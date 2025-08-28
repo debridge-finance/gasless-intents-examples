@@ -1,0 +1,22 @@
+{
+  "name": "gasless-intents-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@debridge-finance/dln-client": "^17.6.2",
+    "@debridge-finance/solana-utils": "^5.2.0",
+    "@solana/web3.js": "^1.98.2",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.5.0",
+    "ethers": "^6.13.5"
+  }
+}

@@ -1,0 +1,8 @@
+// export const BASE_URL = "https://cross-chain-api-intent.dev.debridge.io/v1.0"
+// export const BASE_URL = "https://cross-chain-api-intent-hanoi.dev.debridge.io/v1.0"
+export const BASE_URL = "https://api.debridge.io/v1/gasless"
+export const BUNDLE = "/bundle"
+export const PREPARE = "/bundle/prepare"
+export const BUNDLE_BY_ID = "/bundle/by-id/"
+export const BUNDLE_SUBMIT = "/bundle/submit"
+export const BUNDLE_LIST = "/bundle/list"
