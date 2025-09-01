@@ -83,8 +83,7 @@ export function getPolyUsdcToBscUsdt(signer: string) {
     dstChainTokenOutRecipient: signer,
     srcChainAuthorityAddress: signer,
     dstChainAuthorityAddress: signer,
-    prependOperatingExpenses: false,
-    ptp: false
+    prependOperatingExpenses: false
   }
 }
 
@@ -102,8 +101,7 @@ export function getPolyMaticToBscUsdt(signer: string) {
     dstChainTokenOutRecipient: signer,
     srcChainAuthorityAddress: signer,
     dstChainAuthorityAddress: signer,
-    prependOperatingExpenses: false,
-    ptp: false
+    prependOperatingExpenses: false
   }
 }
 
@@ -121,7 +119,6 @@ export function getPolyUsdtToBscUsdt(signer: string) {
     dstChainTokenOutRecipient: "0x2d5696F81f467460A247d72950527Da0737A49C2",
     srcChainAuthorityAddress: "0x2d5696F81f467460A247d72950527Da0737A49C2",
     dstChainAuthorityAddress: "0x2d5696F81f467460A247d72950527Da0737A49C2",
-    prependOperatingExpenses: false,
-    ptp: false
+    prependOperatingExpenses: false
   }
 }
