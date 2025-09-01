@@ -1,46 +1,49 @@
-import { ethers } from "ethers";
+import { createWalletClient, http } from "viem";
+import {
+  privateKeyToAccount
+} from 'viem/accounts'
+import { polygon } from "viem/chains"
 import { getEnvConfig } from "./../utils";
 import { createBundle, submitBundle } from "./api-calls";
 import { processIntentBundle } from "./signatures/intent-signatures";
+import { randomUUID } from 'crypto';
 
 import util from "util"
+import { getPolyMaticToBscWbnb, getPolyMaticToWethTrade, getPolyUsdcToBscUsdcTrade, getPolyUsdcToBscWbnbTrade } from "./trades";
+
+function remove0xPrefix(input: string): string {
+  if (input.startsWith("0x")) {
+    return input.slice(2);
+  }
+  return input;
+}
 
 async function main() {
   // Wallet setup
-  const { privateKey, polygonRpcUrl } = getEnvConfig();
-  const polygonProvider = new ethers.JsonRpcProvider(polygonRpcUrl);
-  const signer = new ethers.Wallet(privateKey, polygonProvider);
+  const { privateKey } = getEnvConfig();
+
+  const account = privateKeyToAccount(`0x${remove0xPrefix(privateKey)}`);
+
+  const walletClient = createWalletClient({
+    account,
+    chain: polygon,
+    transport: http()
+  });
+
+  const requestId = randomUUID();
 
   // Trades body
   const requestBody = {
-    requestId: "usdc-polygon-bsc-50-d-1",
-    expirationTimestamp: 1756592686000, // Sat Aug 30 2025 22:24:46 GMT+0000
+    requestId,
+    expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: "market",
     trades: [
-      {
-        // Source (Polygon)
-        srcChainId: 137,
-        srcChainTokenIn: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC on Polygon (bridged), 6 decimals
-        srcChainTokenInAmount: "4000000",      // 4$ USDC
-        srcChainTokenInMinAmount: "2000000",   // 2$ USDC
-        srcChainTokenInMaxAmount: "3000000",   // 3$ USDC
-
-        // Destination (BSC)
-        dstChainId: 56,
-        dstChainTokenOut: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", // USDC on BSC, 6 decimals
-        dstChainTokenOutAmount: "auto",
-        dstChainTokenOutRecipient: signer.address,
-
-        // Authorities 
-        srcChainAuthorityAddress: signer.address,
-        dstChainAuthorityAddress: signer.address,
-
-        // Flags
-        prependOperatingExpenses: false,
-        ptp: false
-      }
+      getPolyUsdcToBscUsdcTrade(account.address),
+      getPolyUsdcToBscWbnbTrade(account.address),
+      getPolyMaticToBscWbnb(account.address),
+      getPolyMaticToWethTrade(account.address)
     ],
     preHooks: [],
     postHooks: []
@@ -52,15 +55,15 @@ async function main() {
 
   // Log the first intent for debugging
   if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], {showHidden: false, depth: null, colors: true}));
+    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
   }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
-  const signedDataArray = await processIntentBundle(bundle, signer);
-  
+  const signedDataArray = await processIntentBundle(bundle, walletClient);
+
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
-  
+
   // Prepare the bundle with signatures - but don't submit yet
   const submitPayload = {
     ...bundle,
@@ -69,13 +72,12 @@ async function main() {
     isAtomic: true,
     signedData: signedDataArray
   };
-  
+
   console.log("Payload prepared with signatures. Ready for submission.");
-  
-  // Uncomment this to submit the bundle
+
   const submitResponse = await submitBundle(submitPayload);
   console.log("Submit response:", submitResponse);
-  
+
   return submitPayload;
 }
 

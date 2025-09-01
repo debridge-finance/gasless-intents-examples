@@ -1,7 +1,4 @@
-// intent-signatures.ts
-// Implementation for collecting signatures for intents and their actions
-
-import { ethers } from 'ethers';
+import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
 
 export enum SignatureTypes {
   Sign712 = "Sign712",
@@ -43,7 +40,7 @@ export type Sign7702AuthorizationData = {
 }
 
 // Combined action data type using discriminated union
-export type ActionData = 
+export type ActionData =
   | (EIP712Data & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never })
   | (Sign712MetaMaskData & { contractAddress?: never; nonce?: never })
   | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never });
@@ -96,20 +93,10 @@ export type IntentPayload = {
 }
 
 /**
- * Helper to generate a GUID for request IDs
- */
-export function generateGuid(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-/**
  * Signs an action with ethers.js wallet
  * Handles different signature types: Sign712, Sign712MetaMask, and Sign7702Authorization
  */
-export async function signAction(action: Action, wallet: ethers.Wallet): Promise<string> {
+export async function signAction(action: Action, walletClient: WalletClient): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
 
   // EIP-7702 Authorization
@@ -117,78 +104,38 @@ export async function signAction(action: Action, wallet: ethers.Wallet): Promise
     // Cast to Sign7702AuthorizationData to access specific properties
     const data = action.data as Sign7702AuthorizationData;
     const { contractAddress, nonce } = data;
-    
+
     // For Sign7702Authorization, we need to determine the chainId
-    // If not present in data, we can get it from the provider
-    const chainId = data.chainId || (await wallet.provider.getNetwork()).chainId;
-    let actionNonce = nonce;
-    
-    if (actionNonce === undefined) {
-      actionNonce = await wallet.provider.getTransactionCount(wallet.address);
-      console.log(`Retrieved nonce for ${wallet.address}: ${actionNonce}`);
-    }
-    
-    const authorization = {
-      chainId: Number(chainId),
+    // If not present in data, we can get it from the wallet client
+    const chainId = data.chainId || walletClient.chain.id;
+
+    const authData = {
+      chainId,
       contractAddress,
-      nonce: actionNonce
-    };
-    
-    // Hash the fields and sign - ethers v6 style
-    const abiCoder = ethers.AbiCoder.defaultAbiCoder();
-    const encodedData = abiCoder.encode(
-      ['uint256', 'address', 'uint256'],
-      [authorization.chainId, authorization.contractAddress, authorization.nonce]
-    );
-    const message = ethers.keccak256(encodedData);
-    
-    // In ethers v6, signMessage accepts a string or Uint8Array directly
-    return wallet.signMessage(ethers.getBytes(message));
+      nonce
+    }
+
+    return await sign7702Authorization(walletClient, authData);
   }
-  
+
   // EIP-712 Typed Data - Sign712MetaMask
   else if (action.type === SignatureTypes.Sign712MetaMask) {
     const data = action.data as Sign712MetaMaskData;
     const { domain, types, primaryType, message } = data.toSign;
-    
-    // Remove EIP712Domain from types when signing
-    const typesWithoutDomain = { ...types };
-    delete typesWithoutDomain.EIP712Domain;
-    
-    // In ethers v6, signTypedData is the method for EIP-712 signatures
-    return wallet.signTypedData(domain, typesWithoutDomain, message);
+
+    return sign712(walletClient, { domain, types, primaryType, message });
   }
-  
+
   // EIP-712 Typed Data - Sign712
   else if (action.type === SignatureTypes.Sign712) {
     const data = action.data as EIP712Data;
     const { domain, types, message } = data;
-    
-    // Remove EIP712Domain from types when signing
-    const typesWithoutDomain = { ...types };
-    delete typesWithoutDomain.EIP712Domain;
-    
+
     // In ethers v6, signTypedData is the method for EIP-712 signatures
-    return wallet.signTypedData(domain, typesWithoutDomain, message);
+    return sign712(walletClient, { domain, types, primaryType: data.primaryType, message });
   }
-  
-  // Fallback: sign as message
   else {
-    let messageToSign: string;
-    
-    if (action.type === SignatureTypes.Sign712) {
-      const data = action.data as EIP712Data;
-      messageToSign = JSON.stringify(data.message || {});
-    } 
-    else if (action.type === SignatureTypes.Sign712MetaMask) {
-      const data = action.data as Sign712MetaMaskData;
-      messageToSign = JSON.stringify(data.toSign?.message || {});
-    }
-    else {
-      messageToSign = JSON.stringify(action.data || {});
-    }
-    
-    return wallet.signMessage(messageToSign);
+    throw new Error("Unknown signing method");
   }
 }
 
@@ -197,23 +144,23 @@ export async function signAction(action: Action, wallet: ethers.Wallet): Promise
  * Returns array of { actionId, signedData } objects
  */
 export async function collectIntentSignatures(
-  intent: IntentPayload, 
-  wallet: ethers.Wallet
+  intent: IntentPayload,
+  walletClient: WalletClient
 ): Promise<Array<{ actionId: string, signedData: string }>> {
   const signatures: Array<{ actionId: string, signedData: string }> = [];
-  
+
   if (!intent.requiredActions || intent.requiredActions.length === 0) {
     console.log("No actions to sign in this intent");
     return signatures;
   }
-  
+
   // Process each action in the intent
   for (const action of intent.requiredActions) {
     try {
-      const signature = await signAction(action, wallet);
-      signatures.push({ 
-        actionId: action.actionId, 
-        signedData: signature 
+      const signature = await signAction(action, walletClient);
+      signatures.push({
+        actionId: action.actionId,
+        signedData: signature
       });
       console.log(`Successfully signed action ${action.actionId}`);
     } catch (error) {
@@ -221,7 +168,7 @@ export async function collectIntentSignatures(
       throw error; // Propagate error to caller
     }
   }
-  
+
   return signatures;
 }
 
@@ -230,48 +177,32 @@ export async function collectIntentSignatures(
  * Returns all signatures for both intents and post-hooks
  */
 export async function processIntentBundle(
-  bundle: any, 
-  wallet: ethers.Wallet
+  bundle: any,
+  walletClient: WalletClient
 ): Promise<Array<{ actionId: string, signedData: string }>> {
   const allSignatures: Array<{ actionId: string, signedData: string }> = [];
-  
+
   // Process intents
   if (bundle.intents && Array.isArray(bundle.intents)) {
     for (const intent of bundle.intents) {
       if (intent.requiredActions && Array.isArray(intent.requiredActions)) {
-        const intentSignatures = await collectIntentSignatures(intent, wallet);
+        const intentSignatures = await collectIntentSignatures(intent, walletClient);
         allSignatures.push(...intentSignatures);
       }
     }
   }
-  
+
   // Process post-hooks (if present)
   if (bundle.postHooks && Array.isArray(bundle.postHooks)) {
     for (const hook of bundle.postHooks) {
       if (hook.requiredActions && Array.isArray(hook.requiredActions)) {
-        const hookSignatures = await collectIntentSignatures(hook, wallet);
+        const hookSignatures = await collectIntentSignatures(hook, walletClient);
         allSignatures.push(...hookSignatures);
       }
     }
   }
-  
-  return allSignatures;
-}
 
-/**
- * Creates a signature payload for a specific intent
- * Useful when you need to sign just one intent rather than a full bundle
- */
-export async function createIntentSignaturePayload(
-  intentPayload: IntentPayload,
-  wallet: ethers.Wallet
-): Promise<{ intent: any, signatures: Array<{ actionId: string, signedData: string }> }> {
-  const signatures = await collectIntentSignatures(intentPayload, wallet);
-  
-  return {
-    intent: intentPayload.intent,
-    signatures
-  };
+  return allSignatures;
 }
 
 /**
@@ -280,24 +211,42 @@ export async function createIntentSignaturePayload(
  */
 export async function signAndPrepareBundle(
   bundle: any,
-  privateKey: string,
-  rpcUrl: string
+  walletClient: WalletClient
 ): Promise<any> {
-  // Set up wallet - ethers v6 style
-  const provider = new ethers.JsonRpcProvider(rpcUrl);
-  const wallet = new ethers.Wallet(privateKey, provider);
-  
   // Collect all signatures
-  const signedDataArray = await processIntentBundle(bundle, wallet);
-  
+  const signedDataArray = await processIntentBundle(bundle, walletClient);
+
   // Prepare submission payload
   const submitPayload = {
     ...bundle,
-    requestId: generateGuid(),
+    requestId: bundle.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,
     signedData: signedDataArray
   };
-  
+
   return submitPayload;
+}
+
+async function sign7702Authorization(walletClient: WalletClient, data: any): Promise<`0x${string}`> {
+  const authorization = await walletClient.signAuthorization({
+    ...data,
+    nonce: Number(data.nonce),
+    account: walletClient.account,
+  });
+
+  const signature = serializeSignature({
+    r: authorization.r,
+    s: authorization.s,
+    yParity: authorization.yParity,
+    v: authorization.v,
+  } as SerializeSignatureParameters<'hex'>);
+
+  return signature;
+}
+
+async function sign712(walletClient: WalletClient, data: unknown): Promise<SignTypedDataReturnType> {
+  // @ts-ignore
+  const signature = await walletClient.signTypedData(data);
+  return signature;
 }

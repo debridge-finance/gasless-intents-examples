@@ -1,10 +1,15 @@
+import { ethers } from "ethers";
+import { getEnvConfig } from "../utils";
 import { bundleList } from "./api-calls";
 
 async function main() {
 
-  const owner = "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8";
+  const { privateKey } = getEnvConfig();
+  const signer = new ethers.Wallet(privateKey);
 
-  const res = await bundleList(owner);
+  const owner = signer.address;
+
+  const res = await bundleList(owner.toLowerCase());
 
   console.log("\n✅ Bundle by ID fetched successfully:", res);
 }

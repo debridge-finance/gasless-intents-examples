@@ -1,15 +1,17 @@
-import { getEnvConfig, postUrl } from "./../utils";
-import { BASE_URL, PREPARE } from "./consts";
+import { getEnvConfig, postUrl } from "./../../utils";
+import { BASE_URL, PREPARE } from "./../consts";
+import utils from "util";
 import { randomUUID } from 'crypto';
 
 async function main() {
+
   const requestId = randomUUID();
 
   const requestBody = {
     requestId,
-    expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
+    expirationTimestamp: 1766218120000,
     enableAccountAbstraction: true,
-    isAtomic: false,
+    isAtomic: true,
     tradingAlgorithm: "market",
     trades: [
       {
@@ -43,7 +45,7 @@ async function main() {
 
   const response = await postUrl(url, requestBody);
 
-  console.log(response);
+  console.log(utils.inspect(response, false, 4));
 }
 
 main().catch((error) => {
