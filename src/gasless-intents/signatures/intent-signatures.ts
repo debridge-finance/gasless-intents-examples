@@ -144,18 +144,18 @@ export async function signAction(action: Action, walletClient: WalletClient): Pr
  * Returns array of { actionId, signedData } objects
  */
 export async function collectIntentSignatures(
-  intent: IntentPayload,
+  requiredActions: Array<Action>,
   walletClient: WalletClient
 ): Promise<Array<{ actionId: string, signedData: string }>> {
   const signatures: Array<{ actionId: string, signedData: string }> = [];
 
-  if (!intent.requiredActions || intent.requiredActions.length === 0) {
+  if (!requiredActions || requiredActions.length === 0) {
     console.log("No actions to sign in this intent");
     return signatures;
   }
 
   // Process each action in the intent
-  for (const action of intent.requiredActions) {
+  for (const action of requiredActions) {
     try {
       const signature = await signAction(action, walletClient);
       signatures.push({
@@ -172,12 +172,31 @@ export async function collectIntentSignatures(
   return signatures;
 }
 
+export type TokenResult = {
+  amount: string, // The output token amount
+  approximateUsdValue: number, // The approximate USD value of the output token
+  chainId: number, // The chain ID of the output token
+  recipientAddress: string, // The recipient address for the output token
+  tokenAddress: string // The token address for the output token
+}
+
+export type PostHookPayload = {
+  requiredActions: Array<Action>;
+}
+
+export type Bundle = {
+  intents: Array<IntentPayload>,
+  postHooks: Array<IntentPayload>,
+  tokenResult: Array<TokenResult>,
+  trades: any
+}
+
 /**
  * Main function to process a bundle of intents and collect all signatures
  * Returns all signatures for both intents and post-hooks
  */
 export async function processIntentBundle(
-  bundle: any,
+  bundle: Bundle,
   walletClient: WalletClient
 ): Promise<Array<{ actionId: string, signedData: string }>> {
   const allSignatures: Array<{ actionId: string, signedData: string }> = [];
@@ -186,7 +205,7 @@ export async function processIntentBundle(
   if (bundle.intents && Array.isArray(bundle.intents)) {
     for (const intent of bundle.intents) {
       if (intent.requiredActions && Array.isArray(intent.requiredActions)) {
-        const intentSignatures = await collectIntentSignatures(intent, walletClient);
+        const intentSignatures = await collectIntentSignatures(intent.requiredActions, walletClient);
         allSignatures.push(...intentSignatures);
       }
     }
@@ -196,7 +215,7 @@ export async function processIntentBundle(
   if (bundle.postHooks && Array.isArray(bundle.postHooks)) {
     for (const hook of bundle.postHooks) {
       if (hook.requiredActions && Array.isArray(hook.requiredActions)) {
-        const hookSignatures = await collectIntentSignatures(hook, walletClient);
+        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient);
         allSignatures.push(...hookSignatures);
       }
     }
