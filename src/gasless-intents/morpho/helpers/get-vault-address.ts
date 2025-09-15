@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 type MorphoVaultItem = {
     address: string;
     asset?: { address: string };
