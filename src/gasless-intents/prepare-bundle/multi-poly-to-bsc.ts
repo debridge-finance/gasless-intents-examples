@@ -1,5 +1,5 @@
 import { postUrl } from "./../../utils";
-import { BASE_URL, PREPARE } from "./../consts";
+import { BASE_URL, ENDPOINTS } from "./../consts";
 import utils from "util";
 import { randomUUID } from 'crypto';
 
@@ -67,7 +67,7 @@ async function main() {
     postHooks: []
   }
 
-  const url = `${BASE_URL}${PREPARE}`;
+  const url = `${BASE_URL}${ENDPOINTS.BUNDLES}`;
 
   const response = await postUrl(url, requestBody);
 

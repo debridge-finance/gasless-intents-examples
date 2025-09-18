@@ -1,4 +1,4 @@
-import { BASE_URL, BUNDLE_BY_ID } from "./consts";
+import { BASE_URL, ENDPOINTS } from "./consts";
 import { getUrl } from "./../utils";
 
 
@@ -10,7 +10,7 @@ import { getUrl } from "./../utils";
 
 const bundleId = "b19c2228-6bd2-4689-aecb-c44d96a2ae21" // fourth run
 
-const url = `${BASE_URL}${BUNDLE_BY_ID}${bundleId}`
+const url = `${BASE_URL}${ENDPOINTS.BUNDLE_BY_ID(bundleId)}`
 
 async function main() {
   console.log("Fetching bundle by ID...", url);
