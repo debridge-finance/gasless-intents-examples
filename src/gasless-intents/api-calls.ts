@@ -1,9 +1,9 @@
-import { BASE_URL, BUNDLE_LIST, BUNDLE_SUBMIT, PREPARE } from "./consts";
+import { BASE_URL, ENDPOINTS } from "./consts";
 import { getUrl, postUrl } from "./../utils";
 
 
 export async function createBundle(requestBody) {
-  const url = `${BASE_URL}${PREPARE}`;
+  const url = `${BASE_URL}${ENDPOINTS.BUNDLES}`;
   
   const response = await postUrl(url, requestBody);
   
@@ -11,7 +11,7 @@ export async function createBundle(requestBody) {
 }
 
 export async function submitBundle(requestBody) {
-  const url = `${BASE_URL}${BUNDLE_SUBMIT}`;
+  const url = `${BASE_URL}${ENDPOINTS.SUBMIT_BUNDLE}`;
 
   const response = await postUrl(url+"?format=json", requestBody);
 
@@ -19,7 +19,7 @@ export async function submitBundle(requestBody) {
 }
 
 export async function bundleList(owner: string) {
-  const url = `${BASE_URL}${BUNDLE_LIST}?intentOwner=${owner}`;
+  const url = `${BASE_URL}${ENDPOINTS.BUNDLES}?intentOwner=${owner}`;
 
   const response = await getUrl(url);
 
