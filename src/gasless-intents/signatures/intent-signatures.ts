@@ -182,11 +182,14 @@ export type TokenResult = {
 
 export type PostHookPayload = {
   requiredActions: Array<Action>;
+  hook: {
+    chainId: number;
+  }
 }
 
 export type Bundle = {
   intents: Array<IntentPayload>,
-  postHooks: Array<IntentPayload>,
+  postHooks: Array<PostHookPayload>,
   tokenResult: Array<TokenResult>,
   trades: any
 }
@@ -197,7 +200,7 @@ export type Bundle = {
  */
 export async function processIntentBundle(
   bundle: Bundle,
-  walletClient: WalletClient
+  walletClient: Record<number, WalletClient>
 ): Promise<Array<{ actionId: string, signedData: string }>> {
   const allSignatures: Array<{ actionId: string, signedData: string }> = [];
 
@@ -205,7 +208,7 @@ export async function processIntentBundle(
   if (bundle.intents && Array.isArray(bundle.intents)) {
     for (const intent of bundle.intents) {
       if (intent.requiredActions && Array.isArray(intent.requiredActions)) {
-        const intentSignatures = await collectIntentSignatures(intent.requiredActions, walletClient);
+        const intentSignatures = await collectIntentSignatures(intent.requiredActions, walletClient[intent.intent.intentChainId]);
         allSignatures.push(...intentSignatures);
       }
     }
@@ -215,7 +218,7 @@ export async function processIntentBundle(
   if (bundle.postHooks && Array.isArray(bundle.postHooks)) {
     for (const hook of bundle.postHooks) {
       if (hook.requiredActions && Array.isArray(hook.requiredActions)) {
-        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient);
+        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient[hook.hook.chainId]);
         allSignatures.push(...hookSignatures);
       }
     }
