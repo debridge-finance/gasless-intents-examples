@@ -373,7 +373,7 @@ export function getBaseDegenToBaseUsdc(signer: string): SameChainTrade {
   }
 }
 
-export function getArbitrumEthToUsde(signer: string): SameChainTrade {
+export function getArbitrumEthToWbtc(signer: string): SameChainTrade {
   return {
     chainId: arbitrum.id,
     tokenIn: EVM_NATIVE_TOKEN,
