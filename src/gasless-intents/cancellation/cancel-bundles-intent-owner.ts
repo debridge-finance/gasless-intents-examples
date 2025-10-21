@@ -22,7 +22,8 @@ async function main() {
 
   console.log("\n✅ Bundle by ID fetched successfully:", JSON.stringify(response, null, 2));
 
-  const sortedBundles = sortBundlesByIntentTimestampAscending(bundles).filter((bundle) => bundle.status === BundleStatus.processing);
+  const sortedBundles = sortBundlesByIntentTimestampAscending(bundles).filter(
+    (bundle) => bundle.status === BundleStatus.processing || bundle.status === BundleStatus.created);
 
   if (sortedBundles.length === 0) {
     console.log("\nℹ️ No processing bundles found for the specified intent owner and authority. Exiting.");
