@@ -25,6 +25,7 @@ export async function getMorphoDepositPosthook(tokenAddress: `0x${string}`, chai
     chainId,
     tokenAddress,
     from: beneficiaryAddress,
+    preparePreRequiredActions: true
   }
 
   return result;
