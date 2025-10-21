@@ -173,7 +173,7 @@ export function getPolyMaticToBscBnb(signer: string): CrossChainTrade {
   return {
     srcChainId: 137,
     srcChainTokenIn: EVM_NATIVE_TOKEN,
-    srcChainTokenInAmount: "200000000000000000", // 1 MATIC
+    srcChainTokenInAmount: "200000000000000000", // 2 MATIC
     srcChainTokenInMinAmount: "200000000000000000",
     srcChainTokenInMaxAmount: "200000000000000000",
     dstChainId: 56,
@@ -442,8 +442,8 @@ export function getPolygonUsdcToBaseUsdc(signer: string): CrossChainTrade {
     srcChainTokenInAmount: "7000000",
     srcChainTokenInMinAmount: "7000000",
     srcChainTokenInMaxAmount: "7000000",
-    dstChainId: 56,
-    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainId: 8453,
+    dstChainTokenOut: USDC.Base,
     dstChainTokenOutAmount: "auto",
     srcChainAuthorityAddress: signer,
     dstChainTokenOutRecipient: signer,

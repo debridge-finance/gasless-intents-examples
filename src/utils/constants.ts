@@ -6,7 +6,6 @@ export const BASE_URL = "https://api.debridge.io/v1/gasless"
 export const BUNDLES = "/bundles"
 
 export const BUNDLES_URL = `${BASE_URL}${BUNDLES}`
-'https://api.debridge.io/v1/gasless/bundles'
 export const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`
 export const BUNDLE_LIST_URL = `${BUNDLES_URL}/list`
 export const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
