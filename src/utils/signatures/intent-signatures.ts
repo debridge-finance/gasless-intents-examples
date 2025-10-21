@@ -1,0 +1,161 @@
+import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
+import { Action, Bundle, EIP712Data, Sign712MetaMaskData, Sign7702AuthorizationData, SignatureTypes } from '../../gasless-intents/types';
+
+/**
+ * Signs an action with ethers.js wallet
+ * Handles different signature types: Sign712, Sign712MetaMask, and Sign7702Authorization
+ */
+export async function signAction(action: Action, walletClient: WalletClient): Promise<string> {
+  console.log(`Signing action: ${action.actionId} of type ${action.type}`);
+
+  // EIP-7702 Authorization
+  if (action.type === SignatureTypes.Sign7702Authorization) {
+    // Cast to Sign7702AuthorizationData to access specific properties
+    const data = action.data as Sign7702AuthorizationData;
+    const { contractAddress, nonce } = data;
+
+    // For Sign7702Authorization, we need to determine the chainId
+    // If not present in data, we can get it from the wallet client
+    const chainId = data.chainId || walletClient.chain.id;
+
+    const authData = {
+      chainId,
+      contractAddress,
+      nonce
+    }
+
+    return await sign7702Authorization(walletClient, authData);
+  }
+
+  // EIP-712 Typed Data - Sign712MetaMask
+  else if (action.type === SignatureTypes.Sign712MetaMask) {
+    const data = action.data as Sign712MetaMaskData;
+    const { domain, types, primaryType, message } = data.toSign;
+
+    return sign712(walletClient, { domain, types, primaryType, message });
+  }
+
+  // EIP-712 Typed Data - Sign712
+  else if (action.type === SignatureTypes.Sign712) {
+    const data = action.data as EIP712Data;
+    const { domain, types, message } = data;
+
+    // In ethers v6, signTypedData is the method for EIP-712 signatures
+    return sign712(walletClient, { domain, types, primaryType: data.primaryType, message });
+  }
+  else {
+    throw new Error("Unknown signing method");
+  }
+}
+
+/**
+ * Collects signatures for all actions in an intent
+ * Returns array of { actionId, signedData } objects
+ */
+export async function collectIntentSignatures(
+  requiredActions: Array<Action>,
+  walletClient: WalletClient
+): Promise<Array<{ actionId: string, signedData: string }>> {
+  const signatures: Array<{ actionId: string, signedData: string }> = [];
+
+  if (!requiredActions || requiredActions.length === 0) {
+    console.log("No actions to sign in this intent");
+    return signatures;
+  }
+
+  // Process each action in the intent
+  for (const action of requiredActions) {
+    try {
+      const signature = await signAction(action, walletClient);
+      signatures.push({
+        actionId: action.actionId,
+        signedData: signature
+      });
+      console.log(`Successfully signed action ${action.actionId}`);
+    } catch (error) {
+      console.error(`Error signing action ${action.actionId}:`, error);
+      throw error; // Propagate error to caller
+    }
+  }
+
+  return signatures;
+}
+
+/**
+ * Main function to process a bundle of intents and collect all signatures
+ * Returns all signatures for both intents and post-hooks
+ */
+export async function processIntentBundle(
+  bundle: Bundle,
+  walletClient: Record<number, WalletClient>
+): Promise<Array<{ actionId: string, signedData: string }>> {
+  const allSignatures: Array<{ actionId: string, signedData: string }> = [];
+
+  // Process intents
+  if (bundle.intents && Array.isArray(bundle.intents)) {
+    for (const intent of bundle.intents) {
+      if (intent.requiredActions && Array.isArray(intent.requiredActions)) {
+        const intentSignatures = await collectIntentSignatures(intent.requiredActions, walletClient[intent.intent.intentChainId]);
+        allSignatures.push(...intentSignatures);
+      }
+    }
+  }
+
+  // Process post-hooks (if present)
+  if (bundle.postHooks && Array.isArray(bundle.postHooks)) {
+    for (const hook of bundle.postHooks) {
+      if (hook.requiredActions && Array.isArray(hook.requiredActions)) {
+        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient[hook.hook.chainId]);
+        allSignatures.push(...hookSignatures);
+      }
+    }
+  }
+
+  return allSignatures;
+}
+
+/**
+ * Example function to demonstrate how to use the signature collection
+ * with a wallet and prepare a bundle for submission
+ */
+export async function signAndPrepareBundle(
+  bundle: any,
+  walletClient: WalletClient
+): Promise<any> {
+  // Collect all signatures
+  const signedDataArray = await processIntentBundle(bundle, walletClient);
+
+  // Prepare submission payload
+  const submitPayload = {
+    ...bundle,
+    requestId: bundle.requestId,
+    enableAccountAbstraction: true,
+    isAtomic: true,
+    signedData: signedDataArray
+  };
+
+  return submitPayload;
+}
+
+async function sign7702Authorization(walletClient: WalletClient, data: any): Promise<`0x${string}`> {
+  const authorization = await walletClient.signAuthorization({
+    ...data,
+    nonce: Number(data.nonce),
+    account: walletClient.account,
+  });
+
+  const signature = serializeSignature({
+    r: authorization.r,
+    s: authorization.s,
+    yParity: authorization.yParity,
+    v: authorization.v,
+  } as SerializeSignatureParameters<'hex'>);
+
+  return signature;
+}
+
+async function sign712(walletClient: WalletClient, data: unknown): Promise<SignTypedDataReturnType> {
+  // @ts-ignore
+  const signature = await walletClient.signTypedData(data);
+  return signature;
+}

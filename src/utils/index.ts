@@ -1,65 +1,12 @@
 import 'dotenv/config';
-import { JsonRpcProvider } from "ethers";
 import { VersionedTransaction } from "@solana/web3.js";
-
-export async function getJsonRpcProviders(rpcUrls: { polygonRpcUrl: string, arbRpcUrl: string, bnbRpcUrl: string, baseRpcUrl?: string, tronRpcUrl?: string }) {
-  let polygonProvider: JsonRpcProvider;
-  let arbitrumProvider: JsonRpcProvider;
-  let bnbProvider: JsonRpcProvider;
-  let baseProvider: JsonRpcProvider;
-  let tronProvider: JsonRpcProvider;
-
-  try {
-    console.log(`\nAttempting to connect to Polygon via: ${rpcUrls.polygonRpcUrl}`);
-    polygonProvider = new JsonRpcProvider(rpcUrls.polygonRpcUrl);
-    console.log(`\nAttempting to connect to Arbitrum via: ${rpcUrls.arbRpcUrl}`);
-    arbitrumProvider = new JsonRpcProvider(rpcUrls.arbRpcUrl);
-    console.log(`\nAttempting to connect to BNB via: ${rpcUrls.bnbRpcUrl}`);
-    bnbProvider = new JsonRpcProvider(rpcUrls.bnbRpcUrl);
-    console.log(`\nAttempting to connect to Base via: ${rpcUrls.baseRpcUrl}`);
-    baseProvider = new JsonRpcProvider(rpcUrls.baseRpcUrl);
-    console.log(`\nAttempting to connect to Tron via ${rpcUrls.tronRpcUrl}`);
-    tronProvider = new JsonRpcProvider(rpcUrls.tronRpcUrl);
-
-    const polygonNetwork = await polygonProvider.getNetwork();
-    console.log(`Polygon connection successful. (Network: ${polygonNetwork.name}, Chain ID: ${polygonNetwork.chainId})`);
-    const arbitrumNetwork = await arbitrumProvider.getNetwork();
-    console.log(`Arbitrum connection successful. (Network: ${arbitrumNetwork.name}, Chain ID: ${arbitrumNetwork.chainId})`);
-    const bnbNetwork = await bnbProvider.getNetwork();
-    console.log(`BNB connection successful. (Network: ${bnbNetwork.name}, Chain ID: ${bnbNetwork.chainId})`);
-    if (rpcUrls.baseRpcUrl) {
-      const baseNetwork = await baseProvider.getNetwork();
-      console.log(`Base connection successful. (Network: ${baseNetwork.name}, Chain ID: ${baseNetwork.chainId})`);
-    }
-    if(rpcUrls.tronRpcUrl) {
-      const tronNetwork = await tronProvider.getNetwork();
-      console.log(`Tron connection successful. (Network: ${tronNetwork.name}, Chain ID: ${tronNetwork.chainId})`);
-    }
-
-  } catch (error) {
-    console.error(`Failed to connect: ${error instanceof Error ? error.message : String(error)}`);
-    throw new Error("Could not connect to a Provider.");
-  }
-
-  return {
-    polygonProvider,
-    arbitrumProvider,
-    bnbProvider,
-    baseProvider,
-    tronProvider
-  }
-}
+import { Bundle, BundleCancelRequest } from '../gasless-intents/types';
+import { getAddress } from 'viem';
 
 export function getEnvConfig() {
   // --- Environment Variable Loading and Validation ---
   console.log("Loading environment variables...");
   const privateKey = process.env.SIGNER_PK;
-  const polygonRpcUrl = process.env.POLYGON_RPC_URL;
-  const arbRpcUrl = process.env.ARB_RPC_URL;
-  const bnbRpcUrl = process.env.BNB_RPC_URL;
-  const solRpcUrl = process.env.SOL_RPC_URL;
-  const baseRpcUrl = process.env.BASE_RPC_URL;
-  const tronRpcUrl = process.env.TRON_RPC_URL;
   const solPrivateKey = process.env.SOL_PK;
 
   let error = ""
@@ -67,26 +14,8 @@ export function getEnvConfig() {
   if (!privateKey) {
     error += "\nSIGNER_PK not found in .env file.";
   }
-  if (!polygonRpcUrl) {
-    error += "\nPOLYGON_RPC_URL not found in .env file. Cannot proceed.";
-  }
-  if (!arbRpcUrl) {
-    error += "\nARB_RPC_URL not found in .env file.";
-  }
-  if (!bnbRpcUrl) {
-    error += "\nBNB_RPC_URL not found in .env file.";
-  }
-  if (!solRpcUrl) {
-    error += "\nSOL_RPC_URL not found in .env file.";
-  }
   if (!solPrivateKey) {
     error += "\nSOL_PK not found in .env file.";
-  }
-  if (!baseRpcUrl) {
-    error += "\nBASE_RPC_URL not found in .env file.";
-  }
-  if (!tronRpcUrl) {
-    error += "\nTRON_RPC_URL not found in .env file.";
   }
 
   if (error !== "") {
@@ -96,12 +25,6 @@ export function getEnvConfig() {
   return {
     privateKey,
     solPrivateKey,
-    polygonRpcUrl,
-    arbRpcUrl,
-    bnbRpcUrl,
-    baseRpcUrl,
-    solRpcUrl,
-    tronRpcUrl
   }
 }
 
@@ -133,7 +56,13 @@ export function updatePriorityFee(tx: VersionedTransaction, computeUnitPrice: nu
 }
 
 export async function getUrl(url: string) {
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+  });
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to fetch URL: ${response.statusText}. ${errorText}`);
@@ -155,4 +84,58 @@ export async function postUrl(url: string, body: any) {
     throw new Error(`Failed to post URL: ${response.statusText}. ${errorText}`);
   }
   return response.json();
+}
+
+export function clipHexPrefix(input: string): string {
+  if (input.startsWith("0x")) {
+    return input.slice(2);
+  }
+  return input;
+}
+
+export function toHexPrefixString(input: string): `0x${string}` {
+  if (input.startsWith("0x")) {
+    return input as `0x${string}`;
+  }
+  return `0x${input}`;
+}
+
+export function generateCancelPreimage(
+  request: BundleCancelRequest,
+  authorityAddress: string,
+): string {
+  const parts = [
+    'deBridge:BundleCancel:v1',
+    authorityAddress,
+    request.creationTimestamp,
+    request.expirationTimestamp,
+  ];
+
+  if (request.bundleId) {
+    parts.push(request.bundleId);
+  }
+  if (request.userId) {
+    parts.push(request.userId);
+  }
+  if (request.intentOwners) {
+    parts.push(request.intentOwners.map(getAddress).join(','));
+  }
+
+  return parts.join('|');
+}
+
+/**
+ * Sorts bundles by their earliest intentTimestamp (ascending).
+ * If a bundle has multiple intents, the one with the smallest timestamp is used.
+ */
+export function sortBundlesByIntentTimestampAscending(bundles: Array<Bundle>): Array<Bundle> {
+  return [...bundles].sort((a, b) => {
+    const aTimestamps = a.intents.map(i => i.intent.intentTimestamp);
+    const bTimestamps = b.intents.map(i => i.intent.intentTimestamp);
+
+    const aMin = Math.min(...aTimestamps);
+    const bMin = Math.min(...bTimestamps);
+
+    return aMin - bMin;
+  });
 }
