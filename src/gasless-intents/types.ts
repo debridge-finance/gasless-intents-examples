@@ -262,6 +262,7 @@ export type PostHook = {
   chainId: number;
   tokenAddress: string;
   from: string;
+  preparePreRequiredActions?: boolean;
 }
 
 export type Tx = {
