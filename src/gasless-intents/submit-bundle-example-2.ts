@@ -43,7 +43,7 @@ async function main() {
       }),
       getSameChainTrade(account.address, {
         tokenOut: USDT.Polygon,
-        tokenOutRecipient: "0x13975E723506372aEe65Aa7ECf5065d8ba906dBe" // deBridge DevRel's address
+        tokenOutRecipient: account.address
       })
     ],
     preHooks: [],
