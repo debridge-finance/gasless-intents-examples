@@ -1,4 +1,4 @@
-import {arbitrum} from "viem/chains";
+import { arbitrum } from "viem/chains";
 import { CrossChainTrade, SameChainTrade } from "./types";
 import { EVM_NATIVE_TOKEN, LINK, USDC, USDT, WBNB, WETH } from "../utils/constants";
 
@@ -6,13 +6,13 @@ export function getPolyUsdcToBscUsdcTrade(signer: string): CrossChainTrade {
   return {
     srcChainId: 137,
     srcChainTokenIn: USDC.Polygon, // USDC on Polygon (bridged), 6 decimals
-    srcChainTokenInAmount: (10**5).toString(),      
-    srcChainTokenInMinAmount: (10**5).toString(),   
-    srcChainTokenInMaxAmount: (10**5).toString(),  
+    srcChainTokenInAmount: (10 ** 5).toString(),
+    srcChainTokenInMinAmount: (10 ** 5).toString(),
+    srcChainTokenInMaxAmount: (10 ** 5).toString(),
 
     // Destination (BSC)
     dstChainId: 56,
-    dstChainTokenOut: USDC.BNB, 
+    dstChainTokenOut: USDC.BNB,
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: signer,
 
@@ -314,9 +314,9 @@ export function getPolyLinkToBaseUsdc(signer: string): CrossChainTrade {
   return {
     srcChainId: 137,
     srcChainTokenIn: LINK.Polygon,
-    srcChainTokenInAmount: (10**17).toString(),
-    srcChainTokenInMinAmount: (10**17).toString(),
-    srcChainTokenInMaxAmount: (10**17).toString(),
+    srcChainTokenInAmount: (10 ** 17).toString(),
+    srcChainTokenInMinAmount: (10 ** 17).toString(),
+    srcChainTokenInMaxAmount: (10 ** 17).toString(),
     dstChainId: 8453,
     dstChainTokenOut: USDC.Base,
     dstChainTokenOutAmount: "auto",
@@ -344,13 +344,30 @@ export function getPolyMaticToBaseUsdc(signer: string): CrossChainTrade {
   }
 }
 
+export function getPolyMaticToBaseEth(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "2000000000000000000", // 2 MATIC
+    srcChainTokenInMinAmount: "2000000000000000000",
+    srcChainTokenInMaxAmount: "2000000000000000000",
+    dstChainId: 8453,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
 export function getBaseEthToBaseUsdc(signer: string): SameChainTrade {
   return {
     chainId: 8453,
     tokenIn: EVM_NATIVE_TOKEN,
-    tokenInAmount: (10**14).toString(),
-    tokenInMinAmount: (10**14).toString(),
-    tokenInMaxAmount: (10**14).toString(),
+    tokenInAmount: (10 ** 14).toString(),
+    tokenInMinAmount: (10 ** 14).toString(),
+    tokenInMaxAmount: (10 ** 14).toString(),
     tokenOut: USDC.Base,
     tokenOutRecipient: signer,
     authorityAddress: signer,
@@ -363,9 +380,9 @@ export function getBaseDegenToBaseUsdc(signer: string): SameChainTrade {
   return {
     chainId: 8453,
     tokenIn: "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed",
-    tokenInAmount: (10**18).toString(),
-    tokenInMinAmount: (10**18).toString(),
-    tokenInMaxAmount: (10**18).toString(),
+    tokenInAmount: (10 ** 18).toString(),
+    tokenInMinAmount: (10 ** 18).toString(),
+    tokenInMaxAmount: (10 ** 18).toString(),
     tokenOut: USDC.Base,
     tokenOutRecipient: signer,
     authorityAddress: signer,
@@ -377,9 +394,9 @@ export function getArbitrumEthToWbtc(signer: string): SameChainTrade {
   return {
     chainId: arbitrum.id,
     tokenIn: EVM_NATIVE_TOKEN,
-    tokenInAmount: (10**14).toString(),
-    tokenInMinAmount: (10**14).toString(),
-    tokenInMaxAmount: (10**14).toString(),
+    tokenInAmount: (10 ** 14).toString(),
+    tokenInMinAmount: (10 ** 14).toString(),
+    tokenInMaxAmount: (10 ** 14).toString(),
     tokenOut: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
     tokenOutRecipient: signer,
     authorityAddress: signer,
@@ -391,9 +408,9 @@ export function getOptimismEthToRandomToken(signer: string): SameChainTrade {
   return {
     chainId: 10,
     tokenIn: EVM_NATIVE_TOKEN,
-    tokenInAmount: (10**14).toString(),
-    tokenInMinAmount: (10**14).toString(),
-    tokenInMaxAmount: (10**14).toString(),
+    tokenInAmount: (10 ** 14).toString(),
+    tokenInMinAmount: (10 ** 14).toString(),
+    tokenInMaxAmount: (10 ** 14).toString(),
     tokenOut: "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9",
     tokenOutRecipient: signer,
     authorityAddress: signer,
@@ -444,6 +461,23 @@ export function getPolygonUsdcToBaseUsdc(signer: string): CrossChainTrade {
     srcChainTokenInMaxAmount: "7000000",
     dstChainId: 8453,
     dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolygonUsdcToBaseEth(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "7000000",
+    srcChainTokenInMinAmount: "7000000",
+    srcChainTokenInMaxAmount: "7000000",
+    dstChainId: 8453,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
     dstChainTokenOutAmount: "auto",
     srcChainAuthorityAddress: signer,
     dstChainTokenOutRecipient: signer,
