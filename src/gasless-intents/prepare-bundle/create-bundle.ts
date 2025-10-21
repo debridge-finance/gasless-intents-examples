@@ -1,27 +1,25 @@
-import utils from "util";
-import { randomUUID } from 'crypto';
-import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { createBundle } from "../../utils/api";
 import { USDC } from "../../utils/constants";
+import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { randomUUID } from 'crypto';
 
 async function main() {
-
   const requestId = randomUUID();
 
   const requestBody: BundleProposeBody = {
     requestId,
-    expirationTimestamp: 1766218120000,
+    expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
-    isAtomic: true,
+    isAtomic: false,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
       {
         // Source (Polygon)
         srcChainId: 137,
         srcChainTokenIn: USDC.Polygon, // USDC on Polygon (bridged), 6 decimals
-        srcChainTokenInAmount: "11000000",      // 11$ USDC
-        srcChainTokenInMinAmount: "9000000",   // 9$ USDC
-        srcChainTokenInMaxAmount: "10000000",   // 10$ USDC
+        srcChainTokenInAmount: "2000000",      // 2$ USDC
+        srcChainTokenInMinAmount: "2000000",   // 2$ USDC
+        srcChainTokenInMaxAmount: "2000000",   // 20$ USDC
 
         // Destination (BSC)
         dstChainId: 56,
@@ -44,7 +42,7 @@ async function main() {
 
   const response = await createBundle(requestBody);
 
-  console.log(utils.inspect(response, false, 4));
+  console.log(response);
 }
 
 main().catch((error) => {
