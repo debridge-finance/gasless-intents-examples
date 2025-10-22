@@ -1,18 +1,20 @@
-import { createWalletClient, http } from "viem";
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { polygon } from "viem/chains"
-import { getEnvConfig, toHexPrefixString } from "./../utils";
-import { createBundle, submitBundle } from "./../utils/api";
-import { processIntentBundle } from "./../utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
-
 import util from "util"
-import { getSameChainTrade, getCrossChainTrade } from "./../utils/trades";
-import { USDT } from "../utils/constants";
-import { TradingAlgorithm } from "./types";
-import { getChainIdToWalletClientMap } from "../utils/wallet";
+
+import { getEnvConfig, toHexPrefixString } from "../../utils";
+import { createBundle, submitBundle } from "../../utils/api";
+import { processIntentBundle } from "../../utils/signatures/intent-signatures";
+import {
+  getPolyMaticToWethTrade,
+  getPolyUsdcToBscUsdcTrade,
+  getPolyMaticToBscBnb,
+  getPolyMaticToBscBnbStuck
+} from "../trades";
+import { getChainIdToWalletClientMap } from "../../utils/wallet";
+import { Bundle, TradingAlgorithm } from '../types';
 
 async function main() {
   // Wallet setup
@@ -20,7 +22,7 @@ async function main() {
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
 
-  const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
+  const chainToWalletsMap = getChainIdToWalletClientMap(account);
 
   const requestId = randomUUID();
 
@@ -32,26 +34,17 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getSameChainTrade(account.address), // default USDC on Polygon -> MATIC on Polygon
-      getCrossChainTrade(account.address), // default USDC on Polygon -> USDC on BSC
-      getCrossChainTrade(account.address, {
-        // Only override what you want – everything else defaults
-        srcChainTokenInAmount: "11000000", // 11 USDC
-        srcChainTokenInMinAmount: "9000000",
-        srcChainTokenInMaxAmount: "10000000",
-        dstChainTokenOut: USDT.BNB,        // Default is BSC_USDC, override to USDT
-      }),
-      getSameChainTrade(account.address, {
-        tokenOut: USDT.Polygon,
-        tokenOutRecipient: account.address
-      })
+      getPolyUsdcToBscUsdcTrade(account.address),
+      getPolyMaticToWethTrade(account.address),
+      getPolyMaticToBscBnb(account.address),
+      getPolyMaticToBscBnbStuck(account.address), // 1 Matic for 1 BNB will get it stuck, due to the bundle being atomic
     ],
-    preHooks: [],
-    postHooks: []
+    postHooks: [],
   }
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
+  console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
 
   // Log the first intent for debugging
@@ -61,17 +54,20 @@ async function main() {
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
-  const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
+  const signedDataArray = await processIntentBundle(bundle, chainToWalletsMap);
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
   // Prepare the bundle with signatures - but don't submit yet
-  const submitPayload = {
+  const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,
-    signedData: signedDataArray
+    signedData: signedDataArray,
+    partnerCancelAuthority: [
+      account.address
+    ]
   };
 
   console.log("Payload prepared with signatures. Ready for submission.");

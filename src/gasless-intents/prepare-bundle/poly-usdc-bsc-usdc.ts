@@ -1,30 +1,31 @@
-import { getEnvConfig, postUrl } from "./../../utils";
-import { BASE_URL, ENDPOINTS } from "./../consts";
 import utils from "util";
 import { randomUUID } from 'crypto';
+import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { createBundle } from "../../utils/api";
+import { USDC } from "../../utils/constants";
 
 async function main() {
 
   const requestId = randomUUID();
 
-  const requestBody = {
+  const requestBody: BundleProposeBody = {
     requestId,
     expirationTimestamp: 1766218120000,
     enableAccountAbstraction: true,
     isAtomic: true,
-    tradingAlgorithm: "market",
+    tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
       {
         // Source (Polygon)
         srcChainId: 137,
-        srcChainTokenIn: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC on Polygon (bridged), 6 decimals
+        srcChainTokenIn: USDC.Polygon, // USDC on Polygon (bridged), 6 decimals
         srcChainTokenInAmount: "11000000",      // 11$ USDC
         srcChainTokenInMinAmount: "9000000",   // 9$ USDC
         srcChainTokenInMaxAmount: "10000000",   // 10$ USDC
 
         // Destination (BSC)
         dstChainId: 56,
-        dstChainTokenOut: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", // USDC on BSC, 6 decimals
+        dstChainTokenOut: USDC.BNB, // USDC on BSC/BNB, 6 decimals
         dstChainTokenOutAmount: "auto",
         dstChainTokenOutRecipient: "0x2d5696F81f467460A247d72950527Da0737A49C2",
 
@@ -41,9 +42,7 @@ async function main() {
     postHooks: []
   }
 
-  const url = `${BASE_URL}${ENDPOINTS.BUNDLES}`;
-
-  const response = await postUrl(url, requestBody);
+  const response = await createBundle(requestBody);
 
   console.log(utils.inspect(response, false, 4));
 }

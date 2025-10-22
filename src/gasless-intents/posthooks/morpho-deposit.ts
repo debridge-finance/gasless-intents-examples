@@ -1,57 +1,48 @@
-import { createWalletClient, http } from "viem";
-import {
-  privateKeyToAccount
-} from 'viem/accounts'
-import { polygon } from "viem/chains"
-import { getEnvConfig, toHexPrefixString } from "./../utils";
-import { createBundle, submitBundle } from "./../utils/api";
-import { processIntentBundle } from "./../utils/signatures/intent-signatures";
+import { privateKeyToAccount } from "viem/accounts";
+import util from "util"
 import { randomUUID } from 'crypto';
 
-import util from "util"
-import { getSameChainTrade, getCrossChainTrade } from "./../utils/trades";
-import { USDT } from "../utils/constants";
-import { TradingAlgorithm } from "./types";
-import { getChainIdToWalletClientMap } from "../utils/wallet";
+import { USDC } from "../../utils/constants";
+import { toHexPrefixString, getEnvConfig } from "../../utils";
+import { getMorphoDepositPosthook } from "../../utils/posthooks";
+import { createBundle, submitBundle } from "../../utils/api";
+import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
+import { processIntentBundle } from "../../utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "../../utils/wallet";
 
 async function main() {
-  // Wallet setup
   const { privateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
+  const baseUsdcMorphoDeposit = await getMorphoDepositPosthook(toHexPrefixString(USDC.Base), 8453, account.address);
+
+  console.log("Deposit Call PostHook Calldata:", baseUsdcMorphoDeposit);
+
   const requestId = randomUUID();
 
-  // Trades body
-  const requestBody = {
+  const requestBody: BundleProposeBody = {
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getSameChainTrade(account.address), // default USDC on Polygon -> MATIC on Polygon
-      getCrossChainTrade(account.address), // default USDC on Polygon -> USDC on BSC
-      getCrossChainTrade(account.address, {
-        // Only override what you want – everything else defaults
-        srcChainTokenInAmount: "11000000", // 11 USDC
-        srcChainTokenInMinAmount: "9000000",
-        srcChainTokenInMaxAmount: "10000000",
-        dstChainTokenOut: USDT.BNB,        // Default is BSC_USDC, override to USDT
-      }),
-      getSameChainTrade(account.address, {
-        tokenOut: USDT.Polygon,
-        tokenOutRecipient: account.address
-      })
+      getPolygonUsdcToBaseUsdc(account.address),
+      getPolyMaticToBaseUsdc(account.address),
     ],
-    preHooks: [],
-    postHooks: []
+    postHooks: [
+      baseUsdcMorphoDeposit
+    ],
   }
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
+
+  console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
 
   // Log the first intent for debugging

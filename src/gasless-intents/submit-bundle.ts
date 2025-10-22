@@ -1,56 +1,109 @@
-import { createWalletClient, http } from "viem";
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { polygon } from "viem/chains"
-import { getEnvConfig } from "./../utils";
-import { createBundle, submitBundle } from "./api-calls";
-import { processIntentBundle } from "./signatures/intent-signatures";
+import { getEnvConfig, clipHexPrefix } from "./../utils";
+import { createBundle, submitBundle } from "./../utils/api";
+import { processIntentBundle } from "../utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
 
 import util from "util"
-import { getPolyMaticToBscWbnb, getPolyMaticToWethTrade, getPolyUsdcToBscUsdcTrade, getPolyUsdcToBscWbnbTrade } from "./trades";
-
-function remove0xPrefix(input: string): string {
-  if (input.startsWith("0x")) {
-    return input.slice(2);
-  }
-  return input;
-}
+import {
+  getPolyUsdcToPolyWETH,
+  getPolyMaticToBscWbnb,
+  getPolyMaticToWethTrade,
+  getPolyUsdcToBscUsdcTrade,
+  getPolyUsdcToBscWbnbTrade,
+  getBscNativeToUsdc,
+  getPolyMaticToBscUsdc,
+  getBscNativeToPolNativeTrade,
+  getPolyMaticToBscBnb,
+  getBaseEthToBscWbnb,
+  getArbitrumEthToBscWbnb, 
+  getOptimismEthToBscWbnb,
+  getArbitrumEthToBaseEth,
+  getPolyMaticToBaseUsdc,
+  getBscNativeToBaseUsdc,
+  getOptimismEthToBaseEth,
+  getBaseEthToBaseUsdc, 
+  getOptimismEthToRandomToken, 
+  getArbitrumEthToWbtc, 
+  getBaseDegenToBaseUsdc, 
+  getPolyLinkToBaseUsdc
+} from "./trades";
+import { Bundle, BundleProposeBody, TradingAlgorithm } from "./types";
+import { getChainIdToWalletClientMap } from "../utils/wallet";
 
 async function main() {
   // Wallet setup
   const { privateKey } = getEnvConfig();
 
-  const account = privateKeyToAccount(`0x${remove0xPrefix(privateKey)}`);
+  const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
 
-  const walletClient = createWalletClient({
-    account,
-    chain: polygon,
-    transport: http()
-  });
+  const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
   const requestId = randomUUID();
 
   // Trades body
-  const requestBody = {
+  const requestBody: BundleProposeBody = {
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
-    tradingAlgorithm: "market",
+    tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
       getPolyUsdcToBscUsdcTrade(account.address),
-      getPolyUsdcToBscWbnbTrade(account.address),
-      getPolyMaticToBscWbnb(account.address),
-      getPolyMaticToWethTrade(account.address)
+      getPolyMaticToWethTrade(account.address),
+      getPolyMaticToBscBnb(account.address),
+      //getBscNativeToPolNativeTrade(account.address)
+      //getBscNativeToBaseEth(account.address),
+      //getPolyMaticToBaseEth(account.address),
+      //getBscNativeToBaseEth(account.address),
+      //getBaseEthToBaseEth(account.address),
+      //getArbitrumEthToBaseEth(account.address),
+      // getOptimismEthToBaseEth(account.address),
+
+
+      //getOptimismEthToRandomToken(account.address),
+      //getArbitrumEthToWbtc(account.address),
+
+
+      //getOptimismEthToBaseEth(account.address)
+
+
+      //getPolyUsdcToBscUsdcTrade(account.address),
+      //getPolyUsdcToPolyWETH(account.address),
+      //getPolyUsdcToBscUsdcTrade(account.address),
+
+      // getPolyMaticToBscWbnb(account.address),
+
+      //getPolyMaticToBscBnb(account.address),
+      //getPolyMaticToBscBnb(account.address),
+      //getPolyMaticToBscWbnb(account.address),
+
+      //getPolyUsdcToBscUsdcTrade(account.address),
+      //getPolyUsdcToBscWbnbTrade(account.address),
+      //getPolyMaticToBscWbnb(account.address),
+      // getPolyMaticToWethTrade(account.address)
+      //getBscNativeToPolNativeTrade(account.address)
     ],
-    preHooks: [],
-    postHooks: []
+    postHooks: [
+      // {
+      //   "isAtomic": true,
+      //   //data: '0x6e553f650000000000000000000000000000000000000000000000000000000000002710000000000000000000000000541a7e03dcc8f425f6a0797333d5926d89aeb51f',
+      //   "data": "0x6e553f65{amount}000000000000000000000000541a7e03dcc8f425f6a0797333d5926d89aeb51f",
+      //   "to": "0xAcB0DCe4b0FF400AD8F6917f3ca13E434C9ed6bC",
+      //   "value": "0",
+      //   "chainId": 137,
+      //   "tokenAddress": USDC.Polygon,
+      //   "from": "0x541A7e03dCC8F425F6a0797333d5926D89AeB51f"
+      // }
+    ],
   }
+
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
+  console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
 
   // Log the first intent for debugging
@@ -60,12 +113,12 @@ async function main() {
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
-  const signedDataArray = await processIntentBundle(bundle, walletClient);
+  const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
   // Prepare the bundle with signatures - but don't submit yet
-  const submitPayload = {
+  const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,

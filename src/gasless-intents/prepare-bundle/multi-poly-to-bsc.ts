@@ -1,28 +1,29 @@
-import { postUrl } from "./../../utils";
-import { BASE_URL, ENDPOINTS } from "./../consts";
+import { EVM_NATIVE_TOKEN, USDC, USDT } from "../../utils/constants";
 import utils from "util";
 import { randomUUID } from 'crypto';
+import { createBundle } from "../../utils/api";
+import { BundleProposeBody, TradingAlgorithm } from "../types";
 
 async function main() {
 
   const requestId = randomUUID();
 
-  const requestBody = {
+  const requestBody: BundleProposeBody = {
     requestId,
     expirationTimestamp: 1766218120000,
     enableAccountAbstraction: true,
     isAtomic: true,
-    tradingAlgorithm: "market",
+    tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
       {
         // USDC (Polygon) -> USDT (BSC)
         srcChainId: 137,
-        srcChainTokenIn: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359", // USDC on Polygon
+        srcChainTokenIn: USDC.Polygon, // USDC on Polygon
         srcChainTokenInAmount: "11000000", // 10 USDC
         srcChainTokenInMinAmount: "9000000",
         srcChainTokenInMaxAmount: "10000000",
         dstChainId: 56,
-        dstChainTokenOut: "0x55d398326f99059ff775485246999027b3197955", // USDT on BSC
+        dstChainTokenOut: USDT.BNB, // USDT on BSC
         dstChainTokenOutAmount: "auto",
         dstChainTokenOutRecipient: "0x2d5696F81f467460A247d72950527Da0737A49C2",
         srcChainAuthorityAddress: "0x2d5696F81f467460A247d72950527Da0737A49C2",
@@ -33,12 +34,12 @@ async function main() {
       {
         // MATIC (Polygon) -> USDT (BSC)
         srcChainId: 137,
-        srcChainTokenIn: "0x0000000000000000000000000000000000000000", // native MATIC
+        srcChainTokenIn: EVM_NATIVE_TOKEN, // native MATIC
         srcChainTokenInAmount: "11000000000000000000", // 10 MATIC
         srcChainTokenInMinAmount: "9000000000000000000",
         srcChainTokenInMaxAmount: "10000000000000000000",
         dstChainId: 56,
-        dstChainTokenOut: "0x55d398326f99059ff775485246999027b3197955",
+        dstChainTokenOut: USDT.BNB,
         dstChainTokenOutAmount: "auto",
         dstChainTokenOutRecipient: "0x2d5696F81f467460A247d72950527Da0737A49C2",
         srcChainAuthorityAddress: "0x2d5696F81f467460A247d72950527Da0737A49C2",
@@ -49,12 +50,12 @@ async function main() {
       {
         // USDT (Polygon) -> USDT (BSC)
         srcChainId: 137,
-        srcChainTokenIn: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT on Polygon
+        srcChainTokenIn: USDT.Polygon, // USDT on Polygon
         srcChainTokenInAmount: "10000000", // 10 USDT
         srcChainTokenInMinAmount: "10000000",
         srcChainTokenInMaxAmount: "11000000",
         dstChainId: 56,
-        dstChainTokenOut: "0x55d398326f99059ff775485246999027b3197955",
+        dstChainTokenOut: USDT.BNB,
         dstChainTokenOutAmount: "auto",
         dstChainTokenOutRecipient: "0x2d5696F81f467460A247d72950527Da0737A49C2",
         srcChainAuthorityAddress: "0x2d5696F81f467460A247d72950527Da0737A49C2",
@@ -67,9 +68,7 @@ async function main() {
     postHooks: []
   }
 
-  const url = `${BASE_URL}${ENDPOINTS.BUNDLES}`;
-
-  const response = await postUrl(url, requestBody);
+  const response = await createBundle(requestBody);
 
   console.log(utils.inspect(response, false, 4));
 }

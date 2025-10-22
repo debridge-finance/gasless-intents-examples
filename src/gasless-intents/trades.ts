@@ -1,128 +1,18 @@
-// Token Addresses
-export const NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";
+import { arbitrum } from "viem/chains";
+import { CrossChainTrade, SameChainTrade } from "./types";
+import { EVM_NATIVE_TOKEN, LINK, USDC, USDT, WBNB, WETH } from "../utils/constants";
 
-// Polygon
-export const POLYGON_WETH = "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619";
-export const POLYGON_USDC = "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359";
-export const POLYGON_USDT = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
-
-// BSC
-export const BSC_WBNB = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
-export const BSC_USDC = "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d";
-export const BSC_USDT = "0x55d398326f99059ff775485246999027b3197955";
-
-// Type definitions
-
-export type CrossChainTrade = {
-  srcChainId: number;
-  srcChainTokenIn: string;
-  srcChainTokenInAmount: string;      // human: 6/18 decimals as string
-  srcChainTokenInMinAmount: string;
-  srcChainTokenInMaxAmount: string;
-  dstChainId: number;
-  dstChainTokenOut: string;
-  dstChainTokenOutAmount: "auto" | string;
-  dstChainTokenOutRecipient: string;
-  srcChainAuthorityAddress: string;
-  dstChainAuthorityAddress: string;
-  prependOperatingExpenses: boolean;
-};
-
-export function getCrossChainTrade(
-  signer: string,
-  params: Partial<
-    Omit<CrossChainTrade,
-      | "srcChainAuthorityAddress"
-      | "dstChainAuthorityAddress"
-      | "dstChainTokenOutRecipient"
-    >
-  > & {
-    dstChainTokenOutRecipient?: string;
-  } = {}
-): CrossChainTrade {
-  const {
-    srcChainId = 137,
-    srcChainTokenIn = POLYGON_USDC,
-    srcChainTokenInAmount = "4000000",
-    srcChainTokenInMinAmount = "4000000",
-    srcChainTokenInMaxAmount = "4000000",
-    dstChainId = 56,
-    dstChainTokenOut = BSC_USDC,
-    dstChainTokenOutAmount = "auto",
-    dstChainTokenOutRecipient,
-    prependOperatingExpenses = true,
-  } = params;
-
-  return {
-    srcChainId,
-    srcChainTokenIn,
-    srcChainTokenInAmount,
-    srcChainTokenInMinAmount,
-    srcChainTokenInMaxAmount,
-    dstChainId,
-    dstChainTokenOut,
-    dstChainTokenOutAmount,
-    dstChainTokenOutRecipient: dstChainTokenOutRecipient ?? signer,
-    srcChainAuthorityAddress: signer,
-    dstChainAuthorityAddress: signer,
-    prependOperatingExpenses,
-  };
-}
-
-export type SingleChainSwap = {
-  chainId: number;
-  tokenIn: string;
-  tokenInAmount: string;              // human: 6/18 decimals as string
-  tokenInMinAmount: string;
-  tokenInMaxAmount: string;
-  tokenOut: string;
-  tokenOutRecipient: string;
-  authorityAddress: string;
-  prependOperatingExpenses: boolean;
-};
-
-export function getSingleChainSwap(
-signer: string, params: Partial<
-  Omit<SingleChainSwap, "authorityAddress" | "tokenOutRecipient">
-> & {
-  tokenOutRecipient?: string;
-} = {}): SingleChainSwap {
-  const {
-    chainId = 137,
-    tokenIn = POLYGON_USDC,
-    tokenInAmount = "4000000",
-    tokenInMinAmount = "4000000",
-    tokenInMaxAmount = "4000000",
-    tokenOut = NATIVE_TOKEN, // MATIC on Polygon
-    tokenOutRecipient,
-    prependOperatingExpenses = true,
-  } = params;
-
-  return {
-    chainId,
-    tokenIn,
-    tokenInAmount,
-    tokenInMinAmount,
-    tokenInMaxAmount,
-    tokenOut,
-    tokenOutRecipient: tokenOutRecipient ?? signer,
-    authorityAddress: signer,
-    prependOperatingExpenses,
-  };
-}
-
-
-export function getPolyUsdcToBscUsdcTrade(signer: string) {
+export function getPolyUsdcToBscUsdcTrade(signer: string): CrossChainTrade {
   return {
     srcChainId: 137,
-    srcChainTokenIn: POLYGON_USDC, // USDC on Polygon (bridged), 6 decimals
-    srcChainTokenInAmount: "4000000",      // 4$ USDC
-    srcChainTokenInMinAmount: "2000000",   // 2$ USDC
-    srcChainTokenInMaxAmount: "3000000",   // 3$ USDC
+    srcChainTokenIn: USDC.Polygon, // USDC on Polygon (bridged), 6 decimals
+    srcChainTokenInAmount: (10 ** 5).toString(),
+    srcChainTokenInMinAmount: (10 ** 5).toString(),
+    srcChainTokenInMaxAmount: (10 ** 5).toString(),
 
     // Destination (BSC)
     dstChainId: 56,
-    dstChainTokenOut: BSC_USDC, // USDC on BSC, 6 decimals
+    dstChainTokenOut: USDC.BNB,
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: signer,
 
@@ -131,19 +21,19 @@ export function getPolyUsdcToBscUsdcTrade(signer: string) {
     dstChainAuthorityAddress: signer,
 
     // Flags
-    prependOperatingExpenses: false,
+    prependOperatingExpenses: true,
   }
 }
 
-export function getPolyUsdcToBscWbnbTrade(signer: string) {
+export function getPolyUsdcToBscWbnbTrade(signer: string): CrossChainTrade {
   return {
     srcChainId: 137,
-    srcChainTokenIn: POLYGON_USDC, // USDC on Polygon
+    srcChainTokenIn: USDC.Polygon, // USDC on Polygon
     srcChainTokenInAmount: "4000000", // 4 USDC
     srcChainTokenInMinAmount: "2000000",
     srcChainTokenInMaxAmount: "3000000",
     dstChainId: 56,
-    dstChainTokenOut: BSC_WBNB, // WBNB on BSC
+    dstChainTokenOut: WBNB.BNB, // WBNB on BSC
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: signer,
     srcChainAuthorityAddress: signer,
@@ -152,47 +42,197 @@ export function getPolyUsdcToBscWbnbTrade(signer: string) {
   }
 }
 
-export function getPolyMaticToWethTrade(signer: string) {
+export function getPolyMaticToWethTrade(signer: string): SameChainTrade {
   return {
     // Same-chain swap
     chainId: 137,
-    tokenIn: NATIVE_TOKEN,
-    tokenInAmount: "1000000000000000000", // 1 MATIC
-    tokenInMinAmount: "1000000000000000000",
-    tokenInMaxAmount: "1000000000000000000",
-    tokenOut: POLYGON_WETH,
+    tokenIn: EVM_NATIVE_TOKEN,
+    tokenInAmount: "100000000000000000", // 1 MATIC
+    tokenInMinAmount: "100000000000000000",
+    tokenInMaxAmount: "100000000000000000",
+    tokenOut: WETH.Polygon,
     tokenOutRecipient: signer,
     authorityAddress: signer,
     prependOperatingExpenses: true,
   }
 }
 
-export function getPolyMaticToBscWbnb(signer: string) {
+export function getBscNativeToUsdc(signer: string): SameChainTrade {
   return {
-    srcChainId: 137,
-    srcChainTokenIn: NATIVE_TOKEN,
-    srcChainTokenInAmount: "1000000000000000000", // 1 MATIC
-    srcChainTokenInMinAmount: "1000000000000000000",
-    srcChainTokenInMaxAmount: "1000000000000000000",
-    dstChainId: 56,
-    dstChainTokenOut: BSC_WBNB,
-    dstChainTokenOutAmount: "auto",
-    srcChainAuthorityAddress: signer,
-    dstChainTokenOutRecipient: signer,
-    dstChainAuthorityAddress: signer
+    // Same-chain swap
+    chainId: 56,
+    tokenIn: EVM_NATIVE_TOKEN,
+    tokenInAmount: "100000000000000", // 1 MATIC
+    tokenInMinAmount: "100000000000000",
+    tokenInMaxAmount: "100000000000000",
+    tokenOut: USDC.BNB,
+    tokenOutRecipient: signer,
+    authorityAddress: signer,
+    prependOperatingExpenses: true,
   }
 }
 
-export function getPolyUsdcToBscUsdt(signer: string) {
+export function getBscNativeToPolNativeTrade(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 56,
+    srcChainTokenIn: EVM_NATIVE_TOKEN, // USDC on Polygon (bridged), 6 decimals
+    srcChainTokenInAmount: "1000000000000000",      // 4$ USDC
+    srcChainTokenInMinAmount: "1000000000000000",   // 2$ USDC
+    srcChainTokenInMaxAmount: "1000000000000000",   // 3$ USDC
+
+    // Destination (BSC)
+    dstChainId: 10,
+    dstChainTokenOut: EVM_NATIVE_TOKEN, // EVM_NATIVE_TOKEN, // USDC on BSC, 6 decimals
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: signer,
+
+    // Authorities
+    srcChainAuthorityAddress: signer,
+    dstChainAuthorityAddress: signer,
+
+    // Flags
+    prependOperatingExpenses: true,
+  }
+}
+
+
+export function getPolyMaticToBscWbnb(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "200000000000000000", // 1 MATIC
+    srcChainTokenInMinAmount: "200000000000000000",
+    srcChainTokenInMaxAmount: "200000000000000000",
+    dstChainId: 56,
+    dstChainTokenOut: WBNB.BNB,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getOptimismEthToBscWbnb(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 10,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "50000000000000", // 1 MATIC
+    srcChainTokenInMinAmount: "50000000000000",
+    srcChainTokenInMaxAmount: "50000000000000",
+    dstChainId: 56,
+    dstChainTokenOut: WBNB.BNB,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getArbitrumEthToBscWbnb(signer: string): CrossChainTrade {
+  return {
+    srcChainId: arbitrum.id,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "50000000000000", // 1 MATIC
+    srcChainTokenInMinAmount: "50000000000000",
+    srcChainTokenInMaxAmount: "50000000000000",
+    dstChainId: 56,
+    dstChainTokenOut: WBNB.BNB,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+
+    prependOperatingExpenses: true,
+  }
+}
+
+
+export function getBaseEthToBscWbnb(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 8453,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "20000000000000", // 1 MATIC
+    srcChainTokenInMinAmount: "20000000000000",
+    srcChainTokenInMaxAmount: "20000000000000",
+    dstChainId: 56,
+    dstChainTokenOut: WBNB.BNB,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolyMaticToBscBnb(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "200000000000000000", // 2 MATIC
+    srcChainTokenInMinAmount: "200000000000000000",
+    srcChainTokenInMaxAmount: "200000000000000000",
+    dstChainId: 56,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolyMaticToBscBnbStuck(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "200000000000000000", // 1 MATIC
+    srcChainTokenInMinAmount: "200000000000000000",
+    srcChainTokenInMaxAmount: "200000000000000000",
+    dstChainId: 56,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "1000000000000000000", // 1 BNB
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolyMaticToBscUsdc(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "200000000000000000",
+    srcChainTokenInMinAmount: "200000000000000000",
+    srcChainTokenInMaxAmount: "200000000000000000",
+    dstChainId: 56,
+    dstChainTokenOut: USDC.BNB,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+
+    prependOperatingExpenses: false,
+  }
+}
+
+export function getPolyUsdcToBscUsdt(signer: string): CrossChainTrade {
   return {
     // USDC (Polygon) -> USDT (BSC)
     srcChainId: 137,
-    srcChainTokenIn: POLYGON_USDC, // USDC on Polygon
+    srcChainTokenIn: USDC.Polygon, // USDC on Polygon
     srcChainTokenInAmount: "11000000", // 11 USDC
     srcChainTokenInMinAmount: "9000000",
     srcChainTokenInMaxAmount: "10000000",
     dstChainId: 56,
-    dstChainTokenOut: BSC_USDT, // USDT on BSC
+    dstChainTokenOut: USDT.BNB, // USDT on BSC
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: signer,
     srcChainAuthorityAddress: signer,
@@ -201,16 +241,16 @@ export function getPolyUsdcToBscUsdt(signer: string) {
   }
 }
 
-export function getPolyMaticToBscUsdt(signer: string) {
+export function getPolyMaticToBscUsdt(signer: string): CrossChainTrade {
   return {
     // MATIC (Polygon) -> USDT (BSC)
     srcChainId: 137,
-    srcChainTokenIn: NATIVE_TOKEN, // native MATIC
+    srcChainTokenIn: EVM_NATIVE_TOKEN, // native MATIC
     srcChainTokenInAmount: "11000000000000000000", // 11 MATIC
     srcChainTokenInMinAmount: "9000000000000000000",
     srcChainTokenInMaxAmount: "10000000000000000000",
     dstChainId: 56,
-    dstChainTokenOut: BSC_USDT,
+    dstChainTokenOut: USDT.BNB,
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: signer,
     srcChainAuthorityAddress: signer,
@@ -219,20 +259,229 @@ export function getPolyMaticToBscUsdt(signer: string) {
   }
 }
 
-export function getPolyUsdtToBscUsdt(signer: string) {
+export function getPolyUsdtToBscUsdt(signer: string): CrossChainTrade {
   return {
     // USDT (Polygon) -> USDT (BSC)
     srcChainId: 137,
-    srcChainTokenIn: POLYGON_USDT, // USDT on Polygon
+    srcChainTokenIn: USDT.Polygon, // USDT on Polygon
     srcChainTokenInAmount: "10000000", // 10 USDT
     srcChainTokenInMinAmount: "10000000",
     srcChainTokenInMaxAmount: "10000000",
     dstChainId: 56,
-    dstChainTokenOut: BSC_USDT,
+    dstChainTokenOut: USDT.BNB,
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: signer,
     srcChainAuthorityAddress: signer,
     dstChainAuthorityAddress: signer,
     prependOperatingExpenses: false
+  }
+}
+
+export function getPolyUsdcToPolyWETH(signer: string): SameChainTrade {
+  return {
+    chainId: 137,
+    tokenIn: USDC.Polygon,
+    tokenInAmount: "100000",
+    tokenInMinAmount: "100000",
+    tokenInMaxAmount: "100000",
+    tokenOut: WETH.Polygon,
+    tokenOutRecipient: signer,
+    authorityAddress: signer,
+    affiliateFeePercent: null,
+    affiliateFeeRecipient: null,
+    prependOperatingExpenses: false
+  };
+}
+
+export function getBscNativeToBaseUsdc(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 56,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "100000000000000",
+    srcChainTokenInMinAmount: "100000000000000",
+    srcChainTokenInMaxAmount: "100000000000000",
+    dstChainId: 8453,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolyLinkToBaseUsdc(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: LINK.Polygon,
+    srcChainTokenInAmount: (10 ** 17).toString(),
+    srcChainTokenInMinAmount: (10 ** 17).toString(),
+    srcChainTokenInMaxAmount: (10 ** 17).toString(),
+    dstChainId: 8453,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolyMaticToBaseUsdc(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "2000000000000000000", // 2 MATIC
+    srcChainTokenInMinAmount: "2000000000000000000",
+    srcChainTokenInMaxAmount: "2000000000000000000",
+    dstChainId: 8453,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolyMaticToBaseEth(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "2000000000000000000", // 2 MATIC
+    srcChainTokenInMinAmount: "2000000000000000000",
+    srcChainTokenInMaxAmount: "2000000000000000000",
+    dstChainId: 8453,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getBaseEthToBaseUsdc(signer: string): SameChainTrade {
+  return {
+    chainId: 8453,
+    tokenIn: EVM_NATIVE_TOKEN,
+    tokenInAmount: (10 ** 14).toString(),
+    tokenInMinAmount: (10 ** 14).toString(),
+    tokenInMaxAmount: (10 ** 14).toString(),
+    tokenOut: USDC.Base,
+    tokenOutRecipient: signer,
+    authorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+
+export function getBaseDegenToBaseUsdc(signer: string): SameChainTrade {
+  return {
+    chainId: 8453,
+    tokenIn: "0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed",
+    tokenInAmount: (10 ** 18).toString(),
+    tokenInMinAmount: (10 ** 18).toString(),
+    tokenInMaxAmount: (10 ** 18).toString(),
+    tokenOut: USDC.Base,
+    tokenOutRecipient: signer,
+    authorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getArbitrumEthToWbtc(signer: string): SameChainTrade {
+  return {
+    chainId: arbitrum.id,
+    tokenIn: EVM_NATIVE_TOKEN,
+    tokenInAmount: (10 ** 14).toString(),
+    tokenInMinAmount: (10 ** 14).toString(),
+    tokenInMaxAmount: (10 ** 14).toString(),
+    tokenOut: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
+    tokenOutRecipient: signer,
+    authorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getOptimismEthToRandomToken(signer: string): SameChainTrade {
+  return {
+    chainId: 10,
+    tokenIn: EVM_NATIVE_TOKEN,
+    tokenInAmount: (10 ** 14).toString(),
+    tokenInMinAmount: (10 ** 14).toString(),
+    tokenInMaxAmount: (10 ** 14).toString(),
+    tokenOut: "0x8c6f28f2f1a3c87f0f938b96d27520d9751ec8d9",
+    tokenOutRecipient: signer,
+    authorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getArbitrumEthToBaseEth(signer: string): CrossChainTrade {
+  return {
+    srcChainId: arbitrum.id,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "50000000000000",
+    srcChainTokenInMinAmount: "50000000000000",
+    srcChainTokenInMaxAmount: "50000000000000",
+    dstChainId: 8453,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getOptimismEthToBaseEth(signer: string) {
+  return {
+    srcChainId: 10,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "50000000000000",
+    srcChainTokenInMinAmount: "50000000000000",
+    srcChainTokenInMaxAmount: "50000000000000",
+    dstChainId: 8453,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolygonUsdcToBaseUsdc(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "7000000",
+    srcChainTokenInMinAmount: "7000000",
+    srcChainTokenInMaxAmount: "7000000",
+    dstChainId: 8453,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getPolygonUsdcToBaseEth(signer: string): CrossChainTrade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "7000000",
+    srcChainTokenInMinAmount: "7000000",
+    srcChainTokenInMaxAmount: "7000000",
+    dstChainId: 8453,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
   }
 }
