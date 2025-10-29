@@ -11,6 +11,12 @@ export const BSC_WBNB = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
 export const BSC_USDC = "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d";
 export const BSC_USDT = "0x55d398326f99059ff775485246999027b3197955";
 
+// SOL
+export const SOL_USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+export const SOL_USDT = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB";
+
+export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+export const SOL_NATIVE = "11111111111111111111111111111111"
 // Type definitions
 
 export type CrossChainTrade = {
@@ -131,8 +137,129 @@ export function getPolyUsdcToBscUsdcTrade(signer: string) {
     dstChainAuthorityAddress: signer,
 
     // Flags
+    prependOperatingExpenses: true
+  }
+}
+
+// FOR FULFILL CASE in DST solana
+export function getPolyUsdcToSolUsdcTrade(signer: string, recipient: string, solanaAuthority: string) {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: POLYGON_USDC, // USDC on Polygon (bridged), 6 decimals
+    srcChainTokenInAmount: "100000",
+    srcChainTokenInMinAmount: "100000",
+    srcChainTokenInMaxAmount: "100000",
+
+    // Destination (BSC)
+    dstChainId: 7565164,
+    dstChainTokenOut: SOL_USDC, // USDC on BSC, 6 decimals
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: recipient,
+
+    // Authorities
+    srcChainAuthorityAddress: signer,
+    dstChainAuthorityAddress: solanaAuthority,
+
+    // Flags
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getSolUsdcToBscUsdcTrade(signer: string, dstEvmChain: string) {
+  return {
+    srcChainId: 7565164,
+    srcChainTokenIn: SOL_USDC, // USDC on Polygon (bridged), 6 decimals
+
+    srcChainTokenInAmount: "10000000",      // 1$ USDC
+    srcChainTokenInMinAmount: "10000000",   // 1$ USDC
+    srcChainTokenInMaxAmount: "10000000",   // 1$ USDC
+
+    // Destination (POL)
+    dstChainId: 56,
+    dstChainTokenOut: BSC_USDC, // USDC on BSC, 6 decimals
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: dstEvmChain,
+
+    // Authorities
+    srcChainAuthorityAddress: signer,
+    dstChainAuthorityAddress: dstEvmChain,
+
+    // Flags
+    // prependOperatingExpenses: true,
     prependOperatingExpenses: false,
   }
+}
+
+export function getSolUsdcToPolUsdcTrade(signer: string, dstEvmChain: string) {
+    return {
+        srcChainId: 7565164,
+        srcChainTokenIn: SOL_USDC, // USDC on Polygon (bridged), 6 decimals
+
+        srcChainTokenInAmount: "4000000",
+        srcChainTokenInMinAmount: "4000000",
+        srcChainTokenInMaxAmount: "4000000",
+
+        // Destination (POL)
+        dstChainId: 137,
+        dstChainTokenOut: POLYGON_USDC, // USDC on BSC, 6 decimals
+        dstChainTokenOutAmount: "auto",
+        dstChainTokenOutRecipient: dstEvmChain,
+
+        // Authorities
+        srcChainAuthorityAddress: signer,
+        dstChainAuthorityAddress: dstEvmChain,
+
+        // Flags
+        // prependOperatingExpenses: true,
+        prependOperatingExpenses: false,
+    }
+}
+
+export function getWrapSolToBscUsdcTrade(signer: string, dstEvmChain: string) {
+  return {
+    srcChainId: 7565164,
+    srcChainTokenIn: SOL_NATIVE,
+
+    srcChainTokenInAmount: "21000000",
+    srcChainTokenInMinAmount: "21000000",
+    srcChainTokenInMaxAmount: "21000000",
+
+    // Destination (BSC)
+    dstChainId: 56,
+    dstChainTokenOut: BSC_USDC,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: dstEvmChain,
+
+    // Authorities
+    srcChainAuthorityAddress: signer,
+    dstChainAuthorityAddress: dstEvmChain,
+
+    // Flags
+    // prependOperatingExpenses: true,
+    prependOperatingExpenses: false,
+  }
+}
+
+export function getPolyUsdcToSolJupTrade(signerEvm: string, dstChainTokenOutRecipient: string, dstChainAuthorityAddress: string) {
+    return {
+        srcChainId: 137,
+        srcChainTokenIn: POLYGON_USDC, // USDC on Polygon (bridged), 6 decimals
+        srcChainTokenInAmount: "4000000",      // 4$ USDC
+        srcChainTokenInMinAmount: "4000000",   // 2$ USDC
+        srcChainTokenInMaxAmount: "4000000",   // 3$ USDC
+
+        dstChainId: 7565164,
+        dstChainTokenOut: SOL_JUP,
+        dstChainTokenOutAmount: "auto",
+        dstChainTokenOutRecipient: dstChainTokenOutRecipient,
+
+        // Authorities
+        srcChainAuthorityAddress: signerEvm,
+        dstChainAuthorityAddress: dstChainAuthorityAddress,
+
+        // Flags
+        prependOperatingExpenses: true,
+    }
 }
 
 export function getPolyUsdcToBscWbnbTrade(signer: string) {
