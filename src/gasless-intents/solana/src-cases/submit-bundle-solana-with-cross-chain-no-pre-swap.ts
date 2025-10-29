@@ -1,27 +1,19 @@
-import {createWalletClient, http, WalletClient} from "viem";
 import {
     privateKeyToAccount
 } from 'viem/accounts'
-import {polygon} from "viem/chains"
 import {getEnvConfig} from "../../../utils";
-import {createBundle, createBundleDevStage, submitBundle, submitBundleDevStage} from "../../api-calls";
-import {
-    Action,
-    collectIntentSignatures, EIP712Data,
-    processIntentBundle, Sign712MetaMaskData, Sign7702AuthorizationData,
-    signAction,
-    SignatureTypes
-} from "../../signatures/intent-signatures";
 import {randomUUID} from 'crypto';
 import bs58 from 'bs58';
 
 import util from "util"
 import {
-    getSolUsdcToBscUsdcTrade, getSolUsdcToPolUsdcTrade
+    getSolUsdcToPolUsdcTrade
 } from "../../trades";
 import {Connection, Keypair, PublicKey} from "@solana/web3.js";
 import {IntentsClient} from "@debridge-finance/intents-client";
 import nacl from "tweetnacl";
+import {createBundleDev, submitBundleDev} from "../../../utils/api";
+import {TradingAlgorithm} from "../../types";
 
 function remove0xPrefix(input: string): string {
     if (input.startsWith("0x")) {
@@ -61,7 +53,7 @@ async function main() {
         expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
         enableAccountAbstraction: false,
         isAtomic: true,
-        tradingAlgorithm: "market",
+        tradingAlgorithm: TradingAlgorithm.MARKET,
         trades: [
             getSolUsdcToPolUsdcTrade(solanaKey.publicKey.toBase58(), account.address)
         ],
@@ -70,7 +62,7 @@ async function main() {
     }
 
     console.log(`Creating bundle... ${JSON.stringify(requestBody)}`);
-    const bundle = await createBundleDevStage(requestBody);
+    const bundle = await createBundleDev(requestBody);
     console.log(`Bundle created successfully!, ${JSON.stringify(bundle)}`);
 
     // todo:
@@ -92,12 +84,12 @@ async function main() {
         requestId: requestBody.requestId,
         enableAccountAbstraction: true,
         isAtomic: true,
-        signedData: Array.of({actionId: actionId, signedData: `0x${signatures.hex}`} )
+        signedData: Array.of({actionId: actionId, signedData: `0x${signatures.hex}`})
     };
 
     console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);
 
-    const submitResponse = await submitBundleDevStage(submitPayload);
+    const submitResponse = await submitBundleDev(submitPayload);
     console.log("Submit response:", submitResponse);
 
     return submitPayload;
@@ -145,7 +137,6 @@ function signHexMessageBySolanaKey(
     messageHex: string,
     privateKey: Keypair
 ) {
-    // const hex = messageHex.replace(/^0x/, '');
     const message = Buffer.from(messageHex.slice(2), 'hex');
     let pkForSign = privateKey.secretKey;
     const sig = nacl.sign.detached(message, pkForSign);

@@ -8,7 +8,7 @@ import {
   GetBundlesFilterParams,
   PaginatedResponseMetadata
 } from "../gasless-intents/types";
-import { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_SUBMIT_URL } from "./constants";
+import {BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_SUBMIT_URL, BUNDLES_DEV_URL, BUNDLE_DEV_SUBMIT_URL} from "./constants";
 import { privateKeyToAccount } from "viem/accounts";
 import { getWalletClients } from "./wallet";
 
@@ -22,6 +22,18 @@ export async function submitBundle(requestBody) {
   const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 
   return response;
+}
+
+export async function createBundleDev(requestBody: BundleProposeBody): Promise<Bundle> {
+    const response = await postUrl(BUNDLES_DEV_URL, requestBody);
+
+    return response;
+}
+
+export async function submitBundleDev(requestBody) {
+    const response = await postUrl(`${BUNDLE_DEV_SUBMIT_URL}?format=json`, requestBody);
+
+    return response;
 }
 
 export async function bundleList(owner: string) {

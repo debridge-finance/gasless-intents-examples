@@ -4,8 +4,6 @@ import {
 } from 'viem/accounts'
 import {polygon} from "viem/chains"
 import {getEnvConfig} from "../../../utils";
-import {createBundle, submitBundle} from "../../api-calls";
-import {processIntentBundle} from "../../signatures/intent-signatures";
 import {randomUUID} from 'crypto';
 
 import util from "util"
@@ -14,6 +12,9 @@ import {
 } from "../../trades";
 import {Keypair} from "@solana/web3.js";
 import bs58 from "bs58";
+import {createBundle, createBundleDev, submitBundle, submitBundleDev} from "../../../utils/api";
+import {processIntentBundle} from "../../../utils/signatures/intent-signatures";
+import {TradingAlgorithm} from "../../types";
 
 function remove0xPrefix(input: string): string {
     if (input.startsWith("0x")) {
@@ -48,10 +49,10 @@ async function main() {
         expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
         enableAccountAbstraction: true,
         isAtomic: true,
-        tradingAlgorithm: "market",
+        tradingAlgorithm: TradingAlgorithm.MARKET,
         trades: [
             getPolyUsdcToSolUsdcTrade(account.address, "79bWNoaxKKAqSrFDDytJNXmLACL2GbKFg7qb6KKPCVxx", solanaKey.publicKey.toBase58()),
-            // BUNDLE JUP
+            // JUP
             getPolyUsdcToSolJupTrade(account.address, "79bWNoaxKKAqSrFDDytJNXmLACL2GbKFg7qb6KKPCVxx", solanaKey.publicKey.toBase58()),
         ],
         preHooks: [],
@@ -59,7 +60,7 @@ async function main() {
     }
 
     console.log(`Creating bundle..., ${JSON.stringify(requestBody)}`);
-    const bundle = await createBundle(requestBody);
+    const bundle = await createBundleDev(requestBody);
     console.log("Bundle created successfully!");
 
     // Log the first intent for debugging
@@ -86,7 +87,7 @@ async function main() {
 
     console.log("Payload prepared with signatures. Ready for submission.");
 
-    const submitResponse = await submitBundle(submitPayload);
+    const submitResponse = await submitBundleDev(submitPayload);
     console.log("Submit response:", submitResponse);
 
     return submitPayload;

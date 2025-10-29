@@ -4,7 +4,8 @@ import {Connection, Keypair, VersionedTransaction} from "@solana/web3.js";
 import bs58 from "bs58";
 import {getEnvConfig} from "../../../utils";
 import {getSolUsdcToBscUsdcTrade} from "../../trades";
-import {createBundle} from "../../api-calls";
+import {createBundleDev} from "../../../utils/api";
+import {TradingAlgorithm} from "../../types";
 
 function remove0xPrefix(input: string): string {
     if (input.startsWith("0x")) {
@@ -34,7 +35,7 @@ async function main() {
         expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
         enableAccountAbstraction: true,
         isAtomic: true,
-        tradingAlgorithm: "market",
+        tradingAlgorithm: TradingAlgorithm.MARKET,
         trades: [
             getSolUsdcToBscUsdcTrade(solanaKey.publicKey.toBase58(), account.address)
         ],
@@ -43,7 +44,7 @@ async function main() {
     }
 
     console.log(`Creating bundle..., ${JSON.stringify(requestBody)}`);
-    const bundle = await createBundle(requestBody);
+    const bundle = await createBundleDev(requestBody);
     console.log(`Bundle created successfully: ${JSON.stringify(bundle)}`);
 
     const txForSign = extractTransactionHexData(bundle)[0];
