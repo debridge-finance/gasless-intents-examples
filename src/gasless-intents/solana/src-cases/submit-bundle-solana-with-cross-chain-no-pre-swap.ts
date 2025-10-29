@@ -1,14 +1,10 @@
-import {
-    privateKeyToAccount
-} from 'viem/accounts'
+import {privateKeyToAccount} from 'viem/accounts'
 import {getEnvConfig} from "../../../utils";
 import {randomUUID} from 'crypto';
 import bs58 from 'bs58';
 
 import util from "util"
-import {
-    getSolUsdcToPolUsdcTrade
-} from "../../trades";
+import {getSolUsdcToPolUsdcTrade} from "../../trades";
 import {Connection, Keypair, PublicKey} from "@solana/web3.js";
 import {IntentsClient} from "@debridge-finance/intents-client";
 import nacl from "tweetnacl";
