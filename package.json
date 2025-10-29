@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@debridge-finance/dln-client": "^17.6.2",
-    "@debridge-finance/intents-client": "1.0.0-dev.0",
     "@debridge-finance/solana-utils": "^5.2.0",
     "@solana/web3.js": "^1.98.2",
     "bs58": "^6.0.0",

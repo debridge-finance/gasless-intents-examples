@@ -36,7 +36,7 @@ async function main() {
     const requestId = randomUUID();
 
     const solanaKey =
-        Keypair.fromSecretKey(bs58.decode("41zEbhk7HyBwLFZL4RxJyXBHZ4tU8fHKBXhhuXfxM13KrMgukmT9nM2J9sm2Hbm2sMgfGh8knH9hk834KHpFA5GR"))
+        Keypair.fromSecretKey(bs58.decode("paste_your_key"))
 
 
     // Trades body

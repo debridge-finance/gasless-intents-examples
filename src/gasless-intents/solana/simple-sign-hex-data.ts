@@ -15,7 +15,7 @@ function signHexMessageBySolanaKey(
         Buffer.from([105, 166, 63, 208, 149, 8, 22, 175, 115, 154, 77, 191, 251, 216, 184, 103, 209, 152, 136, 115, 107, 222, 232, 227, 183, 141, 221, 117, 242, 209, 188, 135]),
         Keypair.fromSecretKey(
             bs58.decode(
-                '3KXBHDm7vF9uBsakE1d2RTAA9XBaTt1mrrJnvRW3VXuDktugWQPzD3gps1qF41dcA2xvhxxFfkTjseNpNaY2AtF6',
+                'paste_your_key',
             ),
         ).secretKey,
     );
@@ -26,7 +26,7 @@ function signHexMessageBySolanaKey(
         Buffer.from('0x69a63fd0950816af739a4dbffbd8b867d19888736bdee8e3b78ddd75f2d1bc87'.slice(2), 'hex'),
         Keypair.fromSecretKey(
             bs58.decode(
-                '3KXBHDm7vF9uBsakE1d2RTAA9XBaTt1mrrJnvRW3VXuDktugWQPzD3gps1qF41dcA2xvhxxFfkTjseNpNaY2AtF6',
+                'paste_your_key',
             ),
         ).secretKey,
     );
@@ -36,5 +36,5 @@ function signHexMessageBySolanaKey(
 
 signHexMessageBySolanaKey(
     '0xce26e61d623933dac60284dd2c54281258b918eb44f10041dfccabb5f414648c',
-    Keypair.fromSecretKey(bs58.decode('41zEbhk7HyBwLFZL4RxJyXBHZ4tU8fHKBXhhuXfxM13KrMgukmT9nM2J9sm2Hbm2sMgfGh8knH9hk834KHpFA5GR'))
+    Keypair.fromSecretKey(bs58.decode('paste_your_key')),
 )

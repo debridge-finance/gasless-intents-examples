@@ -2,11 +2,9 @@ import {privateKeyToAccount} from 'viem/accounts'
 import {getEnvConfig} from "../../../utils";
 import {randomUUID} from 'crypto';
 import bs58 from 'bs58';
-
 import util from "util"
 import {getSolUsdcToPolUsdcTrade} from "../../trades";
-import {Connection, Keypair, PublicKey} from "@solana/web3.js";
-import {IntentsClient} from "@debridge-finance/intents-client";
+import {Keypair} from "@solana/web3.js"
 import nacl from "tweetnacl";
 import {createBundleDev, submitBundleDev} from "../../../utils/api";
 import {TradingAlgorithm} from "../../types";
@@ -18,17 +16,7 @@ function remove0xPrefix(input: string): string {
     return input;
 }
 
-export const keypair = Keypair.fromSecretKey(bs58.decode("41zEbhk7HyBwLFZL4RxJyXBHZ4tU8fHKBXhhuXfxM13KrMgukmT9nM2J9sm2Hbm2sMgfGh8knH9hk834KHpFA5GR"));
-export const userSender = Keypair.fromSecretKey(bs58.decode("3KXBHDm7vF9uBsakE1d2RTAA9XBaTt1mrrJnvRW3VXuDktugWQPzD3gps1qF41dcA2xvhxxFfkTjseNpNaY2AtF6"))
-
-export const connection = new Connection('https://solana-mainnet.g.alchemy.com/v2/QyulIlxzj4dMjqRdn2izlLh8RJZ3qEYM', {
-    commitment: "confirmed",
-});
-
-export const client = new IntentsClient(connection, {
-    programId: new PublicKey("intueneJjzHttKp83gWH3GX1h1Uwuixuusj4T8vGDzk"),
-});
-
+export const userSender = Keypair.generate()
 
 async function main() {
     // Wallet setup
@@ -36,13 +24,10 @@ async function main() {
 
     const account = privateKeyToAccount(`0x${remove0xPrefix(privateKey)}`);
 
-    const solanaKey =
-        Keypair.fromSecretKey(bs58.decode("3KXBHDm7vF9uBsakE1d2RTAA9XBaTt1mrrJnvRW3VXuDktugWQPzD3gps1qF41dcA2xvhxxFfkTjseNpNaY2AtF6"))
-
     const requestId = randomUUID();
 
     // Trades body
-    console.log(`solana key: ${solanaKey.publicKey.toBase58()}`)
+    console.log(`solana key: ${userSender.publicKey.toBase58()}`)
     console.log(`solana key: ${account.address}`)
     const requestBody = {
         requestId,
@@ -51,7 +36,7 @@ async function main() {
         isAtomic: true,
         tradingAlgorithm: TradingAlgorithm.MARKET,
         trades: [
-            getSolUsdcToPolUsdcTrade(solanaKey.publicKey.toBase58(), account.address)
+            getSolUsdcToPolUsdcTrade(userSender.publicKey.toBase58(), account.address)
         ],
         preHooks: [],
         postHooks: []
