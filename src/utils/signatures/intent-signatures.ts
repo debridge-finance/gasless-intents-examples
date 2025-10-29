@@ -1,96 +1,5 @@
 import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
-
-export enum SignatureTypes {
-  Sign712 = "Sign712",
-  Sign712MetaMask = "Sign712MetaMask",
-  Sign7702Authorization = "Sign7702Authorization"
-}
-
-// Type for EIP-712 data
-export type EIP712Data = {
-  domain: {
-    name: string;
-    version: string;
-    chainId: number;
-    verifyingContract: string;
-  };
-  types: {
-    EIP712Domain?: Array<{ name: string; type: string }>;
-    [key: string]: Array<{ name: string; type: string }> | undefined;
-  };
-  primaryType: string;
-  message: any;
-}
-
-// Type for Sign712MetaMask specific data
-export type Sign712MetaMaskData = {
-  toSign: EIP712Data;
-  calls?: Array<{
-    to: string;
-    data: string;
-    value: string;
-  }>;
-}
-
-// Type for Sign7702Authorization specific data
-export type Sign7702AuthorizationData = {
-  contractAddress: string;
-  nonce: number;
-  chainId?: number;
-}
-
-// Combined action data type using discriminated union
-export type ActionData =
-  | (EIP712Data & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never })
-  | (Sign712MetaMaskData & { contractAddress?: never; nonce?: never })
-  | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never });
-
-export type Action = {
-  type: SignatureTypes;
-  actionId: string;
-  actions: Array<string>;
-  data: ActionData;
-}
-
-export type Receiver = {
-  address: string;
-  destinationChainIds: number[];
-}
-
-export type InputToken = {
-  address: string;
-  minPartialAmount: string;
-  maxPartialAmount: string;
-  constrainBudget: string;
-}
-
-export type TakeToken = {
-  fromTokenChainId: number;
-  fromTokenAddress: string;
-  takeTokenAddress: string;
-  takeTokenChainId: number;
-  price: string;
-}
-
-export type Intent = {
-  intentId: string;
-  intentChainId: number;
-  intentAuthority: string;
-  intentOwner: string;
-  expirationTimestamp: number;
-  intentTimestamp: number;
-  intentType: string;
-  srcAllowedSender: string[];
-  inputTokens: InputToken[];
-  takeTokens: TakeToken[];
-  receiverDetails: Receiver[];
-  dstAuthorityAddress: Receiver[];
-}
-
-export type IntentPayload = {
-  intent: Intent;
-  requiredActions: Array<Action>;
-}
+import { Action, Bundle, EIP712Data, Sign712MetaMaskData, Sign7702AuthorizationData, SignatureTypes } from '../../gasless-intents/types';
 
 /**
  * Signs an action with ethers.js wallet
@@ -172,32 +81,13 @@ export async function collectIntentSignatures(
   return signatures;
 }
 
-export type TokenResult = {
-  amount: string, // The output token amount
-  approximateUsdValue: number, // The approximate USD value of the output token
-  chainId: number, // The chain ID of the output token
-  recipientAddress: string, // The recipient address for the output token
-  tokenAddress: string // The token address for the output token
-}
-
-export type PostHookPayload = {
-  requiredActions: Array<Action>;
-}
-
-export type Bundle = {
-  intents: Array<IntentPayload>,
-  postHooks: Array<IntentPayload>,
-  tokenResult: Array<TokenResult>,
-  trades: any
-}
-
 /**
  * Main function to process a bundle of intents and collect all signatures
  * Returns all signatures for both intents and post-hooks
  */
 export async function processIntentBundle(
   bundle: Bundle,
-  walletClient: WalletClient
+  walletClient: Record<number, WalletClient>
 ): Promise<Array<{ actionId: string, signedData: string }>> {
   const allSignatures: Array<{ actionId: string, signedData: string }> = [];
 
@@ -205,7 +95,7 @@ export async function processIntentBundle(
   if (bundle.intents && Array.isArray(bundle.intents)) {
     for (const intent of bundle.intents) {
       if (intent.requiredActions && Array.isArray(intent.requiredActions)) {
-        const intentSignatures = await collectIntentSignatures(intent.requiredActions, walletClient);
+        const intentSignatures = await collectIntentSignatures(intent.requiredActions, walletClient[intent.intent.intentChainId]);
         allSignatures.push(...intentSignatures);
       }
     }
@@ -215,7 +105,7 @@ export async function processIntentBundle(
   if (bundle.postHooks && Array.isArray(bundle.postHooks)) {
     for (const hook of bundle.postHooks) {
       if (hook.requiredActions && Array.isArray(hook.requiredActions)) {
-        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient);
+        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient[hook.hook.chainId]);
         allSignatures.push(...hookSignatures);
       }
     }

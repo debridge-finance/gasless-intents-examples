@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { getEnvConfig } from "../utils";
-import { bundleList } from "./api-calls";
+import { bundleList } from "./../utils/api";
 
 async function main() {
 
