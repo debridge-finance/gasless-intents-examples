@@ -49,7 +49,7 @@ export function getPolyUsdcToSolUsdcTrade(signer: string, recipient: string, sol
   }
 }
 
-export function getSolUsdcToBscUsdcTrade(signer: string, dstEvmChain: string): CrossChainTrade {
+export function getSolUsdcToBscUsdcTrade(signer: string, recipient: string): CrossChainTrade {
   return {
     srcChainId: 7565164,
     srcChainTokenIn: USDC.Solana, // USDC on Polygon (bridged), 6 decimals
@@ -62,11 +62,11 @@ export function getSolUsdcToBscUsdcTrade(signer: string, dstEvmChain: string): C
     dstChainId: 56,
     dstChainTokenOut: USDC.BNB, // USDC on BSC, 6 decimals
     dstChainTokenOutAmount: "auto",
-    dstChainTokenOutRecipient: dstEvmChain,
+    dstChainTokenOutRecipient: recipient,
 
     // Authorities
     srcChainAuthorityAddress: signer,
-    dstChainAuthorityAddress: dstEvmChain,
+    dstChainAuthorityAddress: recipient,
 
     // Flags
     // prependOperatingExpenses: true,
@@ -74,7 +74,7 @@ export function getSolUsdcToBscUsdcTrade(signer: string, dstEvmChain: string): C
   }
 }
 
-export function getSolUsdcToPolUsdcTrade(signer: string, dstEvmChain: string): CrossChainTrade {
+export function getSolUsdcToPolUsdcTrade(signer: string, recipient: string): CrossChainTrade {
     return {
         srcChainId: 7565164,
         srcChainTokenIn: USDC.Solana, // USDC on Polygon (bridged), 6 decimals
@@ -87,11 +87,11 @@ export function getSolUsdcToPolUsdcTrade(signer: string, dstEvmChain: string): C
         dstChainId: 137,
         dstChainTokenOut: USDC.Polygon, // USDC on BSC, 6 decimals
         dstChainTokenOutAmount: "auto",
-        dstChainTokenOutRecipient: dstEvmChain,
+        dstChainTokenOutRecipient: recipient,
 
         // Authorities
         srcChainAuthorityAddress: signer,
-        dstChainAuthorityAddress: dstEvmChain,
+        dstChainAuthorityAddress: recipient,
 
         // Flags
         // prependOperatingExpenses: true,

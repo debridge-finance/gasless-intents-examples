@@ -22,7 +22,6 @@ async function main() {
   const intent = bundle.intents[0].intent;
   const expirationTimestamp = new Date(intent.expirationTimestamp * 1000).toISOString();
   const creationTimestamp = new Date(intent.intentTimestamp * 1000).toISOString();
-  const authorityAddress = intent.intentAuthority;
   const intentOwner = intent.intentOwner;
 
   const reasonCode = CancelBundleReasonCodes.USER_REQUEST;

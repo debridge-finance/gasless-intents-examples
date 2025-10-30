@@ -13,6 +13,9 @@ export enum CancelBundleReasonCodes {
   SYSTEM_ABORT = "SYSTEM_ABORT"
 }
 
+/**
+ * `creationTimestamp` and `expirationTimestamp` parameters are used for idempotency purposes - not as time-window filters. 
+ */
 export type BundleCancelRequest = {
   bundleId?: string,
   userId?: string,
@@ -269,4 +272,9 @@ export type Tx = {
   to: string;
   value: string;
   data: string;
+}
+
+export enum ApiVersion {
+  V1_0 = "V1_0",
+  V1_1 = "V1_1"
 }

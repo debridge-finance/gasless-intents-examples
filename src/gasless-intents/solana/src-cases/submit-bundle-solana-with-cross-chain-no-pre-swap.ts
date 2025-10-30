@@ -1,28 +1,24 @@
 import {privateKeyToAccount} from 'viem/accounts'
-import {getEnvConfig} from "../../../utils";
+import {getEnvConfig, toHexPrefixString} from "../../../utils";
 import {randomUUID} from 'crypto';
 import bs58 from 'bs58';
 import util from "util"
 import {getSolUsdcToPolUsdcTrade} from "../../trades";
 import {Keypair} from "@solana/web3.js"
 import nacl from "tweetnacl";
-import {createBundleDev, submitBundleDev} from "../../../utils/api";
+import { getApi } from "../../../utils/api";
 import {TradingAlgorithm} from "../../types";
-
-function remove0xPrefix(input: string): string {
-    if (input.startsWith("0x")) {
-        return input.slice(2);
-    }
-    return input;
-}
+import { BASE_DEV_URL } from '../../../utils/constants';
 
 export const userSender = Keypair.generate()
+
+const { createBundle, submitBundle } = getApi(BASE_DEV_URL);
 
 async function main() {
     // Wallet setup
     const {privateKey} = getEnvConfig();
 
-    const account = privateKeyToAccount(`0x${remove0xPrefix(privateKey)}`);
+    const account = privateKeyToAccount(toHexPrefixString(privateKey));
 
     const requestId = randomUUID();
 
@@ -43,7 +39,7 @@ async function main() {
     }
 
     console.log(`Creating bundle... ${JSON.stringify(requestBody)}`);
-    const bundle = await createBundleDev(requestBody);
+    const bundle = await createBundle(requestBody);
     console.log(`Bundle created successfully!, ${JSON.stringify(bundle)}`);
 
     // todo:
@@ -70,7 +66,7 @@ async function main() {
 
     console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);
 
-    const submitResponse = await submitBundleDev(submitPayload);
+    const submitResponse = await submitBundle(submitPayload);
     console.log("Submit response:", submitResponse);
 
     return submitPayload;

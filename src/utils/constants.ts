@@ -6,23 +6,27 @@ export const BASE_URL = "https://api.debridge.io/v1/gasless"
 export const BASE_DEV_URL = "https://dev-api.debridge.io/v1/gasless"
 
 export const BUNDLES = "/bundles"
-
 export const BUNDLES_URL = `${BASE_URL}${BUNDLES}`
-export const BUNDLES_DEV_URL = `${BASE_DEV_URL}${BUNDLES}`
-
 export const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`
-export const BUNDLE_LIST_URL = `${BUNDLES_URL}/list`
 export const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
 
-export const BUNDLE_DEV_SUBMIT_URL = `${BUNDLES_DEV_URL}/submit`
-export const BUNDLE_DEV_LIST_URL = `${BUNDLES_DEV_URL}/list`
-export const BUNDLE_DEV_CANCEL_URL = `${BUNDLES_DEV_URL}/cancel`;
+export function getEndpoints(baseUrl: string) {
+  const BUNDLES_URL = `${baseUrl}${BUNDLES}`
+  const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`
+  const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
+
+  return {
+    BUNDLES_URL,
+    BUNDLE_SUBMIT_URL,
+    BUNDLE_CANCEL_URL
+  }
+}
 
 // Tokens
 
-// Type definitions
 export const SOL_NATIVE = "11111111111111111111111111111111"
 export const EVM_NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";
+export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
 
 export const USDC = {
   Polygon: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
@@ -55,6 +59,3 @@ export const PLACEHOLDER_TOKEN_AMOUNT = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadb
 export const LINGO = {
   Base: "0xfb42Da273158B0F642F59F2Ba7cc1d5457481677"
 }
-
-// SOL
-export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
