@@ -39,18 +39,18 @@ function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
 }
 
 export function updatePriorityFee(tx: VersionedTransaction, computeUnitPrice: number, computeUnitLimit?: number) {
-  const computeBudgetOfset = 1;
+  const computeBudgetOffset = 1;
   const computeUnitPriceData = tx.message.compiledInstructions[1].data;
   const encodedPrice = encodeNumberToArrayLE(computeUnitPrice, 8);
   for (let i = 0; i < encodedPrice.length; i++) {
-    computeUnitPriceData[i + computeBudgetOfset] = encodedPrice[i];
+    computeUnitPriceData[i + computeBudgetOffset] = encodedPrice[i];
   }
 
   if (computeUnitLimit) {
     const computeUnitLimitData = tx.message.compiledInstructions[0].data;
     const encodedLimit = encodeNumberToArrayLE(computeUnitLimit, 4);
     for (let i = 0; i < encodedLimit.length; i++) {
-      computeUnitLimitData[i + computeBudgetOfset] = encodedLimit[i];
+      computeUnitLimitData[i + computeBudgetOffset] = encodedLimit[i];
     }
   }
 }
