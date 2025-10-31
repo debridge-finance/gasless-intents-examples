@@ -10,6 +10,8 @@ export const BUNDLES_URL = `${BASE_URL}${BUNDLES}`
 export const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`
 export const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
 
+export const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
+
 export function getEndpoints(baseUrl: string) {
   const BUNDLES_URL = `${baseUrl}${BUNDLES}`
   const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`

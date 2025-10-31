@@ -1,6 +1,8 @@
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { polygon, bsc, base, arbitrum, optimism } from "viem/chains";
+import { CHAIN_IDS } from "./chains";
+import { Keypair } from "@solana/web3.js";
 
 
 export function getWalletClients(account: ReturnType<typeof privateKeyToAccount>) {
@@ -43,7 +45,7 @@ export function getWalletClients(account: ReturnType<typeof privateKeyToAccount>
   }
 }
 
-export function getChainIdToWalletClientMap(account: ReturnType<typeof privateKeyToAccount>) {
+export function getChainIdToWalletClientMap(account: ReturnType<typeof privateKeyToAccount>, solanaAccount?: Keypair) {
   const {
     walletClientPolygon,
     walletClientBsc,
@@ -58,5 +60,6 @@ export function getChainIdToWalletClientMap(account: ReturnType<typeof privateKe
     [base.id]: walletClientBase,
     [optimism.id]: walletClientOptimism,
     [arbitrum.id]: walletClientArbitrum,
+    [CHAIN_IDS.Solana]: solanaAccount
   };
 }
