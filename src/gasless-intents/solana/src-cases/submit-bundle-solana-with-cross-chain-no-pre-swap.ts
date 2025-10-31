@@ -3,11 +3,11 @@ import { getEnvConfig, toHexPrefixString } from "../../../utils";
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
 import util from "util"
-import { getSolUsdcToPolUsdcTrade } from "../../trades";
+import { getSolUsdcToPolUsdcTrade, getSolUsdcToPolyUsdcTrade } from "../../trades";
 import { Keypair } from "@solana/web3.js"
 import nacl from "tweetnacl";
 import { getApi } from "../../../utils/api";
-import { TradingAlgorithm } from "../../types";
+import { BundleProposeBody, TradingAlgorithm } from "../../types";
 import { BASE_DEV_URL } from '../../../utils/constants';
 
 export const userSender = Keypair.generate()
@@ -25,14 +25,15 @@ async function main() {
   // Trades body
   console.log(`solana key: ${userSender.publicKey.toBase58()}`)
   console.log(`solana key: ${account.address}`)
-  const requestBody = {
+  const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 31805,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: false,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getSolUsdcToPolUsdcTrade(userSender.publicKey.toBase58(), account.address)
+      getSolUsdcToPolyUsdcTrade(userSender.publicKey.toBase58(), account.address)
     ],
     preHooks: [],
     postHooks: []

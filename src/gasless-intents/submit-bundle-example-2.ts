@@ -11,7 +11,7 @@ import { randomUUID } from 'crypto';
 import util from "util"
 import { getSameChainTrade, getCrossChainTrade } from "./../utils/trades";
 import { USDT } from "../utils/constants";
-import { TradingAlgorithm } from "./types";
+import { BundleProposeBody, TradingAlgorithm } from "./types";
 import { getChainIdToWalletClientMap } from "../utils/wallet";
 
 async function main() {
@@ -25,20 +25,21 @@ async function main() {
   const requestId = randomUUID();
 
   // Trades body
-  const requestBody = {
+  const requestBody: BundleProposeBody = {
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
+    referralCode: 31805,
     trades: [
       getSameChainTrade(account.address), // default USDC on Polygon -> MATIC on Polygon
       getCrossChainTrade(account.address), // default USDC on Polygon -> USDC on BSC
       getCrossChainTrade(account.address, {
         // Only override what you want – everything else defaults
-        srcChainTokenInAmount: "11000000", // 11 USDC
-        srcChainTokenInMinAmount: "9000000",
-        srcChainTokenInMaxAmount: "10000000",
+        srcChainTokenInAmount: "1100000", // 1.1 USDC
+        srcChainTokenInMinAmount: "900000",
+        srcChainTokenInMaxAmount: "1000000",
         dstChainTokenOut: USDT.BNB,        // Default is BSC_USDC, override to USDT
       }),
       getSameChainTrade(account.address, {

@@ -54,7 +54,7 @@ export function getSolUsdcToBscUsdcTrade(signer: string, recipient: string): Cro
     srcChainId: 7565164,
     srcChainTokenIn: USDC.Solana, // USDC on Polygon (bridged), 6 decimals
 
-    srcChainTokenInAmount: "10000000",      // 1$ USDC
+    srcChainTokenInAmount: "10000000",      // 10$ USDC
     srcChainTokenInMinAmount: "10000000",   // 1$ USDC
     srcChainTokenInMaxAmount: "10000000",   // 1$ USDC
 
@@ -71,6 +71,31 @@ export function getSolUsdcToBscUsdcTrade(signer: string, recipient: string): Cro
     // Flags
     // prependOperatingExpenses: true,
     prependOperatingExpenses: false,
+  }
+}
+
+export function getSolUsdcToPolyUsdcTrade(signer: string, recipient: string): CrossChainTrade {
+  return {
+    srcChainId: 7565164,
+    srcChainTokenIn: USDC.Solana, // USDC on Polygon (bridged), 6 decimals
+
+    srcChainTokenInAmount: "5000000",      // 50$ USDC
+    srcChainTokenInMinAmount: "5000000",   // 5$ USDC
+    srcChainTokenInMaxAmount: "5000000",   // 5$ USDC
+
+    // Destination (POL)
+    dstChainId: 137,
+    dstChainTokenOut: USDC.Polygon, // USDC on BSC, 6 decimals
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: recipient,
+
+    // Authorities
+    srcChainAuthorityAddress: signer,
+    dstChainAuthorityAddress: recipient,
+
+    // Flags
+    // prependOperatingExpenses: true,
+    prependOperatingExpenses: true,
   }
 }
 

@@ -94,6 +94,7 @@ export type BundleProposeBody = {
   trades: Array<SameChainTrade | CrossChainTrade>;
   preHooks?: Array<any>;
   postHooks: Array<PostHook>;
+  referralCode?: number;
 }
 
 export enum SignatureTypes {

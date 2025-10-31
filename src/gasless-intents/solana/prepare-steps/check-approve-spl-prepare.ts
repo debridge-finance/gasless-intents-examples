@@ -3,10 +3,11 @@ import { randomUUID } from 'crypto';
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { getEnvConfig, toHexPrefixString } from "../../../utils";
-import { getSolUsdcToBscUsdcTrade } from "../../trades";
+import { getSolUsdcToBscUsdcTrade, getSolUsdcToPolyUsdcTrade } from "../../trades";
 import { getApi } from "../../../utils/api";
 import { TradingAlgorithm } from "../../types";
 import { BASE_DEV_URL } from '../../../utils/constants';
+import { extractTransactionHexData } from '../../../utils/solana';
 
 const { createBundle } = getApi(BASE_DEV_URL);
 
@@ -33,7 +34,7 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getSolUsdcToBscUsdcTrade(solanaKey.publicKey.toBase58(), account.address)
+      getSolUsdcToPolyUsdcTrade(solanaKey.publicKey.toBase58(), account.address)
     ],
     preHooks: [],
     postHooks: []
@@ -66,23 +67,3 @@ main().catch((error) => {
   console.error("\n🚨 FATAL ERROR in script execution:", error);
   process.exitCode = 1;
 });
-
-export function extractTransactionHexData(obj: any): string[] {
-  const result: string[] = [];
-
-  if (!obj?.intents) return result;
-
-  for (const intent of obj.intents) {
-    const requiredActions = intent?.requiredActions;
-    if (!Array.isArray(requiredActions)) continue;
-
-    for (const action of requiredActions) {
-      if (action?.type === "Transaction" && typeof action?.data?.data === "string") {
-        result.push(action.data.data);
-      }
-    }
-  }
-
-  return result;
-}
-
