@@ -63,23 +63,24 @@ async function evmActionSignV1_0(action: Action, walletClient: WalletClient): Pr
   }
 }
 
-async function solanaActionSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
-  if (action.type === SignatureTypes.Transaction) {
-    const connection = new Connection(SOLANA_RPC_URL, { commitment: "confirmed" });
-    
-    const solanaTxData = (action.data as Tx).data;
-    const signedTx = await prepareSolanaTransaction(SOLANA_RPC_URL, solanaTxData, keypair);
-    const raw = signedTx.serialize();
-    const sig = await connection.sendRawTransaction(raw, { skipPreflight: false });
-    return toHexPrefixString(sig);
-  } 
-  else if (action.type === SignatureTypes.Sign) {
-    const signingData = (action.data as SolanaSign).data;
-    const signatures = signHexMessageBySolanaKey(signingData, keypair);
-    return toHexPrefixString(signatures.hex)
-  }
+async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<string> {
+  throw new Error("Not implemented error");
+}
 
-  throw new Error("Signature type not supported");
+// Bug report - why does this even work on the backend? Managed to successfully submit a hex-prefixed base-58 encoded string. Stupid as it sounds.
+async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
+  const connection = new Connection(SOLANA_RPC_URL, { commitment: "confirmed" });
+
+  const signedTx = await prepareSolanaTransaction(SOLANA_RPC_URL, data, keypair);
+  const raw = signedTx.serialize();
+  const sig = await connection.sendRawTransaction(raw, { skipPreflight: false });
+  return sig;
+}
+
+async function solanaActionSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
+  const signingData = (action.data as SolanaSign).data;
+  const signatures = signHexMessageBySolanaKey(signingData, keypair);
+  return toHexPrefixString(signatures.hex)
 }
 
 async function evmActionSignV1_1(action: Action, walletClient: WalletClient): Promise<string> {
@@ -121,9 +122,17 @@ async function singActionV1_0(action: Action, walletClient: WalletClient | Keypa
     case SignatureTypes.Sign712MetaMask: {
       return evmActionSignV1_0(action, walletClient as WalletClient);
     }
-    case SignatureTypes.Sign:
-    case SignatureTypes.Transaction: {
+    case SignatureTypes.Sign: {
       return solanaActionSign(action, walletClient as Keypair);
+    }
+    case SignatureTypes.Transaction: {
+      // Check if the transaction is EVM or Solana
+      const tx = action.data as Tx;
+      if (tx.to || tx.value) {
+        return submitEvmTx(tx, walletClient as WalletClient);
+      } else {
+        return submitSolanaTx(tx.data, walletClient as Keypair);
+      }
     }
     default: {
       throw new Error("Unknown signing method");
@@ -138,9 +147,17 @@ async function singActionV1_1(action: Action, walletClient: WalletClient | Keypa
     case SignatureTypes.Sign712MetaMask: {
       return evmActionSignV1_1(action, walletClient as WalletClient);
     }
-    case SignatureTypes.Sign:
-    case SignatureTypes.Transaction: {
+    case SignatureTypes.Sign: {
       return solanaActionSign(action, walletClient as Keypair);
+    }
+    case SignatureTypes.Transaction: {
+      // Check if the transaction is EVM or Solana
+      const tx = action.data as Tx;
+      if (tx.to || tx.value) {
+        return submitEvmTx(tx, walletClient as WalletClient);
+      } else {
+        return submitSolanaTx(tx.data, walletClient as Keypair);
+      }
     }
     default: {
       throw new Error("Unknown signing method");
