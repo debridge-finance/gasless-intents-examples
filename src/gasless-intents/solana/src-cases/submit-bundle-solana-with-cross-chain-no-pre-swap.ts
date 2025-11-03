@@ -5,7 +5,7 @@ import bs58 from 'bs58';
 import { getSolUsdcToPolyUsdcTrade } from "../../trades";
 import { Keypair } from "@solana/web3.js"
 import { getApi } from "../../../utils/api";
-import { BundleProposeBody, TradingAlgorithm } from "../../types";
+import { Bundle, BundleProposeBody, TradingAlgorithm } from "../../types";
 import { BASE_DEV_URL } from '../../../utils/constants';
 import { processIntentBundle } from '../../../utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '../../../utils/wallet';
@@ -46,8 +46,7 @@ async function main() {
 
   const signedData = await processIntentBundle(bundle, chainIdToWalletClientMap);
 
-  // Prepare the bundle with signatures - but don't submit yet
-  const submitPayload = {
+  const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
