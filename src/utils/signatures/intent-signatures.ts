@@ -74,7 +74,7 @@ async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
   const signedTx = await prepareSolanaTransaction(SOLANA_RPC_URL, data, keypair);
   const raw = signedTx.serialize();
   const sig = await connection.sendRawTransaction(raw, { skipPreflight: false });
-  return toHexPrefixString(sig); // TODO: Remove the toHexPrefixString call, intentionally done for testing 
+  return sig;
 }
 
 async function solanaActionSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
