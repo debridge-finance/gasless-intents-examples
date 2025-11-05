@@ -13,6 +13,9 @@ export enum CancelBundleReasonCodes {
   SYSTEM_ABORT = "SYSTEM_ABORT"
 }
 
+/**
+ * `creationTimestamp` and `expirationTimestamp` parameters are used for idempotency purposes - not as time-window filters. 
+ */
 export type BundleCancelRequest = {
   bundleId?: string,
   userId?: string,
@@ -91,12 +94,15 @@ export type BundleProposeBody = {
   trades: Array<SameChainTrade | CrossChainTrade>;
   preHooks?: Array<any>;
   postHooks: Array<PostHook>;
+  referralCode?: number;
 }
 
 export enum SignatureTypes {
   Sign712 = "Sign712",
   Sign712MetaMask = "Sign712MetaMask",
-  Sign7702Authorization = "Sign7702Authorization"
+  Sign7702Authorization = "Sign7702Authorization",
+  Sign = "Sign", // Solana Hex Sign
+  Transaction = "Transaction" // Assumed that it's Solana transaction - see future for EVM as well
 }
 
 // Type for EIP-712 data
@@ -136,7 +142,9 @@ export type Sign7702AuthorizationData = {
 export type ActionData =
   | (EIP712Data & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never })
   | (Sign712MetaMaskData & { contractAddress?: never; nonce?: never })
-  | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never });
+  | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never })
+  | Tx
+  | SolanaSign;
 
 export type Action = {
   type: SignatureTypes;
@@ -265,8 +273,20 @@ export type PostHook = {
   preparePreRequiredActions?: boolean;
 }
 
+/**
+ * `to` and `value` are only available for EVM transactions.
+ */
 export type Tx = {
-  to: string;
-  value: string;
+  to?: string;
+  value?: string;
   data: string;
+}
+
+export type SolanaSign = {
+  data: string;
+}
+
+export enum ApiVersion {
+  V1_0 = "V1_0",
+  V1_1 = "V1_1"
 }

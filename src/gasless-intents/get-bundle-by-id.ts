@@ -1,6 +1,9 @@
-import { getBundleById } from "../utils/api";
+import { getApi } from "../utils/api";
+import { BASE_DEV_URL } from "../utils/constants";
 
-const bundleId = "c2de4116-f644-4eb6-8fb3-d1976d367a19";
+const bundleId = "e4f157d9-9dd7-43e7-a038-86966e487cdf";
+
+const { getBundleById } = getApi(BASE_DEV_URL);
 
 async function main() {
   console.log("Fetching bundle by ID...", bundleId);

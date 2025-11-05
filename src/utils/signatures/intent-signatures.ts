@@ -1,13 +1,29 @@
 import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
-import { Action, Bundle, EIP712Data, Sign712MetaMaskData, Sign7702AuthorizationData, SignatureTypes } from '../../gasless-intents/types';
+import { Action, ApiVersion, Bundle, EIP712Data, Sign712MetaMaskData, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx } from '../../gasless-intents/types';
+import { getChainIdToWalletClientMap } from '../wallet';
+import { Connection, Keypair } from '@solana/web3.js';
+import { SOLANA_RPC_URL } from '../constants';
+import { prepareSolanaTransaction, signHexMessageBySolanaKey } from '../solana';
+import { toHexPrefixString } from '..';
 
 /**
  * Signs an action with ethers.js wallet
  * Handles different signature types: Sign712, Sign712MetaMask, and Sign7702Authorization
  */
-export async function signAction(action: Action, walletClient: WalletClient): Promise<string> {
+export async function signAction(action: Action, walletClient: WalletClient | Keypair, apiVersion: ApiVersion = ApiVersion.V1_0): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
 
+  switch (apiVersion) {
+    case ApiVersion.V1_0:
+      return singActionV1_0(action, walletClient);
+    case ApiVersion.V1_1:
+      return singActionV1_1(action, walletClient);
+    default:
+      throw new Error("Unrecognized API Version");
+  }
+}
+
+async function evmActionSignV1_0(action: Action, walletClient: WalletClient): Promise<string> {
   // EIP-7702 Authorization
   if (action.type === SignatureTypes.Sign7702Authorization) {
     // Cast to Sign7702AuthorizationData to access specific properties
@@ -38,13 +54,114 @@ export async function signAction(action: Action, walletClient: WalletClient): Pr
   // EIP-712 Typed Data - Sign712
   else if (action.type === SignatureTypes.Sign712) {
     const data = action.data as EIP712Data;
-    const { domain, types, message } = data;
+    const { domain, types, message, primaryType } = data;
 
-    // In ethers v6, signTypedData is the method for EIP-712 signatures
-    return sign712(walletClient, { domain, types, primaryType: data.primaryType, message });
+    return sign712(walletClient, { domain, types, primaryType, message });
   }
   else {
     throw new Error("Unknown signing method");
+  }
+}
+
+async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<string> {
+  throw new Error("Not implemented error");
+}
+
+// Bug report - why does this even work on the backend? Managed to successfully submit a hex-prefixed base-58 encoded string. Stupid as it sounds.
+async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
+  const connection = new Connection(SOLANA_RPC_URL, { commitment: "confirmed" });
+
+  const signedTx = await prepareSolanaTransaction(SOLANA_RPC_URL, data, keypair);
+  const raw = signedTx.serialize();
+  const sig = await connection.sendRawTransaction(raw, { skipPreflight: false });
+  return sig;
+}
+
+async function solanaActionSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
+  const signingData = (action.data as SolanaSign).data;
+  const signatures = signHexMessageBySolanaKey(signingData, keypair);
+  return toHexPrefixString(signatures.hex)
+}
+
+async function evmActionSignV1_1(action: Action, walletClient: WalletClient): Promise<string> {
+  // EIP-7702 Authorization
+  if (action.type === SignatureTypes.Sign7702Authorization) {
+    // Cast to Sign7702AuthorizationData to access specific properties
+    const data = action.data as Sign7702AuthorizationData;
+    const { contractAddress, nonce } = data;
+
+    // For Sign7702Authorization, we need to determine the chainId
+    // If not present in data, we can get it from the wallet client
+    const chainId = data.chainId || walletClient.chain.id;
+
+    const authData = {
+      chainId,
+      contractAddress,
+      nonce
+    }
+
+    return await sign7702Authorization(walletClient, authData);
+  }
+
+  // EIP-712 Typed Data - Sign712
+  else if (action.type === SignatureTypes.Sign712 || action.type === SignatureTypes.Sign712MetaMask) {
+    const data = action.data as EIP712Data;
+    const { domain, types, message, primaryType } = data;
+
+    return sign712(walletClient, { domain, types, primaryType, message });
+  }
+  else {
+    throw new Error("Unknown signing method");
+  }
+}
+
+async function singActionV1_0(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
+  switch (action.type) {
+    case SignatureTypes.Sign7702Authorization:
+    case SignatureTypes.Sign712:
+    case SignatureTypes.Sign712MetaMask: {
+      return evmActionSignV1_0(action, walletClient as WalletClient);
+    }
+    case SignatureTypes.Sign: {
+      return solanaActionSign(action, walletClient as Keypair);
+    }
+    case SignatureTypes.Transaction: {
+      // Check if the transaction is EVM or Solana
+      const tx = action.data as Tx;
+      if (tx.to || tx.value) {
+        return submitEvmTx(tx, walletClient as WalletClient);
+      } else {
+        return submitSolanaTx(tx.data, walletClient as Keypair);
+      }
+    }
+    default: {
+      throw new Error("Unknown signing method");
+    }
+  }
+}
+
+async function singActionV1_1(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
+  switch (action.type) {
+    case SignatureTypes.Sign7702Authorization:
+    case SignatureTypes.Sign712:
+    case SignatureTypes.Sign712MetaMask: {
+      return evmActionSignV1_1(action, walletClient as WalletClient);
+    }
+    case SignatureTypes.Sign: {
+      return solanaActionSign(action, walletClient as Keypair);
+    }
+    case SignatureTypes.Transaction: {
+      // Check if the transaction is EVM or Solana
+      const tx = action.data as Tx;
+      if (tx.to || tx.value) {
+        return submitEvmTx(tx, walletClient as WalletClient);
+      } else {
+        return submitSolanaTx(tx.data, walletClient as Keypair);
+      }
+    }
+    default: {
+      throw new Error("Unknown signing method");
+    }
   }
 }
 
@@ -54,7 +171,8 @@ export async function signAction(action: Action, walletClient: WalletClient): Pr
  */
 export async function collectIntentSignatures(
   requiredActions: Array<Action>,
-  walletClient: WalletClient
+  walletClient: WalletClient | Keypair,
+  apiVersion: ApiVersion = ApiVersion.V1_0
 ): Promise<Array<{ actionId: string, signedData: string }>> {
   const signatures: Array<{ actionId: string, signedData: string }> = [];
 
@@ -66,7 +184,7 @@ export async function collectIntentSignatures(
   // Process each action in the intent
   for (const action of requiredActions) {
     try {
-      const signature = await signAction(action, walletClient);
+      const signature = await signAction(action, walletClient, apiVersion);
       signatures.push({
         actionId: action.actionId,
         signedData: signature
@@ -87,7 +205,8 @@ export async function collectIntentSignatures(
  */
 export async function processIntentBundle(
   bundle: Bundle,
-  walletClient: Record<number, WalletClient>
+  walletClient: ReturnType<typeof getChainIdToWalletClientMap>,
+  apiVersion: ApiVersion = ApiVersion.V1_0
 ): Promise<Array<{ actionId: string, signedData: string }>> {
   const allSignatures: Array<{ actionId: string, signedData: string }> = [];
 
@@ -95,7 +214,7 @@ export async function processIntentBundle(
   if (bundle.intents && Array.isArray(bundle.intents)) {
     for (const intent of bundle.intents) {
       if (intent.requiredActions && Array.isArray(intent.requiredActions)) {
-        const intentSignatures = await collectIntentSignatures(intent.requiredActions, walletClient[intent.intent.intentChainId]);
+        const intentSignatures = await collectIntentSignatures(intent.requiredActions, walletClient[intent.intent.intentChainId], apiVersion);
         allSignatures.push(...intentSignatures);
       }
     }
@@ -105,36 +224,13 @@ export async function processIntentBundle(
   if (bundle.postHooks && Array.isArray(bundle.postHooks)) {
     for (const hook of bundle.postHooks) {
       if (hook.requiredActions && Array.isArray(hook.requiredActions)) {
-        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient[hook.hook.chainId]);
+        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient[hook.hook.chainId], apiVersion);
         allSignatures.push(...hookSignatures);
       }
     }
   }
 
   return allSignatures;
-}
-
-/**
- * Example function to demonstrate how to use the signature collection
- * with a wallet and prepare a bundle for submission
- */
-export async function signAndPrepareBundle(
-  bundle: any,
-  walletClient: WalletClient
-): Promise<any> {
-  // Collect all signatures
-  const signedDataArray = await processIntentBundle(bundle, walletClient);
-
-  // Prepare submission payload
-  const submitPayload = {
-    ...bundle,
-    requestId: bundle.requestId,
-    enableAccountAbstraction: true,
-    isAtomic: true,
-    signedData: signedDataArray
-  };
-
-  return submitPayload;
 }
 
 async function sign7702Authorization(walletClient: WalletClient, data: any): Promise<`0x${string}`> {

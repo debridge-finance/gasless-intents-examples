@@ -3,26 +3,44 @@
 // export const BASE_URL = "https://cross-chain-api-intent.dev.debridge.io/v1.0"
 // export const BASE_URL = "https://cross-chain-api-intent-hanoi.dev.debridge.io/v1.0"
 export const BASE_URL = "https://api.debridge.io/v1/gasless"
-export const BUNDLES = "/bundles"
+export const BASE_DEV_URL = "https://dev-api.debridge.io/v1/gasless"
 
+export const BUNDLES = "/bundles"
 export const BUNDLES_URL = `${BASE_URL}${BUNDLES}`
 export const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`
-export const BUNDLE_LIST_URL = `${BUNDLES_URL}/list`
 export const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
+
+export const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
+
+export function getEndpoints(baseUrl: string) {
+  const BUNDLES_URL = `${baseUrl}${BUNDLES}`
+  const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`
+  const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
+
+  return {
+    BUNDLES_URL,
+    BUNDLE_SUBMIT_URL,
+    BUNDLE_CANCEL_URL
+  }
+}
 
 // Tokens
 
+export const SOL_NATIVE = "11111111111111111111111111111111"
 export const EVM_NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";
+export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
 
 export const USDC = {
   Polygon: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
   BNB: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
   Base: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  Solana: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 }
 
 export const USDT = {
   Polygon: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
   BNB: "0x55d398326f99059ff775485246999027b3197955",
+  Solana: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
 }
 
 export const LINK = {

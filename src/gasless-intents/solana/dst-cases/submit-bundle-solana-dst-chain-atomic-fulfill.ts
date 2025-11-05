@@ -1,57 +1,50 @@
-import { createWalletClient, http } from "viem";
-import {
-  privateKeyToAccount
-} from 'viem/accounts'
-import { polygon } from "viem/chains"
-import { getEnvConfig, toHexPrefixString } from "./../utils";
-import { createBundle, submitBundle } from "./../utils/api";
-import { processIntentBundle } from "./../utils/signatures/intent-signatures";
+import { privateKeyToAccount } from 'viem/accounts'
+import { getEnvConfig, toHexPrefixString } from "../../../utils";
 import { randomUUID } from 'crypto';
 
 import util from "util"
-import { getSameChainTrade, getCrossChainTrade } from "./../utils/trades";
-import { USDT } from "../utils/constants";
-import { BundleProposeBody, TradingAlgorithm } from "./types";
-import { getChainIdToWalletClientMap } from "../utils/wallet";
+import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "../../trades";
+import { Keypair } from "@solana/web3.js";
+import bs58 from "bs58";
+import { getApi } from "../../../utils/api";
+import { processIntentBundle } from "../../../utils/signatures/intent-signatures";
+import { ApiVersion, TradingAlgorithm } from "../../types";
+import { getChainIdToWalletClientMap } from "../../../utils/wallet";
+import { BASE_DEV_URL } from '../../../utils/constants';
+
+const { createBundle, submitBundle } = getApi(BASE_DEV_URL);
 
 async function main() {
   // Wallet setup
-  const { privateKey } = getEnvConfig();
+  const { privateKey, solPrivateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
+  console.log(`account: ${account.address}`)
+
   const requestId = randomUUID();
 
+  const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey));
+  const solanaAddress = solanaKey.publicKey.toBase58();
+
   // Trades body
-  const requestBody: BundleProposeBody = {
+  const requestBody = {
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    referralCode: 31805,
     trades: [
-      getSameChainTrade(account.address), // default USDC on Polygon -> MATIC on Polygon
-      getCrossChainTrade(account.address), // default USDC on Polygon -> USDC on BSC
-      getCrossChainTrade(account.address, {
-        // Only override what you want – everything else defaults
-        srcChainTokenInAmount: "1100000", // 1.1 USDC
-        srcChainTokenInMinAmount: "900000",
-        srcChainTokenInMaxAmount: "1000000",
-        dstChainTokenOut: USDT.BNB,        // Default is BSC_USDC, override to USDT
-      }),
-      getSameChainTrade(account.address, {
-        tokenOut: USDT.Polygon,
-        tokenOutRecipient: account.address
-      })
+      getPolyUsdcToSolUsdcTrade(account.address, solanaAddress, solanaAddress),
+      getPolyUsdcToSolJupTrade(account.address, solanaAddress, solanaAddress),
     ],
     preHooks: [],
     postHooks: []
   }
 
-  console.log("Creating bundle...");
+  console.log(`Creating bundle..., ${JSON.stringify(requestBody)}`);
   const bundle = await createBundle(requestBody);
   console.log("Bundle created successfully!");
 
@@ -62,7 +55,7 @@ async function main() {
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
-  const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
+  const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap, ApiVersion.V1_1);
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
@@ -74,6 +67,8 @@ async function main() {
     isAtomic: true,
     signedData: signedDataArray
   };
+
+  console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);
 
   console.log("Payload prepared with signatures. Ready for submission.");
 
