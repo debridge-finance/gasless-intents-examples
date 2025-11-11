@@ -1,15 +1,11 @@
 import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
 import { Action, ApiVersion, Bundle, EIP712Data, Sign712MetaMaskData, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx } from '../../gasless-intents/types';
 import { getChainIdToWalletClientMap } from '../wallet';
-import { Connection, Keypair } from '@solana/web3.js';
+import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js';
 import { SOLANA_RPC_URL } from '../constants';
 import { prepareSolanaTransaction, signHexMessageBySolanaKey } from '../solana';
-import { toHexPrefixString } from '..';
+import { clipHexPrefix, toHexPrefixString } from '..';
 
-/**
- * Signs an action with ethers.js wallet
- * Handles different signature types: Sign712, Sign712MetaMask, and Sign7702Authorization
- */
 export async function signAction(action: Action, walletClient: WalletClient | Keypair, apiVersion: ApiVersion = ApiVersion.V1_0): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
 
@@ -77,10 +73,18 @@ async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
   return sig;
 }
 
-async function solanaActionSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
+async function solanaAuthorizationSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
   const signingData = (action.data as SolanaSign).data;
   const signatures = signHexMessageBySolanaKey(signingData, keypair);
   return toHexPrefixString(signatures.hex)
+}
+
+function solanaVersionedTransactionSign(action: Action, keypair: Keypair): string {
+  const signingData = (action.data as SolanaSign).data;
+  const versionedTransaction = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(signingData), 'hex'));
+  versionedTransaction.sign([keypair]);
+
+  return toHexPrefixString(Buffer.from(versionedTransaction.serialize()).toString('hex'));
 }
 
 async function evmActionSignV1_1(action: Action, walletClient: WalletClient): Promise<string> {
@@ -123,7 +127,10 @@ async function singActionV1_0(action: Action, walletClient: WalletClient | Keypa
       return evmActionSignV1_0(action, walletClient as WalletClient);
     }
     case SignatureTypes.Sign: {
-      return solanaActionSign(action, walletClient as Keypair);
+      return solanaAuthorizationSign(action, walletClient as Keypair);
+    }
+    case SignatureTypes.SignTransaction: {
+      return solanaVersionedTransactionSign(action, walletClient as Keypair);
     }
     case SignatureTypes.Transaction: {
       // Check if the transaction is EVM or Solana
@@ -148,7 +155,10 @@ async function singActionV1_1(action: Action, walletClient: WalletClient | Keypa
       return evmActionSignV1_1(action, walletClient as WalletClient);
     }
     case SignatureTypes.Sign: {
-      return solanaActionSign(action, walletClient as Keypair);
+      return solanaAuthorizationSign(action, walletClient as Keypair);
+    }
+    case SignatureTypes.SignTransaction: {
+      return solanaVersionedTransactionSign(action, walletClient as Keypair);
     }
     case SignatureTypes.Transaction: {
       // Check if the transaction is EVM or Solana
@@ -160,7 +170,7 @@ async function singActionV1_1(action: Action, walletClient: WalletClient | Keypa
       }
     }
     default: {
-      throw new Error("Unknown signing method");
+      throw new Error(`Unknown signing method: ${action.type}`);
     }
   }
 }
