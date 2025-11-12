@@ -6,8 +6,8 @@ import { getAddress } from 'viem';
 export function getEnvConfig() {
   // --- Environment Variable Loading and Validation ---
   console.log("Loading environment variables...");
-  const privateKey = process.env.SIGNER_PK;
-  const solPrivateKey = process.env.SOL_PK;
+  const privateKey = '8ffe3d8534c2ae95db3e0806c36f8f9d8de72ac262352f9ab935366e68c9d93c';
+  const solPrivateKey = '3KXBHDm7vF9uBsakE1d2RTAA9XBaTt1mrrJnvRW3VXuDktugWQPzD3gps1qF41dcA2xvhxxFfkTjseNpNaY2AtF6';
 
   let error = ""
 

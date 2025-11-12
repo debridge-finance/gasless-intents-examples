@@ -102,7 +102,8 @@ export enum SignatureTypes {
   Sign712MetaMask = "Sign712MetaMask",
   Sign7702Authorization = "Sign7702Authorization",
   Sign = "Sign", // Solana Hex Sign
-  Transaction = "Transaction" // Assumed that it's Solana transaction - see future for EVM as well
+  Transaction = "Transaction", // Assumed that it's Solana transaction - see future for EVM as well
+    SignTransaction = "SignTransaction"
 }
 
 // Type for EIP-712 data

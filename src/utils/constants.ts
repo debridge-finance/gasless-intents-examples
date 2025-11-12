@@ -2,12 +2,11 @@
 
 // export const BASE_URL = "https://cross-chain-api-intent.dev.debridge.io/v1.0"
 // export const BASE_URL = "https://cross-chain-api-intent-hanoi.dev.debridge.io/v1.0"
-export const BASE_URL = "https://api.debridge.io/v1/gasless"
-export const BASE_DEV_URL = "https://dev-api.debridge.io/v1/gasless"
+export const BASE_URL = "https://api-dev.debridge.io"
 
-export const BUNDLES = "/bundles"
+export const BUNDLES = "/v1.1/gasless/bundles"
 export const BUNDLES_URL = `${BASE_URL}${BUNDLES}`
-export const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`
+export const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/v1.1/gasless/bundles/submit`
 export const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
 
 export const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";

@@ -42,6 +42,7 @@ export function extractTransactionHexData2(obj: any): Array<{ actionId: string, 
   return result;
 }
 
+// todo: swap blockhash only for case when solana account absatraction is FALSE
 export async function prepareSolanaTransaction(solRpcUrl: string, txData: string, solWallet: Keypair) {
   const connection = new Connection(solRpcUrl, { commitment: "confirmed" });
   const tx = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(txData), "hex"));

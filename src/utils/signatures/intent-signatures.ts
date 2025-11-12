@@ -1,10 +1,20 @@
-import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
-import { Action, ApiVersion, Bundle, EIP712Data, Sign712MetaMaskData, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx } from '../../gasless-intents/types';
-import { getChainIdToWalletClientMap } from '../wallet';
-import { Connection, Keypair } from '@solana/web3.js';
-import { SOLANA_RPC_URL } from '../constants';
-import { prepareSolanaTransaction, signHexMessageBySolanaKey } from '../solana';
-import { toHexPrefixString } from '..';
+import {serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient} from 'viem';
+import {
+    Action,
+    ApiVersion,
+    Bundle,
+    EIP712Data,
+    Sign712MetaMaskData,
+    Sign7702AuthorizationData,
+    SignatureTypes,
+    SolanaSign,
+    Tx
+} from '../../gasless-intents/types';
+import {getChainIdToWalletClientMap} from '../wallet';
+import {Connection, Keypair, VersionedTransaction} from '@solana/web3.js';
+import {SOLANA_RPC_URL} from '../constants';
+import {prepareSolanaTransaction, signHexMessageBySolanaKey} from '../solana';
+import {toHexPrefixString} from '..';
 
 /**
  * Signs an action with ethers.js wallet
@@ -74,12 +84,29 @@ async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
   const signedTx = await prepareSolanaTransaction(SOLANA_RPC_URL, data, keypair);
   const raw = signedTx.serialize();
   const sig = await connection.sendRawTransaction(raw, { skipPreflight: false });
+  const confirmation = await connection.confirmTransaction(
+      {
+          signature: sig,
+          ...(await connection.getLatestBlockhash()),
+      },
+      "confirmed"
+  );
+
+  if (confirmation.value.err) {
+      throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
+  }
+
   return sig;
 }
 
 async function solanaActionSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
   const signingData = (action.data as SolanaSign).data;
   const signatures = signHexMessageBySolanaKey(signingData, keypair);
+  if (action.type === SignatureTypes.SignTransaction) {
+      const tx = VersionedTransaction.deserialize(Buffer.from(signingData.slice(2), 'hex'));
+      tx.sign([keypair])
+      return '0x' + Buffer.from(tx.serialize()).toString('hex') as SignTypedDataReturnType
+  }
   return toHexPrefixString(signatures.hex)
 }
 
@@ -134,6 +161,9 @@ async function singActionV1_0(action: Action, walletClient: WalletClient | Keypa
         return submitSolanaTx(tx.data, walletClient as Keypair);
       }
     }
+      case SignatureTypes.SignTransaction: {
+          return solanaActionSign(action, walletClient as Keypair);
+      }
     default: {
       throw new Error("Unknown signing method");
     }
@@ -159,6 +189,9 @@ async function singActionV1_1(action: Action, walletClient: WalletClient | Keypa
         return submitSolanaTx(tx.data, walletClient as Keypair);
       }
     }
+      case SignatureTypes.SignTransaction: {
+          return solanaActionSign(action, walletClient as Keypair);
+      }
     default: {
       throw new Error("Unknown signing method");
     }

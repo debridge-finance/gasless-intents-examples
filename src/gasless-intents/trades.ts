@@ -79,9 +79,9 @@ export function getSolUsdcToPolyUsdcTrade(signer: string, recipient: string): Cr
     srcChainId: 7565164,
     srcChainTokenIn: USDC.Solana, // USDC on Polygon (bridged), 6 decimals
 
-    srcChainTokenInAmount: "5000000",      // 50$ USDC
-    srcChainTokenInMinAmount: "5000000",   // 5$ USDC
-    srcChainTokenInMaxAmount: "5000000",   // 5$ USDC
+    srcChainTokenInAmount: "2000000",      // 50$ USDC
+    srcChainTokenInMinAmount: "2000000",   // 5$ USDC
+    srcChainTokenInMaxAmount: "2000000",   // 5$ USDC
 
     // Destination (POL)
     dstChainId: 137,
@@ -95,8 +95,58 @@ export function getSolUsdcToPolyUsdcTrade(signer: string, recipient: string): Cr
 
     // Flags
     // prependOperatingExpenses: true,
-    prependOperatingExpenses: true,
+    prependOperatingExpenses: false,
   }
+}
+
+export function getSolUsdtToPolyUsdcTrade(signer: string, recipient: string): CrossChainTrade {
+    return {
+        srcChainId: 7565164,
+        srcChainTokenIn: USDT.Solana, // USDC on Polygon (bridged), 6 decimals
+
+        srcChainTokenInAmount: "2000000",      // 50$ USDC
+        srcChainTokenInMinAmount: "2000000",   // 5$ USDC
+        srcChainTokenInMaxAmount: "2000000",   // 5$ USDC
+
+        // Destination (POL)
+        dstChainId: 137,
+        dstChainTokenOut: USDC.Polygon, // USDC on BSC, 6 decimals
+        dstChainTokenOutAmount: "auto",
+        dstChainTokenOutRecipient: recipient,
+
+        // Authorities
+        srcChainAuthorityAddress: signer,
+        dstChainAuthorityAddress: recipient,
+
+        // Flags
+        // prependOperatingExpenses: true,
+        prependOperatingExpenses: false,
+    }
+}
+
+export function getSolToPolyUsdcTrade(signer: string, recipient: string): CrossChainTrade {
+    return {
+        srcChainId: 7565164,
+        srcChainTokenIn: SOL_NATIVE,
+
+        srcChainTokenInAmount: "10000",
+        srcChainTokenInMinAmount: "10000",
+        srcChainTokenInMaxAmount: "10000",
+
+        // Destination (POL)
+        dstChainId: 137,
+        dstChainTokenOut: USDC.Polygon, // USDC on BSC, 6 decimals
+        dstChainTokenOutAmount: "auto",
+        dstChainTokenOutRecipient: recipient,
+
+        // Authorities
+        srcChainAuthorityAddress: signer,
+        dstChainAuthorityAddress: recipient,
+
+        // Flags
+        // prependOperatingExpenses: true,
+        prependOperatingExpenses: true,
+    }
 }
 
 export function getSolUsdcToPolUsdcTrade(signer: string, recipient: string): CrossChainTrade {
