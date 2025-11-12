@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>deBridge WS Client (Raw WebSocket)</title>
+  <style>
+    body {
+      font-family: Consolas, monospace;
+      background: #1e1e1e;
+      color: #dcdcdc;
+      margin: 0; padding: 20px;
+    }
+    h1 { text-align: center; color: #00aaff; }
+    .card {
+      background: #252526;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 15px auto;
+      max-width: 1000px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    label { font-weight: bold; display: block; margin-top: 10px; color:#9cdcfe;}
+    .doc {
+      color: #aaaaaa;
+      font-size: 0.9em;
+      margin-bottom: 5px;
+      line-height: 1.3em;
+    }
+    input {
+      width: 100%; padding: 6px 8px; border-radius: 4px;
+      border: 1px solid #555; background: #333; color: #dcdcdc;
+    }
+    button {
+      background: #0078d7; color: white; border: none;
+      padding: 8px 16px; border-radius: 4px; cursor: pointer;
+      margin-top: 10px; margin-right: 8px;
+    }
+    button:hover { background: #005ea3; }
+    button:disabled { background: #444; color: #888; cursor: not-allowed; }
+    #status { font-weight: bold; margin-left: 10px; }
+    #log {
+      background: #111; color: #dcdcdc;
+      padding: 10px; height: 500px; overflow-y: auto;
+      border-radius: 6px; white-space: pre-wrap;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>deBridge WebSocket Client</h1>
+
+  <div class="card">
+    <label>WebSocket URL:</label>
+    <div class="doc">Address of the WebSocket server endpoint. Use <code>wss://api.debridge.io/ws</code> or a local test URL.</div>
+    <input id="serverUrl" value="wss://api.debridge.io/ws" />
+
+    <label>Bundle IDs:</label>
+    <div class="doc">Array of specific bundle identifiers. Each ID corresponds to a single bundle tracked by deBridge. Up to 100 per client.</div>
+    <input id="bundleIds" placeholder="a0546c33-524f-4067-9dfe-12b616db2298, e2e1bbd3-4a03-4653-8ce0-a5fc2333ff99, ..." />
+
+    <label>Referral Code:</label>
+    <div class="doc">Partner referral code used for tracking bundles created through an integration partner. Only one referral code per client is allowed.</div>
+    <input id="referralCode" placeholder="31261" />
+
+    <label>Intent Owners:</label>
+    <div class="doc">Wallet addresses that own intents. Allows up to 100 addresses per client.</div>
+    <input id="intentOwners" placeholder="0x247204F8368be563876..., 0xc3E2E2BC277305b4d85..." />
+
+    <label>Intent Authorities:</label>
+    <div class="doc">Authorized addresses that can manage or execute intents. Allows up to 100 addresses per client.</div>
+    <input id="intentAuthorities" placeholder="0x247204F8368be563876..., 0xc3E2E2BC277305b4d85..." />
+
+    <label>Cancel Partner Authorities:</label>
+    <div class="doc">Addresses authorized to cancel bundles or trades on behalf of a partner. Allows up to 100 per client.</div>
+    <input id="cancelAuthorities" placeholder="0x247204F8368be563876..., 0xc3E2E2BC277305b4d85..." />
+
+    <label>User IDs:</label>
+    <div class="doc">Application-level user identifiers associated with bundles or trades. Supports up to 100 user IDs per client.</div>
+    <input id="userIds" placeholder="user-1, user-2, ..." />
+
+    <div style="margin-top: 15px;">
+      <button id="connectBtn">Connect</button>
+      <button id="disconnectBtn" disabled>Disconnect</button>
+      <span id="status" style="color:red;">Disconnected</span>
+    </div>
+
+    <div style="margin-top: 10px;">
+      <button id="subscribeBtn" disabled>Subscribe</button>
+      <button id="unsubscribeBtn" disabled>Unsubscribe</button>
+      <button id="clearLogBtn">Clear Log</button>
+      <button id="saveLogBtn">Save Log</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="log"></div>
+  </div>
+
+  <script>
+    let ws = null;
+    let connected = false;
+    const activeFilters = [];
+
+    const parseList = (str) =>
+      str.split(/[, ]+/).map(x => x.trim()).filter(Boolean);
+
+    const logLine = (msg) => {
+      const el = document.getElementById('log');
+      const time = new Date().toISOString();
+      el.textContent += `[${time}] ${msg}\n`;
+      el.scrollTop = el.scrollHeight;
+    };
+
+    const updateStatus = (text, color) => {
+      const el = document.getElementById('status');
+      el.textContent = text;
+      el.style.color = color;
+    };
+
+    const updateButtons = () => {
+      document.getElementById('connectBtn').disabled = connected;
+      document.getElementById('disconnectBtn').disabled = !connected;
+      document.getElementById('subscribeBtn').disabled = !connected;
+      document.getElementById('unsubscribeBtn').disabled = !connected;
+    };
+
+    function clearLog() {
+      document.getElementById('log').textContent = '';
+      logLine("[INFO] Log cleared.");
+    }
+
+    function saveLog() {
+      const content = document.getElementById('log').textContent;
+      if (!content.trim()) return logLine("[WARN] Log is empty.");
+      const blob = new Blob([content], { type: 'text/plain' });
+      const link = document.createElement('a');
+      const name = `ws-log-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+      link.href = URL.createObjectURL(blob);
+      link.download = name;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      logLine(`[INFO] Log saved as ${name}`);
+    }
+
+    function buildFilters() {
+      const bundles = parseList(document.getElementById('bundleIds').value);
+      const referralCode = document.getElementById('referralCode').value.trim();
+      const intentOwners = parseList(document.getElementById('intentOwners').value);
+      const intentAuthorities = parseList(document.getElementById('intentAuthorities').value);
+      const cancelAuthorities = parseList(document.getElementById('cancelAuthorities').value);
+      const userIds = parseList(document.getElementById('userIds').value);
+
+      const filters = [];
+      if (bundles.length) filters.push({ filters: { bundleId: bundles } });
+      if (referralCode) filters.push({ filters: { referralCode: [referralCode] } });
+      if (intentOwners.length) filters.push({ filters: { intentOwner: intentOwners } });
+      if (intentAuthorities.length) filters.push({ filters: { intentAuthority: intentAuthorities } });
+      if (cancelAuthorities.length) filters.push({ filters: { cancelPartnerAuthority: cancelAuthorities } });
+      if (userIds.length) filters.push({ filters: { userId: userIds } });
+      return filters;
+    }
+
+    function safeSend(obj) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        logLine("[WARN] WebSocket is not connected.");
+        return;
+      }
+      try {
+        const json = JSON.stringify(obj);
+        ws.send(json);
+        logLine(`[SEND] ${json}`);
+      } catch (err) {
+        logLine(`[ERROR] Failed to send: ${err.message}`);
+      }
+    }
+
+    function connect() {
+      const url = document.getElementById('serverUrl').value.trim();
+      if (!url) return logLine("[ERROR] WebSocket URL is empty.");
+
+      logLine(`[INFO] Connecting to ${url} ...`);
+      ws = new WebSocket(url);
+
+      ws.onopen = () => {
+        connected = true;
+        updateStatus("Connected", "lime");
+        updateButtons();
+        logLine("[INFO] Connection established.");
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (!msg.event) {
+            logLine(`[RAW] ${event.data}`);
+            return;
+          }
+
+          switch (msg.event) {
+            case "subscribe":
+              logLine(`[CONFIRM] Subscribed → ${JSON.stringify(msg.data)}`);
+              break;
+            case "bundle_update":
+              logLine(`[UPDATE] ${JSON.stringify(msg.data, null, 2)}`);
+              break;
+            case "unsubscribed":
+              logLine(`[INFO] Unsubscribed → ${JSON.stringify(msg.data)}`);
+              break;
+            case "error":
+              logLine(`[ERROR] ${JSON.stringify(msg.data)}`);
+              break;
+            default:
+              logLine(`[RECV] ${event.data}`);
+          }
+        } catch (err) {
+          logLine(`[ERROR] Invalid JSON from server: ${event.data}`);
+        }
+      };
+
+      ws.onclose = (e) => {
+        connected = false;
+        updateStatus("Disconnected", "red");
+        updateButtons();
+        logLine(`[INFO] Disconnected. Code: ${e.code}, Reason: ${e.reason || 'N/A'}`);
+      };
+
+      ws.onerror = (err) => {
+        logLine(`[ERROR] WebSocket error: ${err.message || JSON.stringify(err)}`);
+      };
+    }
+
+    function disconnect() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        logLine("[WARN] Already disconnected.");
+        return;
+      }
+      ws.close(1000, "Manual disconnect");
+      connected = false;
+      updateStatus("Disconnected", "red");
+      updateButtons();
+      logLine("[INFO] Manual disconnect requested.");
+    }
+
+    function subscribe() {
+      const list = buildFilters();
+      if (list.length === 0) return logLine("[WARN] No filters to subscribe.");
+
+      list.forEach((f) => {
+        safeSend({ event: "subscribe", data: f });
+        activeFilters.push(f);
+      });
+    }
+
+    function unsubscribe() {
+      if (activeFilters.length === 0) {
+        logLine("[WARN] No active subscriptions.");
+        return;
+      }
+
+      activeFilters.forEach((f) => {
+        safeSend({ event: "unsubscribe", data: f });
+      });
+      activeFilters.length = 0;
+      logLine("[INFO] Unsubscribed from all filters.");
+    }
+
+    // Event bindings
+    document.getElementById('connectBtn').addEventListener('click', connect);
+    document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+    document.getElementById('subscribeBtn').addEventListener('click', subscribe);
+    document.getElementById('unsubscribeBtn').addEventListener('click', unsubscribe);
+    document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+    document.getElementById('saveLogBtn').addEventListener('click', saveLog);
+
+    updateButtons();
+  </script>
+</body>
+</html>
