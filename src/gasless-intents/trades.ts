@@ -1,5 +1,5 @@
 import { arbitrum } from "viem/chains";
-import { CrossChainTrade, SameChainTrade } from "./types";
+import { CrossChainTrade, SameChainTrade, Trade } from "./types";
 import {EVM_NATIVE_TOKEN, LINK, SOL_JUP, SOL_NATIVE, USDC, USDT, WBNB, WETH} from "../utils/constants";
 
 export function getPolyUsdcToBscUsdcTrade(signer: string): CrossChainTrade {
@@ -79,7 +79,32 @@ export function getSolUsdcToPolyUsdcTrade(signer: string, recipient: string): Cr
     srcChainId: 7565164,
     srcChainTokenIn: USDC.Solana, // USDC on Polygon (bridged), 6 decimals
 
-    srcChainTokenInAmount: "5000000",      // 50$ USDC
+    srcChainTokenInAmount: "5000000",      // 5$ USDC
+    srcChainTokenInMinAmount: "5000000",   // 5$ USDC
+    srcChainTokenInMaxAmount: "5000000",   // 5$ USDC
+
+    // Destination (POL)
+    dstChainId: 137,
+    dstChainTokenOut: USDC.Polygon, // USDC on BSC, 6 decimals
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: recipient,
+
+    // Authorities
+    srcChainAuthorityAddress: signer,
+    dstChainAuthorityAddress: recipient,
+
+    // Flags
+    // prependOperatingExpenses: true,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getSolUsdcToPolyUsdcTradeV1_1(signer: string, recipient: string): Trade {
+  return {
+    srcChainId: 7565164,
+    srcChainTokenIn: USDC.Solana, // USDC on Polygon (bridged), 6 decimals
+
+    srcChainTokenInAmount: "5000000",      // 5$ USDC
     srcChainTokenInMinAmount: "5000000",   // 5$ USDC
     srcChainTokenInMaxAmount: "5000000",   // 5$ USDC
 

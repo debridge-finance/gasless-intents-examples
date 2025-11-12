@@ -1,10 +1,10 @@
 import { clipHexPrefix, toHexPrefixString } from ".";
-import { PostHook } from "../gasless-intents/types";
+import { Hook } from "../gasless-intents/types";
 import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
 import { createDepositCall, createTransferCall } from "./contract-calls";
 import { getVaultAddressByToken } from "./morpho/get-vault-address";
 
-export async function getMorphoDepositPosthook(tokenAddress: `0x${string}`, chainId: number, beneficiaryAddress: `0x${string}`): Promise<PostHook> {
+export async function getMorphoDepositPosthook(tokenAddress: `0x${string}`, chainId: number, beneficiaryAddress: `0x${string}`): Promise<Hook> {
   const vaultAddress = await getVaultAddressByToken(tokenAddress, chainId);
 
   if (!vaultAddress || vaultAddress.length === 0 || vaultAddress === EVM_NATIVE_TOKEN) {
@@ -17,7 +17,7 @@ export async function getMorphoDepositPosthook(tokenAddress: `0x${string}`, chai
 
   postHookTransaction.data = modifiedCalldata;
 
-  const result: PostHook = {
+  const result: Hook = {
     isAtomic: true,
     data: postHookTransaction.data,
     to: postHookTransaction.to,
@@ -31,8 +31,8 @@ export async function getMorphoDepositPosthook(tokenAddress: `0x${string}`, chai
   return result;
 }
 
-export async function getSendNativeAssetPosthook(chainId: number, senderAddress: `0x${string}`, beneficiaryAddress: `0x${string}`): Promise<PostHook> {
-  const result: PostHook = {
+export async function getSendNativeAssetPosthook(chainId: number, senderAddress: `0x${string}`, beneficiaryAddress: `0x${string}`): Promise<Hook> {
+  const result: Hook = {
     isAtomic: true,
     data: "0x",
     to: beneficiaryAddress,
@@ -46,7 +46,7 @@ export async function getSendNativeAssetPosthook(chainId: number, senderAddress:
   return result;
 }
 
-export async function getSendErc20PostHook(tokenAddress: `0x${string}`, chainId: number, senderAddress: `0x${string}`, beneficiaryAddress: `0x${string}`): Promise<PostHook> {
+export async function getSendErc20PostHook(tokenAddress: `0x${string}`, chainId: number, senderAddress: `0x${string}`, beneficiaryAddress: `0x${string}`): Promise<Hook> {
 
   const postHookTransaction = createTransferCall(beneficiaryAddress, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
 
@@ -54,7 +54,7 @@ export async function getSendErc20PostHook(tokenAddress: `0x${string}`, chainId:
 
   postHookTransaction.data = modifiedCalldata;
 
-  const posthook: PostHook = {
+  const posthook: Hook = {
     isAtomic: true,
     data: postHookTransaction.data,
     to: tokenAddress,

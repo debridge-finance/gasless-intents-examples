@@ -40,6 +40,7 @@ export enum TradingAlgorithm {
   MARKET = "market"
 }
 
+/** TODO: Remove support - deprecated in V1.1 */
 export type SameChainTrade = {
   chainId: number;
   tokenIn: string;
@@ -58,6 +59,7 @@ export type SameChainTrade = {
   affiliateFeeRecipient?: string;
 }
 
+/** TODO: Remove support - deprecated in V1.1 */
 export type CrossChainTrade = {
   // Source chain params
   srcChainId: number;
@@ -85,15 +87,69 @@ export type CrossChainTrade = {
   affiliateFeeRecipient?: string;
 }
 
+export type Trade = {
+  // Source chain params
+  srcChainId: number;
+  srcChainTokenIn: string;
+  srcChainTokenInAmount: string;
+  srcChainTokenInMinAmount: string;
+  srcChainTokenInMaxAmount: string;
+
+  // Destination chain params
+  dstChainId: number;
+  dstChainTokenOut: string;
+  dstChainTokenOutAmount: string;
+  dstChainTokenOutRecipient: string;
+  
+  // Authorities - can patch trades
+  srcChainAuthorityAddress: string;
+  dstChainAuthorityAddress: string;
+  srcAllowedCancelBeneficiary?: string;
+
+  // Optional affiliate fee params
+  affiliateFeePercent?: number;
+  affiliateFeeRecipient?: string;
+
+  // Flags
+  prependOperatingExpenses: boolean;
+  ptp?: boolean;
+
+  // TODO: Define the fields
+  allowedTaker?: null;
+  dlnHook?: null;
+  metadata?: null;
+}
+
 export type BundleProposeBody = {
+  
   requestId?: string;
+  userId?: string;
+  
   expirationTimestamp: number; // Unix timestamp in seconds
   enableAccountAbstraction: boolean;
   isAtomic: boolean;
   tradingAlgorithm: TradingAlgorithm;
   trades: Array<SameChainTrade | CrossChainTrade>;
+  preHooks?: Array<Hook>;
+  postHooks: Array<Hook>;
+  referralCode?: number;
+}
+
+export type BundleProposeBodyV1_1 = {
+  // Client-side UUIDs
+  requestId?: string;
+  userId?: string;
+
+  // Timestamps
+  expirationTimestamp: number; // Unix timestamp in seconds
+  
+  // Flags
+  enableAccountAbstraction: boolean;
+  isAtomic: boolean;
+  tradingAlgorithm: TradingAlgorithm;
+  trades: Array<Trade>;
   preHooks?: Array<any>;
-  postHooks: Array<PostHook>;
+  postHooks: Array<Hook>;
   referralCode?: number;
 }
 
@@ -101,8 +157,9 @@ export enum SignatureTypes {
   Sign712 = "Sign712",
   Sign712MetaMask = "Sign712MetaMask",
   Sign7702Authorization = "Sign7702Authorization",
-  Sign = "Sign", // Solana Hex Sign
-  Transaction = "Transaction" // Assumed that it's Solana transaction - see future for EVM as well
+  Sign = "Sign", // Solana Hex Sign - Authorization
+  SignTransaction = "SignTransaction", // Solana Versioned Transaction signing
+  Transaction = "Transaction" // Could be EVM or Solana - Solana doesn't have `value` and `to` fields.
 }
 
 // Type for EIP-712 data
@@ -227,7 +284,7 @@ export type Bundle = {
   intents: Array<IntentPayload>,
   postHooks: Array<PostHookPayload>,
   tokenResult: Array<TokenResult>,
-  trades: Array<SameChainTrade | CrossChainTrade>,
+  trades: Array<SameChainTrade | CrossChainTrade | Trade>,
   status?: BundleStatus
 
   // Flags
@@ -262,7 +319,7 @@ export type PaginatedResponseMetadata = {
   totalItems: number;
 }
 
-export type PostHook = {
+export type Hook = {
   isAtomic: boolean;
   data: string;
   to: string;

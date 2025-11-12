@@ -2,15 +2,15 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { getEnvConfig, toHexPrefixString } from "../../../utils";
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
-import { getSolUsdcToPolyUsdcTrade } from "../../trades";
+import { getSolUsdcToPolyUsdcTradeV1_1 } from "../../trades";
 import { Keypair } from "@solana/web3.js"
 import { getApi } from "../../../utils/api";
-import { Bundle, BundleProposeBody, TradingAlgorithm } from "../../types";
+import { Bundle, BundleProposeBodyV1_1, TradingAlgorithm } from "../../types";
 import { BASE_DEV_URL } from '../../../utils/constants';
 import { processIntentBundle } from '../../../utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '../../../utils/wallet';
 
-const { createBundle, submitBundle } = getApi(BASE_DEV_URL);
+const { createBundleV1_1, submitBundleV1_1 } = getApi(BASE_DEV_URL);
 
 async function main() {
   // Wallet setup
@@ -26,22 +26,22 @@ async function main() {
   // Trades body
   console.log(`solana key: ${solanaKey.publicKey.toBase58()}`)
   console.log(`solana key: ${account.address}`)
-  const requestBody: BundleProposeBody = {
+  const requestBody: BundleProposeBodyV1_1 = {
     requestId,
     referralCode: 31805,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
-    enableAccountAbstraction: false,
+    enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getSolUsdcToPolyUsdcTrade("862oLANNqhdXyUCwLJPBqUHrScrqNR4yoGWGTxjZftKs", account.address)
+      getSolUsdcToPolyUsdcTradeV1_1(solanaKey.publicKey.toString(), account.address)
     ],
     preHooks: [],
     postHooks: []
   }
 
   console.log(`Creating bundle... ${JSON.stringify(requestBody)}`);
-  const bundle = await createBundle(requestBody);
+  const bundle = await createBundleV1_1(requestBody);
   console.log(`Bundle created successfully!, ${JSON.stringify(bundle)}`);
 
   const signedData = await processIntentBundle(bundle, chainIdToWalletClientMap);
@@ -56,7 +56,7 @@ async function main() {
 
   console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);
 
-  const submitResponse = await submitBundle(submitPayload);
+  const submitResponse = await submitBundleV1_1(submitPayload);
   console.log("Submit response:", submitResponse);
 
   return submitPayload;

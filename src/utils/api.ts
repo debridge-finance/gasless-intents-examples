@@ -5,6 +5,7 @@ import {
   BundleCancelRequest,
   BundleCancelResponse,
   BundleProposeBody,
+  BundleProposeBodyV1_1,
   GetBundlesFilterParams,
   PaginatedResponseMetadata
 } from "../gasless-intents/types";
@@ -74,6 +75,20 @@ export function getApi(baseUrl: string) {
     return postUrl(BUNDLE_CANCEL_URL, requestBody);
   }
 
+  // TODO: Unify - V1_0 is deprecated
+  async function createBundleV1_1(requestBody: BundleProposeBodyV1_1): Promise<Bundle> {
+    const response = await postUrl("https://cross-chain-api-rev-51.dev.debridge.io/v1.0/bundle", requestBody);
+
+    return response;
+  }
+
+  // TODO: Unify - V1_0 is deprecated
+  async function submitBundleV1_1(requestBody: Bundle) {
+    const response = await postUrl(`https://cross-chain-api-rev-51.dev.debridge.io/v1.0/bundle/submit?format=json`, requestBody);
+
+    return response;
+  };
+
   return {
     createBundle,
     submitBundle,
@@ -81,6 +96,8 @@ export function getApi(baseUrl: string) {
     getBundles,
     getBundleById,
     cancelBundles,
+    createBundleV1_1,
+    submitBundleV1_1
   }
 }
 
