@@ -1,3 +1,5 @@
+import { Bundle } from "../types";
+
 /** Individual filter keys accepted by the WS API. */
 export enum WsFilterKey {
   bundleId = "bundleId",
@@ -19,35 +21,36 @@ export type WsFilterMap = {
 };
 
 /**
- * The filter object the client sends. In the page code, each subscription
- * is one of these (exactly one key usually present).
+ * The filter object the client sends.
  */
 export type WsFilterWrapper = {
   filters: WsFilterMap;
 };
 
 
-/** The array shape returned by buildFilters() in your snippet. */
+/** The array shape returned by buildFilters(). */
 export type BuiltFilters = WsFilterWrapper[];
 
 
 // ---- Client → Server messages ---------------------------------------------
 
-export type ClientEvent = "subscribe" | "unsubscribe";
-
+export enum ClientEvent {
+  subscribe = "subscribe",
+  unsubscribe = "unsubscribe"
+}
 /** Base envelope for messages sent to the server. */
 export interface ClientEnvelope<TEvent extends ClientEvent, TData> {
   event: TEvent;
   data: TData;
 }
 
-/** Subscribe with a specific filter wrapper (one per call in the snippet). */
-export type SubscribeMessage = ClientEnvelope<"subscribe", WsFilterWrapper>;
+/** Subscribe with a specific filter wrapper. */
+export type SubscribeMessage = ClientEnvelope<ClientEvent.subscribe, WsFilterWrapper>;
 
-/** Unsubscribe mirrors subscribe (same filter wrapper you used to subscribe). */
-export type UnsubscribeMessage = ClientEnvelope<"unsubscribe", WsFilterWrapper>;
+/** Unsubscribe mirrors subscribe (same filter used to subscribe). */
+export type UnsubscribeMessage = ClientEnvelope<ClientEvent.unsubscribe, WsFilterWrapper>;
 
-/** Union of all client-sent messages used by this page. */
+/** Union of all client-sent messages. */
 export type ClientMessage = SubscribeMessage | UnsubscribeMessage;
 
 // ---- Server → Client messages ---------------------------------------------
@@ -86,16 +89,9 @@ export interface ServerErrorData {
   details?: unknown;
 }
 
-/**
- * The payload of live updates. If you already have Bundle/Trade types
- * from your REST models, put them here to keep WS and REST aligned.
- * For now we keep it generic.
- */
-export type BundleUpdateData = unknown;
-
 /** Discriminated unions for server messages. */
 export type SubscribeAckMessage = ServerEnvelope<ServerEvent.subscribe, SubscribeAckData>;
-export type BundleUpdateMessage = ServerEnvelope<ServerEvent.bundle_update, BundleUpdateData>;
+export type BundleUpdateMessage = ServerEnvelope<ServerEvent.bundle_update, Bundle>;
 export type UnsubscribedMessage = ServerEnvelope<ServerEvent.unsubscribed, UnsubscribedData>;
 export type ServerErrorMessage = ServerEnvelope<ServerEvent.error, ServerErrorData>;
 
@@ -131,9 +127,9 @@ export function isServerEnvelope(x: unknown): x is ServerMessage {
 }
 
 export function isBundleUpdate(m: ServerMessage): m is BundleUpdateMessage {
-  return m.event === "bundle_update";
+  return m.event === ServerEvent.bundle_update;
 }
 
 export function isServerError(m: ServerMessage): m is ServerErrorMessage {
-  return m.event === "error";
+  return m.event === ServerEvent.error;
 }

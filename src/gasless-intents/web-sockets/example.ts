@@ -1,11 +1,12 @@
 import { DebridgeWsClient } from "./DebridgeWsClient";
 import { WSConfig, WsFilterMap } from "./types";
-import { log } from "./utils";
+import { log } from "./log-utils";
 
 // Edit these values to your needs.
 const CONFIG: WSConfig = {
   url: process.env.DEBRIDGE_WS_URL || "wss://api.debridge.io/ws",
   // Provide all supported filters here; one subscription will be sent per key.
+  // Max 100 entries per filter, aside from `referralCode`. Only 1 `referralCode` per client.
   filters: {
     bundleId: [],
     referralCode: ["31805"],

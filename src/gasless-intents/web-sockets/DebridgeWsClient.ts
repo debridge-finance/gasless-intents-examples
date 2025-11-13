@@ -1,16 +1,19 @@
 import WebSocket from "ws";
 import {
   BuiltFilters,
+  ClientEvent,
   ClientMessage,
   isServerEnvelope,
   ServerEvent,
+  WSConfig,
   WsFilterMap,
   WsFilterWrapper,
 } from "./types";
-import { warn, log, err } from "./utils";
+import { warn, log, err } from "./log-utils";
 
+// TODO: Implement filter runtime filter updates
 export class DebridgeWsClient {
-  private config: any;
+  private config: WSConfig;
   private url: string;
   private ws: WebSocket | null = null;
   private connected = false;
@@ -47,7 +50,7 @@ export class DebridgeWsClient {
     });
   }
 
-  private onMessage(raw: WSRawData) {
+  private onMessage(raw: WebSocket.Data) {
     const text = dataToString(raw);
 
     try {
@@ -109,7 +112,7 @@ export class DebridgeWsClient {
       return;
     }
     list.forEach((f) => {
-      this.safeSend({ event: "subscribe", data: f });
+      this.safeSend({ event: ClientEvent.subscribe, data: f });
       this.activeFilters.push(f);
     });
   }
@@ -120,7 +123,7 @@ export class DebridgeWsClient {
       return;
     }
     this.activeFilters.forEach((f) => {
-      this.safeSend({ event: "unsubscribe", data: f });
+      this.safeSend({ event: ClientEvent.unsubscribe, data: f });
     });
     this.activeFilters = [];
     log("Unsubscribed from all filters.");
@@ -141,7 +144,7 @@ export class DebridgeWsClient {
 // Helpers
 
 // Build one WsFilterWrapper per key present, same as the HTML demo.
-function buildFilters(map: WsFilterMap): BuiltFilters {
+export function buildFilters(map: WsFilterMap): BuiltFilters {
   const out: BuiltFilters = [];
   if (map.bundleId?.length) out.push({ filters: { bundleId: map.bundleId } });
   if (map.referralCode?.length)
@@ -156,10 +159,7 @@ function buildFilters(map: WsFilterMap): BuiltFilters {
   return out;
 }
 
-// Canonical raw data type from `ws`
-type WSRawData = WebSocket.Data; // string | Buffer | ArrayBuffer | Buffer[]
-
-function dataToString(raw: WSRawData): string {
+function dataToString(raw: WebSocket.Data): string {
   if (typeof raw === "string") return raw;
   if (Buffer.isBuffer(raw)) return raw.toString("utf8");
   if (Array.isArray(raw)) return Buffer.concat(raw).toString("utf8");
