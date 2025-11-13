@@ -232,6 +232,31 @@ export function getPolyMaticToWethTrade(signer: string): SameChainTrade {
   }
 }
 
+export function getPolyMaticToWethTradeV1_1(signer: string, recipient: string): Trade {
+  return {
+    srcChainId: 137,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+
+    srcChainTokenInAmount: "100000000000000000",      // 1 MATIC
+    srcChainTokenInMinAmount: "100000000000000000",   // 1 MATIC
+    srcChainTokenInMaxAmount: "100000000000000000",   // 1 MATIC
+
+    // Destination (POL)
+    dstChainId: 137,
+    dstChainTokenOut: WETH.Polygon,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: recipient,
+
+    // Authorities
+    srcChainAuthorityAddress: signer,
+    dstChainAuthorityAddress: recipient,
+
+    // Flags
+    // prependOperatingExpenses: true,
+    prependOperatingExpenses: true,
+  }
+}
+
 export function getBscNativeToUsdc(signer: string): SameChainTrade {
   return {
     // Same-chain swap

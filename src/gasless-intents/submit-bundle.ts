@@ -28,9 +28,10 @@ import {
   getOptimismEthToRandomToken, 
   getArbitrumEthToWbtc, 
   getBaseDegenToBaseUsdc, 
-  getPolyLinkToBaseUsdc
+  getPolyLinkToBaseUsdc,
+  getPolyMaticToWethTradeV1_1
 } from "./trades";
-import { Bundle, BundleProposeBody, TradingAlgorithm } from "./types";
+import { ApiVersion, Bundle, BundleProposeBody, TradingAlgorithm } from "./types";
 import { getChainIdToWalletClientMap } from "../utils/wallet";
 
 async function main() {
@@ -52,7 +53,7 @@ async function main() {
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
       getPolyUsdcToBscUsdcTrade(account.address),
-      getPolyMaticToWethTrade(account.address),
+      getPolyMaticToWethTradeV1_1(account.address, account.address),
       getPolyMaticToBscBnb(account.address),
       //getBscNativeToPolNativeTrade(account.address)
       //getBscNativeToBaseEth(account.address),
@@ -113,7 +114,7 @@ async function main() {
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
-  const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
+  const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap, ApiVersion.V1_1);
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
