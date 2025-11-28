@@ -1,48 +1,52 @@
-import { privateKeyToAccount } from 'viem/accounts'
-import { getEnvConfig, toHexPrefixString } from "../../../utils";
-import { randomUUID } from 'crypto';
-
 import util from "util"
-import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "./../../trades";
-import { Keypair } from "@solana/web3.js";
-import bs58 from "bs58";
-import { createBundle, submitBundle } from "../../../utils/api";
-import { processIntentBundle } from "../../../utils/signatures/intent-signatures";
-import { TradingAlgorithm } from "../../types";
-import { getChainIdToWalletClientMap } from "../../../utils/wallet";
+import { randomUUID } from 'crypto';
+import { privateKeyToAccount } from "viem/accounts";
+import { polygon } from "viem/chains";
+
+import { toHexPrefixString, getEnvConfig } from "../../utils";
+import { getSendNativeAssetHook } from "../../utils/hooks";
+import { createBundle, submitBundle } from "../../utils/api";
+import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "../trades";
+import { processIntentBundle } from "../../utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "../../utils/wallet";
 
 async function main() {
-  // Wallet setup
-  const { privateKey, solPrivateKey } = getEnvConfig();
+  const { privateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  console.log(`account: ${account.address}`)
+  const senderAddress = account.address;
+  const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
+
+  const polygonSendNativeHook = await getSendNativeAssetHook(polygon.id, senderAddress, beneficiaryAddress, "5000000000000000");
+
+  console.log("Send Native PostHook Calldata:", polygonSendNativeHook);
 
   const requestId = randomUUID();
 
-  const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey));
-  const solanaAddress = solanaKey.publicKey.toBase58();
-
-  // Trades body
-  const requestBody = {
+  const requestBody: BundleProposeBody = {
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [
-      getPolyUsdcToSolUsdcTrade(account.address, solanaAddress, solanaAddress),
-      getPolyUsdcToSolJupTrade(account.address, solanaAddress, solanaAddress),
+    preHooks: [
+      polygonSendNativeHook
     ],
-    preHooks: [],
-    postHooks: []
+    trades: [
+      getPolygonUsdcToBaseEth(account.address),
+      getPolyMaticToBaseEth(account.address),
+    ],
+    postHooks: [],
   }
 
-  console.log(`Creating bundle..., ${JSON.stringify(requestBody)}`);
+  console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
+
+  console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
 
   // Log the first intent for debugging
@@ -64,8 +68,6 @@ async function main() {
     isAtomic: true,
     signedData: signedDataArray
   };
-
-  console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);
 
   console.log("Payload prepared with signatures. Ready for submission.");
 
