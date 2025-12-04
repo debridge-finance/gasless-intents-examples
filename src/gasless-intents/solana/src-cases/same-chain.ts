@@ -2,12 +2,13 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { getEnvConfig, toHexPrefixString } from "../../../utils";
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
-import { getSolUsdcToPolyUsdcTrade } from "../../trades";
 import { Keypair } from "@solana/web3.js"
 import { createBundle, submitBundle } from "../../../utils/api";
-import { Bundle, BundleProposeBody, TradingAlgorithm } from "../../types";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../../types";
+import { SOL_JUP, USDC } from '../../../utils/constants';
 import { processIntentBundle } from '../../../utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '../../../utils/wallet';
+import { CHAIN_IDS } from '../../../utils/chains';
 
 async function main() {
   // Wallet setup
@@ -20,6 +21,21 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account, solanaKey);
 
+  const trade: Trade = {
+    srcChainId: CHAIN_IDS.Solana,
+    srcChainTokenIn: SOL_JUP,
+    srcChainTokenInAmount: '5000000', // 20 JUP - 6 decimals 
+    srcChainTokenInMinAmount: '5000000', 
+    srcChainTokenInMaxAmount: '5000000',
+    dstChainId: CHAIN_IDS.Solana,
+    dstChainTokenOut: USDC.Solana,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: solanaKey.publicKey.toBase58(),
+    srcChainAuthorityAddress: solanaKey.publicKey.toBase58(),
+    dstChainAuthorityAddress: solanaKey.publicKey.toBase58(),
+    prependOperatingExpenses: true
+  }
+
   // Trades body
   console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`)
   console.log(`EVM Address: ${account.address}`)
@@ -27,11 +43,11 @@ async function main() {
     requestId,
     referralCode: 31805,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
-    enableAccountAbstraction: false,
+    enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getSolUsdcToPolyUsdcTrade(solanaKey.publicKey.toString(), account.address)
+      trade
     ],
     preHooks: [],
     postHooks: []

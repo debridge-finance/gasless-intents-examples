@@ -1,37 +1,14 @@
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { getEnvConfig, clipHexPrefix } from "../utils";
-import { createBundle, submitBundle } from "../utils/api";
+import { getEnvConfig, clipHexPrefix } from "./../utils";
+import { createBundle, submitBundle } from "./../utils/api";
 import { processIntentBundle } from "../utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
 
 import util from "util"
 import {
-  getPolyUsdcToPolyWETH,
-  getPolyMaticToBscWbnb,
-  getPolyMaticToWethTrade,
-  getPolyUsdcToBscUsdcTrade,
-  getPolyUsdcToBscWbnbTrade,
-  getBscNativeToUsdc,
-  getPolyMaticToBscUsdc,
-  getBscNativeToPolNativeTrade,
-  getPolyMaticToBscBnb,
-  getBaseEthToBscWbnb,
-  getArbitrumEthToBscWbnb, 
-  getOptimismEthToBscWbnb,
-  getArbitrumEthToBaseEth,
-  getPolyMaticToBaseUsdc,
-  getBscNativeToBaseUsdc,
-  getOptimismEthToBaseEth,
-  getBaseEthToBaseUsdc, 
-  getOptimismEthToSynthUSD, 
-  getArbitrumEthToWbtc, 
-  getBaseDegenToBaseUsdc, 
-  getPolyLinkToBaseUsdc,
-  getPolyMaticToWethTradeV1_1,
-  getPolygonDaiToUSDC
-} from "./trades";
+  getPolyMaticToBscBnb} from "./trades";
 import { Bundle, BundleProposeBody, TradingAlgorithm } from "./types";
 import { getChainIdToWalletClientMap } from "../utils/wallet";
 
@@ -49,12 +26,12 @@ async function main() {
   const requestBody: BundleProposeBody = {
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
-    enableAccountAbstraction: true,
+    enableAccountAbstraction: false,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getPolyUsdcToBscUsdcTrade(account.address),
-      getPolyMaticToWethTradeV1_1(account.address, account.address),
+      // getPolyUsdcToBscUsdcTrade(account.address),
+      // getPolyMaticToWethTradeV1_1(account.address, account.address),
       getPolyMaticToBscBnb(account.address),
 
       // getPolygonDaiToUSDC(account.address)
@@ -92,16 +69,6 @@ async function main() {
       //getBscNativeToPolNativeTrade(account.address)
     ],
     postHooks: [
-      // {
-      //   "isAtomic": true,
-      //   //data: '0x6e553f650000000000000000000000000000000000000000000000000000000000002710000000000000000000000000541a7e03dcc8f425f6a0797333d5926d89aeb51f',
-      //   "data": "0x6e553f65{amount}000000000000000000000000541a7e03dcc8f425f6a0797333d5926d89aeb51f",
-      //   "to": "0xAcB0DCe4b0FF400AD8F6917f3ca13E434C9ed6bC",
-      //   "value": "0",
-      //   "chainId": 137,
-      //   "tokenAddress": USDC.Polygon,
-      //   "from": "0x541A7e03dCC8F425F6a0797333d5926D89AeB51f"
-      // }
     ],
   }
 
@@ -126,7 +93,7 @@ async function main() {
   const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
-    enableAccountAbstraction: true,
+    enableAccountAbstraction: false,
     isAtomic: true,
     signedData: signedDataArray
   };
