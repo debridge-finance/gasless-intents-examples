@@ -27,12 +27,15 @@ export function getEndpoints(baseUrl: string) {
 
 export const SOL_NATIVE = "11111111111111111111111111111111"
 export const EVM_NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";
-export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" // 6 decimals https://solscan.io/token/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
+export const DBR_SOL = "DBRiDgJAMsM95moTzJs7M9LnkGErpbv9v6CUR1DXnUu5";
 
 export const USDC = {
   Polygon: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
   BNB: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
   Base: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+  Arbitrum: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+  Optimism: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
   Solana: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 }
 
@@ -52,6 +55,10 @@ export const WBNB = {
 
 export const WETH = {
   Polygon: "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+}
+
+export const DAI = {
+  Polygon: "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
 }
 
 // Used as a placeholder value for the amount - 256 bits, 8 repetitions of "deadbeef"

@@ -3,13 +3,10 @@ import { randomUUID } from 'crypto';
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { getEnvConfig, toHexPrefixString } from "../../../utils";
-import { getSolUsdcToBscUsdcTrade, getSolUsdcToPolyUsdcTrade } from "../../trades";
-import { getApi } from "../../../utils/api";
+import { getSolUsdcToPolyUsdcTrade } from "./../../trades";
+import { createBundle } from "../../../utils/api";
 import { TradingAlgorithm } from "../../types";
-import { BASE_DEV_URL } from '../../../utils/constants';
 import { extractTransactionHexData } from '../../../utils/solana';
-
-const { createBundle } = getApi(BASE_DEV_URL);
 
 async function main() {
   // Wallet setup
