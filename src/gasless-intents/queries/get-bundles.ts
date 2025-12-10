@@ -1,5 +1,5 @@
-import { getBundles } from "../utils/api";
-import { GetBundlesFilterParams } from "./types";
+import { getBundles } from "../../utils/api";
+import { GetBundlesFilterParams } from "../types";
 
 async function main() {
   const filters: GetBundlesFilterParams = {
