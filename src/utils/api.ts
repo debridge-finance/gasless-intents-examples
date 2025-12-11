@@ -30,12 +30,6 @@ export async function submitBundle(requestBody) {
   return response;
 }
 
-export async function bundleList(owner: string) {
-  const response = await getUrl(`${BUNDLES_URL}?intentOwner=${owner}`);
-
-  return response;
-}
-
 export async function getBundles(filters: GetBundlesFilterParams): Promise<PaginatedResponseMetadata & { bundles: Array<Bundle> }> {
   const usedFilters: GetBundlesFilterParams = {
     ...filters,

@@ -3,8 +3,18 @@ export type GetBundlesFilterParams = {
   intentAuthority?: string;
   userId?: string;
   referralCode?: string;
+  orderIds?: Array<string>;
+  createdFrom?: string;
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
+  sort?: string;
   page?: number;
   pageSize?: number;
+}
+
+export type GetBundleListResponse = PaginatedResponseMetadata & {
+  bundles: Array<Bundle>
 }
 
 export enum CancelBundleReasonCodes {
@@ -286,10 +296,10 @@ export type CancelBundleData = {
 }
 
 export type PaginatedResponseMetadata = {
+  total: number;
   page: number;
   pageSize: number;
   totalPages: number;
-  totalItems: number;
 }
 
 export type Hook = {
