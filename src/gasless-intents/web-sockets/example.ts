@@ -24,14 +24,13 @@ const CONFIG: WSConfig = {
     enabled: true,
     baseMs: 500,
     maxMs: 10_000,
-    factor: 2,
   },
 };
 
 // ---------------- Entrypoint ----------------
 
 (async () => {
-  const client = new DebridgeWsClient(CONFIG.url);
+  const client = new DebridgeWsClient(CONFIG);
 
   // Graceful shutdown
   const shutdown = () => {

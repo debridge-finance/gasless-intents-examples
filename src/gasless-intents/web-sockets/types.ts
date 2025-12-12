@@ -110,7 +110,6 @@ export type WSConfig = {
     enabled: boolean;
     baseMs: number;
     maxMs: number;
-    factor: 2;
   }
 }
 

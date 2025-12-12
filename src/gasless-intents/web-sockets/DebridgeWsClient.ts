@@ -11,7 +11,7 @@ import {
 } from "./types";
 import { warn, log, err } from "./log-utils";
 
-// TODO: Implement filter runtime filter updates
+// TODO: Implement runtime filter updates
 export class DebridgeWsClient {
   private config: WSConfig;
   private url: string;
@@ -21,29 +21,52 @@ export class DebridgeWsClient {
   private reconnectAttempts = 0;
   private closing = false;
 
+  // Ping/pong heartbeat
+  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private pongTimeout: NodeJS.Timeout | null = null;
+  private awaitingPong = false;
+  private lastPongAt = 0;
+
   constructor(config: any) {
     this.url = config.url;
     this.config = config;
   }
 
   connect() {
-    if (this.ws && this.connected) {
-      warn("Already connected.");
+    // Avoid duplicate sockets
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+      warn("Already connected/connecting.");
       return;
     }
+
     this.closing = false;
     log(`Connecting to ${this.url} ...`);
+
     this.ws = new WebSocket(this.url);
 
     this.ws.on("open", () => {
       this.connected = true;
       this.reconnectAttempts = 0;
       log("Connection established.");
+
+      this.startHeartbeat();
+
       // Auto-subscribe once connected (based on CONFIG.filters)
-      this.subscribeAll(buildFilters(this.config.filters));
+      this.restoreSubscriptions();
     });
 
     this.ws.on("message", (data) => this.onMessage(data));
+
+    // If the server pings us, ws auto-replies with pong; we can still log it.
+    this.ws.on("ping", () => {
+      // Optional: treat as liveness signal
+      log("[PING] received from server");
+    });
+
+    this.ws.on("pong", () => {
+      this.onPong();
+    });
+
     this.ws.on("close", (code, reason) => this.onClose(code, reason.toString()));
     this.ws.on("error", (e) => {
       err("WebSocket error:", (e as any)?.message || e);
@@ -83,15 +106,15 @@ export class DebridgeWsClient {
 
   private onClose(code: number, reason: string) {
     this.connected = false;
+    this.stopHeartbeat();
+
     log(`Disconnected. Code: ${code}, Reason: ${reason || "N/A"}`);
     if (this.closing) return;
 
     if (this.config.reconnect.enabled) {
-      const delay = Math.min(
-        this.config.reconnect.baseMs * Math.pow(this.config.reconnect.factor, this.reconnectAttempts++),
-        this.config.reconnect.maxMs
-      );
-      log(`Reconnecting in ${delay}ms ...`);
+      const delay = Math.max(0, this.config.reconnect.baseMs ?? 1000);
+      this.reconnectAttempts++;
+      log(`Reconnecting in ${delay}ms ... (attempt ${this.reconnectAttempts})`);
       setTimeout(() => this.connect(), delay);
     }
   }
@@ -104,6 +127,22 @@ export class DebridgeWsClient {
     const json = JSON.stringify(msg);
     this.ws.send(json);
     log("[SEND]", json);
+  }
+
+  private restoreSubscriptions() {
+    const list = buildFilters(this.config.filters);
+
+    // Prevent duplicates across reconnects
+    this.activeFilters = list;
+
+    if (list.length === 0) {
+      warn("No filters to subscribe.");
+      return;
+    }
+
+    list.forEach((f) => {
+      this.safeSend({ event: ClientEvent.subscribe, data: f });
+    });
   }
 
   subscribeAll(list: BuiltFilters) {
@@ -131,6 +170,8 @@ export class DebridgeWsClient {
 
   close() {
     this.closing = true;
+    this.stopHeartbeat();
+
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       log("Already disconnected.");
       return;
@@ -139,11 +180,90 @@ export class DebridgeWsClient {
     this.ws.close(1000, "Manual disconnect");
     log("Manual disconnect requested.");
   }
+
+  private getPingConfig() {
+    const pingCfg = (this.config as any)?.ping ?? {};
+    return {
+      enabled: pingCfg.enabled ?? true,
+      intervalMs: pingCfg.intervalMs ?? 25_000,
+      timeoutMs: pingCfg.timeoutMs ?? 10_000,
+      log: pingCfg.log ?? false,
+    };
+  }
+
+  private startHeartbeat() {
+    this.stopHeartbeat();
+
+    const { enabled, intervalMs, timeoutMs, log: pingLog } = this.getPingConfig();
+    if (!enabled) return;
+
+    this.lastPongAt = Date.now();
+    this.awaitingPong = false;
+
+    const tick = () => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+      // Kill the socket if previous ping unanswered
+      if (this.awaitingPong) {
+        warn(`No pong received within ${timeoutMs}ms. Terminating socket...`);
+        try {
+          this.ws.terminate();
+        } catch {}
+        return;
+      }
+
+      this.awaitingPong = true;
+
+      if (this.pongTimeout) clearTimeout(this.pongTimeout);
+      this.pongTimeout = setTimeout(() => {
+        if (this.awaitingPong) {
+          warn(`Pong timeout (${timeoutMs}ms). Terminating socket...`);
+          try {
+            this.ws?.terminate();
+          } catch {}
+        }
+      }, timeoutMs);
+
+      try {
+        this.ws.ping();
+        if (pingLog) log("[PING] sent");
+      } catch (e) {
+        err("Failed to send ping:", (e as any)?.message || e);
+      }
+    };
+
+    this.heartbeatInterval = setInterval(tick, intervalMs);
+
+    this.heartbeatInterval.unref?.();
+    this.pongTimeout?.unref?.();
+  }
+
+  private onPong() {
+    this.lastPongAt = Date.now();
+    this.awaitingPong = false;
+
+    if (this.pongTimeout) {
+      clearTimeout(this.pongTimeout);
+      this.pongTimeout = null;
+    }
+
+    const { log: pingLog } = this.getPingConfig();
+    if (pingLog) log("[PONG] received");
+  }
+
+  private stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+    if (this.pongTimeout) {
+      clearTimeout(this.pongTimeout);
+      this.pongTimeout = null;
+    }
+    this.awaitingPong = false;
+  }
 }
 
-// Helpers
-
-// Build one WsFilterWrapper per key present, same as the HTML demo.
 export function buildFilters(map: WsFilterMap): BuiltFilters {
   const out: BuiltFilters = [];
   if (map.bundleId?.length) out.push({ filters: { bundleId: map.bundleId } });
@@ -163,6 +283,5 @@ function dataToString(raw: WebSocket.Data): string {
   if (typeof raw === "string") return raw;
   if (Buffer.isBuffer(raw)) return raw.toString("utf8");
   if (Array.isArray(raw)) return Buffer.concat(raw).toString("utf8");
-  // ArrayBuffer branch
   return Buffer.from(new Uint8Array(raw as ArrayBuffer)).toString("utf8");
 }
