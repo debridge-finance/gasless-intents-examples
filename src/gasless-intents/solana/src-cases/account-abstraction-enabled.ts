@@ -2,15 +2,12 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { getEnvConfig, toHexPrefixString } from "../../../utils";
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
-import { getSolUsdcToPolyUsdcTradeV1_1 } from "../../trades";
+import { getSolUsdcToPolyUsdcTradeV1_1 } from "./../../trades";
 import { Keypair } from "@solana/web3.js"
-import { getApi } from "../../../utils/api";
-import { Bundle, BundleProposeBodyV1_1, TradingAlgorithm } from "../../types";
-import { BASE_DEV_URL } from '../../../utils/constants';
+import { createBundle, submitBundle } from "../../../utils/api";
+import { Bundle, BundleProposeBody, TradingAlgorithm } from "../../types";
 import { processIntentBundle } from '../../../utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '../../../utils/wallet';
-
-const { createBundleV1_1, submitBundleV1_1 } = getApi(BASE_DEV_URL);
 
 async function main() {
   // Wallet setup
@@ -24,9 +21,9 @@ async function main() {
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account, solanaKey);
 
   // Trades body
-  console.log(`solana key: ${solanaKey.publicKey.toBase58()}`)
-  console.log(`solana key: ${account.address}`)
-  const requestBody: BundleProposeBodyV1_1 = {
+  console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`)
+  console.log(`EVM Address: ${account.address}`)
+  const requestBody: BundleProposeBody = {
     requestId,
     referralCode: 31805,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
@@ -41,7 +38,7 @@ async function main() {
   }
 
   console.log(`Creating bundle... ${JSON.stringify(requestBody)}`);
-  const bundle = await createBundleV1_1(requestBody);
+  const bundle = await createBundle(requestBody);
   console.log(`Bundle created successfully!, ${JSON.stringify(bundle)}`);
 
   const signedData = await processIntentBundle(bundle, chainIdToWalletClientMap);
@@ -56,7 +53,7 @@ async function main() {
 
   console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);
 
-  const submitResponse = await submitBundleV1_1(submitPayload);
+  const submitResponse = await submitBundle(submitPayload);
   console.log("Submit response:", submitResponse);
 
   return submitPayload;

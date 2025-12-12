@@ -3,8 +3,18 @@ export type GetBundlesFilterParams = {
   intentAuthority?: string;
   userId?: string;
   referralCode?: string;
+  orderIds?: Array<string>;
+  createdFrom?: string;
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
+  sort?: string;
   page?: number;
   pageSize?: number;
+}
+
+export type GetBundleListResponse = PaginatedResponseMetadata & {
+  bundles: Array<Bundle>
 }
 
 export enum CancelBundleReasonCodes {
@@ -40,53 +50,6 @@ export enum TradingAlgorithm {
   MARKET = "market"
 }
 
-/** TODO: Remove support - deprecated in V1.1 */
-export type SameChainTrade = {
-  chainId: number;
-  tokenIn: string;
-  tokenInAmount: string;
-  tokenInMinAmount: string;
-  tokenInMaxAmount: string;
-  tokenOut: string;
-  tokenOutRecipient: string;
-  authorityAddress: string;
-
-  // Flags
-  prependOperatingExpenses: boolean;
-
-  // Optional affiliate fee params
-  affiliateFeePercent?: number;
-  affiliateFeeRecipient?: string;
-}
-
-/** TODO: Remove support - deprecated in V1.1 */
-export type CrossChainTrade = {
-  // Source chain params
-  srcChainId: number;
-  srcChainTokenIn: string;
-  srcChainTokenInAmount: string;
-  srcChainTokenInMinAmount: string;
-  srcChainTokenInMaxAmount: string;
-
-  // Destination chain params
-  dstChainId: number;
-  dstChainTokenOut: string;
-  dstChainTokenOutAmount: string;
-  dstChainTokenOutRecipient: string;
-
-  // Authorities - can patch trades
-  srcChainAuthorityAddress: string;
-  dstChainAuthorityAddress: string;
-
-  // Flags
-  prependOperatingExpenses: boolean;
-  ptp?: boolean;
-
-  // Optional affiliate fee params
-  affiliateFeePercent?: number;
-  affiliateFeeRecipient?: string;
-}
-
 export type Trade = {
   // Source chain params
   srcChainId: number;
@@ -100,7 +63,7 @@ export type Trade = {
   dstChainTokenOut: string;
   dstChainTokenOutAmount: string;
   dstChainTokenOutRecipient: string;
-  
+
   // Authorities - can patch trades
   srcChainAuthorityAddress: string;
   dstChainAuthorityAddress: string;
@@ -121,28 +84,13 @@ export type Trade = {
 }
 
 export type BundleProposeBody = {
-  
-  requestId?: string;
-  userId?: string;
-  
-  expirationTimestamp: number; // Unix timestamp in seconds
-  enableAccountAbstraction: boolean;
-  isAtomic: boolean;
-  tradingAlgorithm: TradingAlgorithm;
-  trades: Array<SameChainTrade | CrossChainTrade>;
-  preHooks?: Array<Hook>;
-  postHooks: Array<Hook>;
-  referralCode?: number;
-}
-
-export type BundleProposeBodyV1_1 = {
   // Client-side UUIDs
   requestId?: string;
   userId?: string;
 
   // Timestamps
   expirationTimestamp: number; // Unix timestamp in seconds
-  
+
   // Flags
   enableAccountAbstraction: boolean;
   isAtomic: boolean;
@@ -178,19 +126,9 @@ export type EIP712Data = {
   message: any;
 }
 
-// Type for Sign712MetaMask specific data
-export type Sign712MetaMaskData = {
-  toSign: EIP712Data;
-  calls?: Array<{
-    to: string;
-    data: string;
-    value: string;
-  }>;
-}
-
 // Type for Sign7702Authorization specific data
 export type Sign7702AuthorizationData = {
-  contractAddress: string;
+  contractAddress: `0x${string}`;
   nonce: number;
   chainId?: number;
 }
@@ -198,7 +136,6 @@ export type Sign7702AuthorizationData = {
 // Combined action data type using discriminated union
 export type ActionData =
   | (EIP712Data & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never })
-  | (Sign712MetaMaskData & { contractAddress?: never; nonce?: never })
   | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never })
   | Tx
   | SolanaSign;
@@ -206,8 +143,54 @@ export type ActionData =
 export type Action = {
   type: SignatureTypes;
   actionId: string;
-  actions: Array<string>;
+  actions: Array<ActionType>;
   data: ActionData;
+  description: string;
+  actionCosts: Array<ActionCostItem>;
+  details?: ActionDetails;
+}
+
+export enum ActionType {
+  // Shared
+  Budget = "Budget",
+  Intent = "Intent",
+  Wrap = "Wrap", 
+  
+  // EVM only
+  Delegate = "Delegate",
+  Hook = "Hook",
+
+  // Solana Only
+  Compensation = "Compensation",
+  Operation = "Operation",
+}
+
+export type ActionCostItem = {
+  chainId: number;
+  tokenAddress: string;
+  amount: string;
+  approximateUsdValue: number;
+  type: ActionCostItemType;
+  networkDetails?: NetworkDetails // EVM-chains only
+}
+
+export enum ActionCostItemType {
+  PROTOCOL_COST = "PROTOCOL_COST", 
+  SOLVER_COST = "SOLVER_COST", 
+  PARTNER_COST = "PARTNER_COST", 
+  SOLVER_EXECUTION_COST = "SOLVER_EXECUTION_COST"
+}
+
+export type NetworkDetails = {
+  gasLimit: string;
+  gasPrice: string;
+  baseFee: string;
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+}
+
+export type ActionDetails = {
+  transactionCalls: Array<Tx>
 }
 
 export type Receiver = {
@@ -284,7 +267,7 @@ export type Bundle = {
   intents: Array<IntentPayload>,
   postHooks: Array<PostHookPayload>,
   tokenResult: Array<TokenResult>,
-  trades: Array<SameChainTrade | CrossChainTrade | Trade>,
+  trades: Array<Trade>,
   status?: BundleStatus
 
   // Flags
@@ -313,10 +296,10 @@ export type CancelBundleData = {
 }
 
 export type PaginatedResponseMetadata = {
+  total: number;
   page: number;
   pageSize: number;
   totalPages: number;
-  totalItems: number;
 }
 
 export type Hook = {
@@ -341,9 +324,4 @@ export type Tx = {
 
 export type SolanaSign = {
   data: string;
-}
-
-export enum ApiVersion {
-  V1_0 = "V1_0",
-  V1_1 = "V1_1"
 }
