@@ -48,6 +48,7 @@ async function main() {
   // Trades body
   const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 110000002,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,

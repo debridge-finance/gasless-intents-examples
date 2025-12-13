@@ -4,12 +4,12 @@ import { log } from "./log-utils";
 
 // Edit these values to your needs.
 const CONFIG: WSConfig = {
-  url: process.env.DEBRIDGE_WS_URL || "wss://api.debridge.io/ws",
+  url: process.env.DEBRIDGE_WS_URL || "wss://api-gaslessb2b.debridge.finance/ws",
   // Provide all supported filters here; one subscription will be sent per key.
   // Max 100 entries per filter, aside from `referralCode`. Only 1 `referralCode` per client.
   filters: {
     bundleId: [],
-    referralCode: ["31805"],
+    referralCode: ["110000002"],
     intentOwner: [
       "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8"
     ],

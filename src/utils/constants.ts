@@ -1,23 +1,23 @@
-// export const BASE_URL = "https://cross-chain-api-intent.dev.debridge.io/v1.0"
-// export const BASE_URL = "https://cross-chain-api-intent-hanoi.dev.debridge.io/v1.0"
-export const BASE_URL = "https://api.debridge.io/v1/gasless";
-// export const BASE_DEV_URL = "https://dev-api.debridge.io/v1/gasless";
-export const BASE_DEV_URL = "https://cross-chain-api-rev-51.dev.debridge.io/v1/gasless";
+export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+
+export const V1_BASE = "/v1/gasless";
+export const V1_1_BASE = "/v1.1/gasless";
 
 export const BUNDLES = "/bundles";
-export const BUNDLES_URL = `${BASE_URL}${BUNDLES}`;
-export const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`;
-export const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
+
+export const BUNDLES_URL = `${BASE_URL}${V1_BASE}${BUNDLES}`;
 
 export const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
 
 export function getEndpoints(baseUrl: string) {
-  const BUNDLES_URL = `${baseUrl}${BUNDLES}`;
-  const BUNDLE_SUBMIT_URL = `${BUNDLES_URL}/submit`;
-  const BUNDLE_CANCEL_URL = `${BUNDLES_URL}/cancel`;
+  const BUNDLES_URL = `${baseUrl}${V1_BASE}${BUNDLES}`;
+  const BUNDLE_PROPOSE_URL = `${baseUrl}${V1_1_BASE}${BUNDLES}`
+  const BUNDLE_SUBMIT_URL = `${baseUrl}${V1_1_BASE}${BUNDLES}/submit`;
+  const BUNDLE_CANCEL_URL = `${baseUrl}${V1_BASE}${BUNDLES}/cancel`;
 
   return {
     BUNDLES_URL,
+    BUNDLE_PROPOSE_URL,
     BUNDLE_SUBMIT_URL,
     BUNDLE_CANCEL_URL
   }

@@ -15,11 +15,12 @@ import { getWalletClients } from "./wallet";
 const {
   BUNDLE_CANCEL_URL,
   BUNDLES_URL,
+  BUNDLE_PROPOSE_URL,
   BUNDLE_SUBMIT_URL
 } = getEndpoints(BASE_URL);
 
 export async function createBundle(requestBody: BundleProposeBody): Promise<Bundle> {
-  const response = await postUrl(BUNDLES_URL, requestBody);
+  const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
 
   return response;
 }

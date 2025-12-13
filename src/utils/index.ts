@@ -28,6 +28,22 @@ export function getEnvConfig() {
   }
 }
 
+
+export function getHeaders(extra?: HeadersInit): Headers {
+  const DE_BRIDGE_PARTNER_API_KEY = process.env.DE_BRIDGE_PARTNER_API_KEY;
+
+  if (!DE_BRIDGE_PARTNER_API_KEY) throw new Error("Missing DE_BRIDGE_PARTNER_API_KEY in .env");
+
+  const headers = new Headers(extra);
+
+  if (!headers.has("accept")) headers.set("accept", "application/json");
+  if (!headers.has("content-type")) headers.set("content-type", "application/json");
+  if (!headers.has("x-api-key")) headers.set("x-api-key", DE_BRIDGE_PARTNER_API_KEY);
+
+  return headers;
+}
+
+
 function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
   const result = new Uint8Array(arraySize);
   for (let i = 0; i < arraySize; i++) {
@@ -56,13 +72,13 @@ export function updatePriorityFee(tx: VersionedTransaction, computeUnitPrice: nu
 }
 
 export async function getUrl(url: string) {
+  console.log(getHeaders())
+  
   const response = await fetch(url, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    },
+    headers: getHeaders(),
   });
+
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to fetch URL: ${response.statusText}. ${errorText}`);
@@ -73,10 +89,7 @@ export async function getUrl(url: string) {
 export async function postUrl(url: string, body: any) {
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    },
+    headers: getHeaders(),
     body: JSON.stringify(body),
   });
   if (!response.ok) {

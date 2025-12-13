@@ -88,7 +88,7 @@ async function main() {
 
   // Propose bundle body
   const requestBody: BundleProposeBody = {
-    referralCode: 0,
+    referralCode: 110000002,
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
@@ -124,7 +124,7 @@ async function main() {
   // Prepare the bundle with signatures - but don't submit yet
   const submitPayload: Bundle = {
     ...bundle,
-    referralCode: 0,
+    referralCode: 110000002,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,

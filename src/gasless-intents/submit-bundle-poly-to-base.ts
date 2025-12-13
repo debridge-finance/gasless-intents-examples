@@ -1,58 +1,83 @@
-import { createWalletClient, http } from "viem";
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { polygon } from "viem/chains"
-import { getEnvConfig, toHexPrefixString } from "./../utils";
-import { createBundle, submitBundle } from "./../utils/api";
-import { processIntentBundle } from "./../utils/signatures/intent-signatures";
+import { getEnvConfig, clipHexPrefix } from "../utils";
+import { createBundle, submitBundle } from "../utils/api";
+import { processIntentBundle } from "../utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
 
 import util from "util"
-import { getSameChainTrade, getCrossChainTrade } from "./../utils/trades";
-import { USDT } from "../utils/constants";
-import { BundleProposeBody, TradingAlgorithm } from "./types";
+import {
+  getPolyUsdcToPolyWETH,
+  getPolyMaticToBscWbnb,
+  getPolyMaticToWethTrade,
+  getPolyUsdcToBscUsdcTrade,
+  getPolyUsdcToBscWbnbTrade,
+  getBscNativeToUsdc,
+  getPolyMaticToBscUsdc,
+  getBscNativeToPolNativeTrade,
+  getPolyMaticToBscBnb,
+  getBaseEthToBscWbnb,
+  getArbitrumEthToBscWbnb,
+  getOptimismEthToBscWbnb,
+  getArbitrumEthToBaseEth,
+  getPolyMaticToBaseUsdc,
+  getBscNativeToBaseUsdc,
+  getOptimismEthToBaseEth,
+  getBaseEthToBaseUsdc,
+  getOptimismEthToSynthUSD,
+  getArbitrumEthToWbtc,
+  getBaseDegenToBaseUsdc,
+  getPolyLinkToBaseUsdc,
+  getPolyMaticToWethTradeV1_1,
+  getPolygonDaiToUSDC
+} from "./trades";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "./types";
 import { getChainIdToWalletClientMap } from "../utils/wallet";
+import { CHAIN_IDS } from '../utils/chains';
+import { USDC } from '../utils/constants';
 
 async function main() {
   // Wallet setup
   const { privateKey } = getEnvConfig();
 
-  const account = privateKeyToAccount(toHexPrefixString(privateKey));
+  const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
   const requestId = randomUUID();
 
+  const usdcPolyToUsdcBase: Trade = {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "4000000", // 4 USDC
+    srcChainTokenInMinAmount: "4000000",
+    srcChainTokenInMaxAmount: "4000000",
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: account.address,
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true
+  }
+
   // Trades body
   const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 110000002,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    referralCode: 110000002,
-    trades: [
-      getSameChainTrade(account.address), // default USDC on Polygon -> MATIC on Polygon
-      getCrossChainTrade(account.address), // default USDC on Polygon -> USDC on BSC
-      getCrossChainTrade(account.address, {
-        // Only override what you want – everything else defaults
-        srcChainTokenInAmount: "1100000", // 1.1 USDC
-        srcChainTokenInMinAmount: "900000",
-        srcChainTokenInMaxAmount: "1000000",
-        dstChainTokenOut: USDT.BNB,        // Default is BSC_USDC, override to USDT
-      }),
-      getSameChainTrade(account.address, {
-        tokenOut: USDT.Polygon,
-        tokenOutRecipient: account.address
-      })
-    ],
-    preHooks: [],
-    postHooks: []
+    trades: [usdcPolyToUsdcBase],
+    postHooks: [],
   }
+
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
+  console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
 
   // Log the first intent for debugging
@@ -67,7 +92,7 @@ async function main() {
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
   // Prepare the bundle with signatures - but don't submit yet
-  const submitPayload = {
+  const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
