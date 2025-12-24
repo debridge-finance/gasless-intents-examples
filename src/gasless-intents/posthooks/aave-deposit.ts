@@ -4,12 +4,13 @@ import { randomUUID } from 'crypto';
 
 import { USDC } from "../../utils/constants";
 import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { getMorphoDepositPosthook } from "../../utils/hooks";
+import { getAaveSupplyHook } from "../../utils/hooks";
 import { createBundle, submitBundle } from "../../utils/api";
 import { BundleProposeBody, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
+import { getPolygonUsdcToArbitrumUsdc, getPolyMaticToArbitrumUsdc } from "../trades";
 import { processIntentBundle } from "../../utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "../../utils/wallet";
+import { CHAIN_IDS } from "../../utils/chains";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -18,9 +19,11 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const baseUsdcMorphoDeposit = await getMorphoDepositPosthook(toHexPrefixString(USDC.Base), 8453, account.address);
+  const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
 
-  console.log("Deposit Call PostHook Calldata:", baseUsdcMorphoDeposit);
+  const arbitrumUsdcAaveDeposit = await getAaveSupplyHook(AAVE_V3_POOL_ARBITRUM, toHexPrefixString(USDC.Arbitrum), CHAIN_IDS.Arbitrum, account.address);
+
+  console.log("Deposit Call PostHook Calldata:", arbitrumUsdcAaveDeposit);
 
   const requestId = randomUUID();
 
@@ -32,11 +35,11 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getPolygonUsdcToBaseUsdc(account.address),
-      getPolyMaticToBaseUsdc(account.address),
+      getPolygonUsdcToArbitrumUsdc(account.address),
+      getPolyMaticToArbitrumUsdc(account.address),
     ],
     postHooks: [
-      baseUsdcMorphoDeposit
+      arbitrumUsdcAaveDeposit
     ],
   }
 

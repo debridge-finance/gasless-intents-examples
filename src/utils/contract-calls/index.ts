@@ -12,6 +12,10 @@ const ERC4626_VAULT_DEPOSIT_ABI = parseAbi([
   "function deposit(uint256 assets, address receiver) external returns (uint256 shares)"
 ]);
 
+const AAVE_SUPPLY_ABI = parseAbi([
+  "function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode)"
+]);
+
 export function createApproveCall(
   tokenAddress: Address,
   spenderAddress: Address,
@@ -57,6 +61,23 @@ export function createDepositCall(
 
   return {
     to: vaultAddress,
+    data,
+    value: 0n,
+  };
+}
+
+export function createAaveSupplyCall(contractAddress: string, assetAddress: `0x${string}`, supplyAmount: bigint, onBehalfOf: `0x${string}`, aaveReferralCode: number = 0) {
+  const data = encodeFunctionData({
+    abi: AAVE_SUPPLY_ABI,
+    functionName: "supply",
+    args: [assetAddress,
+      supplyAmount,
+      onBehalfOf,
+      aaveReferralCode],
+  });
+
+  return {
+    to: contractAddress,
     data,
     value: 0n,
   };

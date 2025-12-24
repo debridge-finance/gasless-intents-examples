@@ -311,6 +311,7 @@ export type Hook = {
   tokenAddress: string;
   from: string;
   preparePreRequiredActions?: boolean;
+  additionalAmountForPlaceholder?: string;
 }
 
 /**

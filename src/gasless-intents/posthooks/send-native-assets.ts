@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 
 import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { getSendNativeAssetPosthook } from "../../utils/posthooks";
+import { getSendNativeAssetHook } from "../../utils/hooks";
 import { createBundle, submitBundle } from "../../utils/api";
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "../trades";
@@ -21,7 +21,7 @@ async function main() {
   const senderAddress = account.address;
   const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
 
-  const baseSendNativePosthook = await getSendNativeAssetPosthook(base.id, senderAddress, beneficiaryAddress);
+  const baseSendNativePosthook = await getSendNativeAssetHook(base.id, senderAddress, beneficiaryAddress);
 
   console.log("Send Native PostHook Calldata:", baseSendNativePosthook);
 
@@ -29,6 +29,7 @@ async function main() {
 
   const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 110000002,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
@@ -62,6 +63,7 @@ async function main() {
   // Prepare the bundle with signatures - but don't submit yet
   const submitPayload = {
     ...bundle,
+    referralCode: 110000002,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,
