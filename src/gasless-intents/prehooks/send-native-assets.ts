@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
 
 import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { getSendNativeAssetHook } from "../../utils/hooks";
+import { getSendNativeAssetPosthook } from "../../utils/posthooks";
 import { createBundle, submitBundle } from "../../utils/api";
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "../trades";
@@ -21,7 +21,7 @@ async function main() {
   const senderAddress = account.address;
   const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
 
-  const polygonSendNativeHook = await getSendNativeAssetHook(polygon.id, senderAddress, beneficiaryAddress, "5000000000000000");
+  const polygonSendNativeHook = await getSendNativeAssetPosthook(polygon.id, senderAddress, beneficiaryAddress);
 
   console.log("Send Native PostHook Calldata:", polygonSendNativeHook);
 
@@ -60,7 +60,7 @@ async function main() {
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
-  // Prepare the bundle with signatures - but don't submit yet
+  // Prepare the bundle with intent signatures for submission
   const submitPayload = {
     ...bundle,
     requestId: requestBody.requestId,
