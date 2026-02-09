@@ -275,8 +275,8 @@ export type Bundle = {
   isAtomic: boolean,
 
   // Optional fields
-  requestId?: string,
-  userId?: string,
+  requestId?: string, // Client-side UUID for idempotency, enforced on /submit endpoint
+  userId?: string,  // Client side user ID, enforced on /submit endpoint
   partnerCancelAuthority?: Array<string>,
   referralCode?: number
 
