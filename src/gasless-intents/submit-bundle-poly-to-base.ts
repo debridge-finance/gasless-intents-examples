@@ -7,31 +7,6 @@ import { processIntentBundle } from "../utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
 
 import util from "util"
-import {
-  getPolyUsdcToPolyWETH,
-  getPolyMaticToBscWbnb,
-  getPolyMaticToWethTrade,
-  getPolyUsdcToBscUsdcTrade,
-  getPolyUsdcToBscWbnbTrade,
-  getBscNativeToUsdc,
-  getPolyMaticToBscUsdc,
-  getBscNativeToPolNativeTrade,
-  getPolyMaticToBscBnb,
-  getBaseEthToBscWbnb,
-  getArbitrumEthToBscWbnb,
-  getOptimismEthToBscWbnb,
-  getArbitrumEthToBaseEth,
-  getPolyMaticToBaseUsdc,
-  getBscNativeToBaseUsdc,
-  getOptimismEthToBaseEth,
-  getBaseEthToBaseUsdc,
-  getOptimismEthToSynthUSD,
-  getArbitrumEthToWbtc,
-  getBaseDegenToBaseUsdc,
-  getPolyLinkToBaseUsdc,
-  getPolyMaticToWethTradeV1_1,
-  getPolygonDaiToUSDC
-} from "./trades";
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "./types";
 import { getChainIdToWalletClientMap } from "../utils/wallet";
 import { CHAIN_IDS } from '../utils/chains';
