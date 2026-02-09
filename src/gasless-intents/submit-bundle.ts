@@ -123,7 +123,7 @@ async function main() {
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
-  // Prepare the bundle with signatures - but don't submit yet
+  // Prepare the bundle with intent signatures for submission
   const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
