@@ -1,7 +1,8 @@
-import { clipHexPrefix, toHexPrefixString } from ".";
-import { Hook } from "../gasless-intents/types";
+import { toHexPrefixString } from ".";
+import { ExtendedHook, GasCompensationInfo, Hook, PlaceHolder } from "../gasless-intents/types";
 import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
 import { createDepositCall, createTransferCall } from "./contract-calls";
+import { replaceAmountPlaceholder, replaceNamedPlaceholders } from "./hooks-common";
 import { getVaultAddressByToken } from "./morpho/get-vault-address";
 
 export async function getMorphoDepositPosthook(tokenAddress: `0x${string}`, chainId: number, beneficiaryAddress: `0x${string}`): Promise<Hook> {
@@ -13,9 +14,7 @@ export async function getMorphoDepositPosthook(tokenAddress: `0x${string}`, chai
 
   const postHookTransaction = createDepositCall(toHexPrefixString(vaultAddress), BigInt(PLACEHOLDER_TOKEN_AMOUNT), beneficiaryAddress);
 
-  const modifiedCalldata = postHookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), "{amount}");
-
-  postHookTransaction.data = modifiedCalldata;
+  postHookTransaction.data = replaceAmountPlaceholder(postHookTransaction.data);
 
   const result: Hook = {
     isAtomic: true,
@@ -50,9 +49,7 @@ export async function getSendErc20PostHook(tokenAddress: `0x${string}`, chainId:
 
   const postHookTransaction = createTransferCall(beneficiaryAddress, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
 
-  const modifiedCalldata = postHookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), "{amount}");
-
-  postHookTransaction.data = modifiedCalldata;
+  postHookTransaction.data = replaceAmountPlaceholder(postHookTransaction.data);
 
   const posthook: Hook = {
     isAtomic: true,
@@ -66,4 +63,31 @@ export async function getSendErc20PostHook(tokenAddress: `0x${string}`, chainId:
   }
 
   return posthook;
+}
+
+/**
+ * Builds an ExtendedHook for use as a post-hook, from pre-encoded calldata
+ * containing N PLACEHOLDER_TOKEN_AMOUNT sentinels.
+ */
+export function buildExtendedPostHook(params: {
+  chainId: number;
+  from: string;
+  to: string;
+  data: string;
+  value?: string;
+  placeHolders: PlaceHolder[];
+  gasCompensationInfo?: GasCompensationInfo;
+  isAtomic?: boolean;
+}): ExtendedHook {
+  const names = params.placeHolders.map(p => p.nameVariable);
+  return {
+    isAtomic: params.isAtomic ?? true,
+    data: replaceNamedPlaceholders(params.data, names),
+    to: params.to,
+    value: params.value ?? "0",
+    chainId: params.chainId,
+    from: params.from,
+    placeHolders: params.placeHolders,
+    gasCompensationInfo: params.gasCompensationInfo,
+  };
 }
