@@ -72,6 +72,8 @@ export function updatePriorityFee(tx: VersionedTransaction, computeUnitPrice: nu
 }
 
 export async function getUrl(url: string) {
+  console.log(getHeaders())
+  
   const response = await fetch(url, {
     method: "GET",
     headers: getHeaders(),

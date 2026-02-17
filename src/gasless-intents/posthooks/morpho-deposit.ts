@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 
 import { USDC } from "../../utils/constants";
 import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { getMorphoDepositPosthook } from "../../utils/posthooks";
+import { getMorphoDepositPosthook } from "../../utils/hooks";
 import { createBundle, submitBundle } from "../../utils/api";
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
@@ -26,6 +26,7 @@ async function main() {
 
   const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 110000002,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
@@ -59,6 +60,7 @@ async function main() {
   // Prepare the bundle with intent signatures for submission
   const submitPayload = {
     ...bundle,
+    referralCode: 110000002,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,

@@ -1,16 +1,16 @@
+import { privateKeyToAccount } from "viem/accounts";
 import util from "util"
 import { randomUUID } from 'crypto';
-import { privateKeyToAccount } from "viem/accounts";
-import { base } from "viem/chains";
 
 import { USDC } from "../../utils/constants";
 import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { getSendErc20Hook } from "../../utils/hooks";
+import { getAaveSupplyHook } from "../../utils/hooks";
 import { createBundle, submitBundle } from "../../utils/api";
 import { BundleProposeBody, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
+import { getPolygonUsdcToArbitrumUsdc, getPolyMaticToArbitrumUsdc } from "../trades";
 import { processIntentBundle } from "../../utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "../../utils/wallet";
+import { CHAIN_IDS } from "../../utils/chains";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -19,12 +19,11 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const senderAddress = account.address;
-  const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
+  const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
 
-  const sendErc20Posthook = await getSendErc20Hook(toHexPrefixString(USDC.Base), base.id, senderAddress, beneficiaryAddress);
+  const arbitrumUsdcAaveDeposit = await getAaveSupplyHook(AAVE_V3_POOL_ARBITRUM, toHexPrefixString(USDC.Arbitrum), CHAIN_IDS.Arbitrum, account.address);
 
-  console.log("Send ERC20 PostHook Calldata:", sendErc20Posthook);
+  console.log("Deposit Call PostHook Calldata:", arbitrumUsdcAaveDeposit);
 
   const requestId = randomUUID();
 
@@ -36,11 +35,11 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getPolygonUsdcToBaseUsdc(account.address),
-      getPolyMaticToBaseUsdc(account.address),
+      getPolygonUsdcToArbitrumUsdc(account.address),
+      getPolyMaticToArbitrumUsdc(account.address),
     ],
     postHooks: [
-      sendErc20Posthook
+      arbitrumUsdcAaveDeposit
     ],
   }
 
@@ -61,7 +60,7 @@ async function main() {
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
-  // Prepare the bundle with intent signatures for submission
+  // Prepare the bundle with signatures - but don't submit yet
   const submitPayload = {
     ...bundle,
     referralCode: 110000002,
