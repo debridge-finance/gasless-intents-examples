@@ -1,16 +1,16 @@
-import {
-  privateKeyToAccount
-} from 'viem/accounts'
+import { injectBundle, closeInjector } from "../../bundle-state-sync/src/inject-bundle";
+
+import { privateKeyToAccount } from "viem/accounts";
 import { getEnvConfig, clipHexPrefix } from "../utils";
 import { createBundle, submitBundle } from "../utils/api";
 import { processIntentBundle } from "../utils/signatures/intent-signatures";
-import { randomUUID } from 'crypto';
+import { randomUUID } from "crypto";
 
-import util from "util"
+import util from "util";
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "./types";
 import { getChainIdToWalletClientMap } from "../utils/wallet";
-import { CHAIN_IDS } from '../utils/chains';
-import { USDC } from '../utils/constants';
+import { CHAIN_IDS } from "../utils/chains";
+import { USDC } from "../utils/constants";
 
 async function main() {
   // Wallet setup
@@ -25,30 +25,29 @@ async function main() {
   const usdcPolyToUsdcBase: Trade = {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: "4000000", // 4 USDC
-    srcChainTokenInMinAmount: "4000000",
-    srcChainTokenInMaxAmount: "4000000",
+    srcChainTokenInAmount: "2000000", // 4 USDC
+    srcChainTokenInMinAmount: "2000000",
+    srcChainTokenInMaxAmount: "2000000",
     srcChainAuthorityAddress: account.address,
     dstChainId: CHAIN_IDS.Base,
     dstChainTokenOut: USDC.Base,
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: account.address,
     dstChainAuthorityAddress: account.address,
-    prependOperatingExpenses: true
-  }
+    prependOperatingExpenses: true,
+  };
 
   // Trades body
   const requestBody: BundleProposeBody = {
     requestId,
     referralCode: 110000002,
-    expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
+    expirationTimestamp: Math.floor((new Date().getTime() * 2) / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [usdcPolyToUsdcBase],
     postHooks: [],
-  }
-
+  };
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
@@ -72,13 +71,16 @@ async function main() {
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,
-    signedData: signedDataArray
+    signedData: signedDataArray,
   };
 
   console.log("Payload prepared with signatures. Ready for submission.");
 
   const submitResponse = await submitBundle(submitPayload);
   console.log("Submit response:", submitResponse);
+
+  await injectBundle(submitResponse.bundleId);
+  await closeInjector();
 
   return submitPayload;
 }
