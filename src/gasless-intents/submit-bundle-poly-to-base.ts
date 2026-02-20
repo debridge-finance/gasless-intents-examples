@@ -1,4 +1,4 @@
-import { injectBundle, closeInjector } from "../../bundle-state-sync/src/inject-bundle";
+import { injectBundle, closeInjector } from "../utils/database-operations/inject-bundle";
 
 import { privateKeyToAccount } from "viem/accounts";
 import { getEnvConfig, clipHexPrefix } from "../utils";
