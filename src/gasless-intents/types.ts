@@ -83,22 +83,29 @@ export type Trade = {
   metadata?: null;
 }
 
-export type BundleProposeBody = {
+export type BundleBase = {
   // Client-side UUIDs
-  requestId?: string;
-  userId?: string;
-
-  // Timestamps
-  expirationTimestamp: number; // Unix timestamp in seconds
+  requestId?: string; // Client-side UUID for idempotency, enforced on /submit endpoint
+  userId?: string; // Client side user ID, enforced on /submit endpoint
 
   // Flags
   enableAccountAbstraction: boolean;
   isAtomic: boolean;
-  tradingAlgorithm: TradingAlgorithm;
+
   trades: Array<Trade>;
-  preHooks?: Array<any>;
-  postHooks: Array<Hook>;
   referralCode?: number;
+}
+
+export type BundleProposeBody = BundleBase & {
+  expirationTimestamp: number; // Unix timestamp in seconds
+  tradingAlgorithm: TradingAlgorithm;
+  preHooks?: Array<ExtendedHook | SimpleHook>;
+  postHooks?: Array<ExtendedHook | SimpleHook>;
+}
+
+export type SubmitBundleResponse = {
+  bundleId: string; 
+  message?: string; // Optional message field for additional info (e.g. if a duplicate bundle is detected based on requestId)
 }
 
 export enum SignatureTypes {
@@ -241,10 +248,12 @@ export type TokenResult = {
   tokenAddress: string // The token address for the output token
 }
 
-export type PostHookPayload = {
+export type HookPayload = {
   requiredActions: Array<Action>;
   hook: {
     chainId: number;
+    placeHolders?: PlaceHolder[];
+    gasCompensationInfo?: GasCompensationInfo;
   }
 }
 
@@ -263,22 +272,13 @@ export enum BundleStatus {
   created = "created",
 }
 
-export type Bundle = {
+export type Bundle = BundleBase & {
   intents: Array<IntentPayload>,
-  postHooks: Array<PostHookPayload>,
+  postHooks: Array<HookPayload>,
+  preHooks: Array<HookPayload>,
   tokenResult: Array<TokenResult>,
-  trades: Array<Trade>,
-  status?: BundleStatus
-
-  // Flags
-  enableAccountAbstraction: boolean,
-  isAtomic: boolean,
-
-  // Optional fields
-  requestId?: string, // Client-side UUID for idempotency, enforced on /submit endpoint
-  userId?: string,  // Client side user ID, enforced on /submit endpoint
+  status?: BundleStatus,
   partnerCancelAuthority?: Array<string>,
-  referralCode?: number
 
   // Signatures
   signedData?: Array<{ actionId: string, signedData: string }>;
@@ -311,7 +311,34 @@ export type Hook = {
   tokenAddress: string;
   from: string;
   preparePreRequiredActions?: boolean;
+  additionalAmount?: string; // Optional field for ERC-20 post-hooks that need to reserve extra tokens for the post-hook action
 }
+
+export type PlaceHolder = {
+  nameVariable: string;      // e.g. "amount1" — matches {amount1} in data
+  tokenAddress: string;      // token used for cumulative amount lookup
+  address: string;           // user address for grouping key
+  additionalAmount?: string; // optional offset added to cumulative amount
+};
+
+export type GasCompensationInfo = {
+  tokenAddress: string;
+  chainId: number;
+  sender: string;
+};
+
+export type ExtendedHook = {
+  isAtomic: boolean;
+  data: string;              // hex calldata with {amount1}, {amount2}, etc.
+  to: string;
+  value: string;             // wei string; can be "{amountN}" for native transfers
+  chainId: number;
+  from: string;
+  placeHolders?: PlaceHolder[];
+  gasCompensationInfo?: GasCompensationInfo;
+};
+
+export type SimpleHook = Hook;  // Alias for semantic clarity alongside ExtendedHook
 
 /**
  * `to` and `value` are only available for EVM transactions.

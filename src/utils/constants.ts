@@ -1,4 +1,6 @@
-export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+// export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+
+export const BASE_URL = "https://api-dev.debridge.io";
 
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
