@@ -13,7 +13,7 @@ import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
 import { getChainIdToWalletClientMap } from "../../utils/wallet";
 import { Keypair } from '@solana/web3.js';
 import { CHAIN_IDS } from "../../utils/chains";
-import { EVM_NATIVE_TOKEN, SOL_JUP, DBR_SOL, SOL_NATIVE, USDC } from '../../utils/constants';
+import { SOL_JUP, DBR_SOL, USDC } from '../../utils/constants';
 
 async function main() {
   // Wallet setup
