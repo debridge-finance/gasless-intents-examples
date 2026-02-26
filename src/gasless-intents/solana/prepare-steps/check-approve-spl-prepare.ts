@@ -2,11 +2,11 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { randomUUID } from 'crypto';
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
-import { getEnvConfig, toHexPrefixString } from "../../../utils";
+import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { getSolUsdcToPolyUsdcTrade } from "./../../trades";
-import { createBundle } from "../../../utils/api";
-import { TradingAlgorithm } from "../../types";
-import { extractTransactionHexData } from '../../../utils/solana';
+import { createBundle } from '@utils/api';
+import { TradingAlgorithm } from "@gasless-intents/types";
+import { extractTransactionHexData } from '@utils/solana';
 
 async function main() {
   // Wallet setup

@@ -1,5 +1,5 @@
 import { clipHexPrefix, toHexPrefixString } from ".";
-import { Hook } from "../gasless-intents/types";
+import { Hook } from "@gasless-intents/types";
 import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
 import { createDepositCall, createTransferCall } from "./contract-calls";
 import { getVaultAddressByToken } from "./morpho/get-vault-address";

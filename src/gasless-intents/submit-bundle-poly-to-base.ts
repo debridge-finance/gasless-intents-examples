@@ -1,16 +1,16 @@
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { getEnvConfig, clipHexPrefix } from "../utils";
-import { createBundle, submitBundle } from "../utils/api";
-import { processIntentBundle } from "../utils/signatures/intent-signatures";
+import { getEnvConfig, clipHexPrefix } from '@utils/index';
+import { createBundle, submitBundle } from '@utils/api';
+import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 
 import util from "util"
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "./types";
-import { getChainIdToWalletClientMap } from "../utils/wallet";
-import { CHAIN_IDS } from '../utils/chains';
-import { USDC } from '../utils/constants';
+import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { CHAIN_IDS } from '@utils/chains';
+import { USDC } from '@utils/constants';
 
 async function main() {
   // Wallet setup

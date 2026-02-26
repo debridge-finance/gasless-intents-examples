@@ -5,7 +5,15 @@
     "target": "ES2020",
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    "lib": ["ES2020"],
+    "paths": {
+      "@gasless-intents/*": ["src/gasless-intents/*"],
+      "@utils/*": ["src/utils/*"]
+    }
   },
-  "lib": ["ES2020"]
+  "include": ["src/**/*.ts"]
 }

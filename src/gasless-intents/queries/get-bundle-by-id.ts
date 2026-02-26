@@ -1,4 +1,4 @@
-import { getBundleById } from "../../utils/api";
+import { getBundleById } from '@utils/api';
 
 const bundleId = "68d307f3-86d3-4247-afd7-b61c18938da8"; // Replace - use your own, get after submitting a bundle
 

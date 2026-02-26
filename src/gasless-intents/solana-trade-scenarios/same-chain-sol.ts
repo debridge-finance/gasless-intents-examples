@@ -1,19 +1,19 @@
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { getEnvConfig, clipHexPrefix } from "../../utils";
-import { createBundle, submitBundle } from "../../utils/api";
-import { processIntentBundle } from "../../utils/signatures/intent-signatures";
+import { getEnvConfig, clipHexPrefix } from '@utils/index';
+import { createBundle, submitBundle } from '@utils/api';
+import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
 
 import util from "util"
 
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
-import { getChainIdToWalletClientMap } from "../../utils/wallet";
+import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { Keypair } from '@solana/web3.js';
-import { CHAIN_IDS } from "../../utils/chains";
-import { SOL_NATIVE, USDC } from '../../utils/constants';
+import { CHAIN_IDS } from '@utils/chains';
+import { SOL_NATIVE, USDC } from '@utils/constants';
 
 async function main() {
   // Wallet setup

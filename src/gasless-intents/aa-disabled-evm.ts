@@ -3,14 +3,14 @@ import {
 } from 'viem/accounts'
 import { getEnvConfig, clipHexPrefix } from "./../utils";
 import { createBundle, submitBundle } from "./../utils/api";
-import { processIntentBundle } from "../utils/signatures/intent-signatures";
+import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 
 import util from "util"
 import {
   getPolyMaticToBscBnb} from "./trades";
 import { Bundle, BundleProposeBody, TradingAlgorithm } from "./types";
-import { getChainIdToWalletClientMap } from "../utils/wallet";
+import { getChainIdToWalletClientMap } from '@utils/wallet';
 
 async function main() {
   // Wallet setup

@@ -1,4 +1,4 @@
-import { getBundles } from "../../utils/api";
+import { getBundles } from '@utils/api';
 import { GetBundlesFilterParams } from "../types";
 
 async function main() {

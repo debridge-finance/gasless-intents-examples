@@ -2,14 +2,14 @@ import { privateKeyToAccount } from "viem/accounts";
 import util from "util"
 import { randomUUID } from 'crypto';
 
-import { USDC } from "../../utils/constants";
-import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { getMorphoDepositPosthook } from "../../utils/posthooks";
-import { createBundle, submitBundle } from "../../utils/api";
+import { USDC } from '@utils/constants';
+import { toHexPrefixString, getEnvConfig } from '@utils/index';
+import { getMorphoDepositPosthook } from '@utils/posthooks';
+import { createBundle, submitBundle } from '@utils/api';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
-import { processIntentBundle } from "../../utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "../../utils/wallet";
+import { processIntentBundle } from '@utils/signatures/intent-signatures';
+import { getChainIdToWalletClientMap } from '@utils/wallet';
 
 async function main() {
   const { privateKey } = getEnvConfig();
