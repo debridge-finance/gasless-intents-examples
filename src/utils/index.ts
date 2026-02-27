@@ -1,15 +1,18 @@
-import 'dotenv/config';
+import "dotenv/config";
 import { VersionedTransaction } from "@solana/web3.js";
-import { Bundle, BundleCancelRequest } from '../gasless-intents/types';
-import { getAddress } from 'viem';
+import { Bundle, BundleCancelRequest } from "../gasless-intents/types";
+import { getAddress } from "viem";
 
-export function getEnvConfig() {
+export function getEnvConfig(): {
+  privateKey: string;
+  solPrivateKey: string;
+} {
   // --- Environment Variable Loading and Validation ---
   console.log("Loading environment variables...");
   const privateKey = process.env.SIGNER_PK;
   const solPrivateKey = process.env.SOL_PK;
 
-  let error = ""
+  let error = "";
 
   if (!privateKey) {
     error += "\nSIGNER_PK not found in .env file.";
@@ -25,9 +28,8 @@ export function getEnvConfig() {
   return {
     privateKey,
     solPrivateKey,
-  }
+  };
 }
-
 
 export function getHeaders(extra?: HeadersInit): Headers {
   const DE_BRIDGE_PARTNER_API_KEY = process.env.DE_BRIDGE_PARTNER_API_KEY;
@@ -42,7 +44,6 @@ export function getHeaders(extra?: HeadersInit): Headers {
 
   return headers;
 }
-
 
 function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
   const result = new Uint8Array(arraySize);
@@ -85,6 +86,8 @@ export async function getUrl(url: string) {
 }
 
 export async function postUrl(url: string, body: any) {
+  console.log("POST URL:", url);
+  console.log("REQUEST:", { method: "POST", headers: getHeaders(), body: JSON.stringify(body) });
   const response = await fetch(url, {
     method: "POST",
     headers: getHeaders(),
@@ -111,16 +114,8 @@ export function toHexPrefixString(input: string): `0x${string}` {
   return `0x${input}`;
 }
 
-export function generateCancelPreimage(
-  request: BundleCancelRequest,
-  authorityAddress: string,
-): string {
-  const parts = [
-    'deBridge:BundleCancel:v1',
-    authorityAddress,
-    request.creationTimestamp,
-    request.expirationTimestamp,
-  ];
+export function generateCancelPreimage(request: BundleCancelRequest, authorityAddress: string): string {
+  const parts = ["deBridge:BundleCancel:v1", authorityAddress, request.creationTimestamp, request.expirationTimestamp];
 
   if (request.bundleId) {
     parts.push(request.bundleId);
@@ -129,10 +124,10 @@ export function generateCancelPreimage(
     parts.push(request.userId);
   }
   if (request.intentOwners) {
-    parts.push(request.intentOwners.map(getAddress).join(','));
+    parts.push(request.intentOwners.map(getAddress).join(","));
   }
 
-  return parts.join('|');
+  return parts.join("|");
 }
 
 /**
@@ -141,8 +136,8 @@ export function generateCancelPreimage(
  */
 export function sortBundlesByIntentTimestampAscending(bundles: Array<Bundle>): Array<Bundle> {
   return [...bundles].sort((a, b) => {
-    const aTimestamps = a.intents.map(i => i.intent.intentTimestamp);
-    const bTimestamps = b.intents.map(i => i.intent.intentTimestamp);
+    const aTimestamps = a.intents.map((i) => i.intent.intentTimestamp);
+    const bTimestamps = b.intents.map((i) => i.intent.intentTimestamp);
 
     const aMin = Math.min(...aTimestamps);
     const bMin = Math.min(...bTimestamps);

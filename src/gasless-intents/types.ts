@@ -307,6 +307,7 @@ export type Hook = {
   chainId: number;
   tokenAddress: string;
   from: string;
+  additionalAmount?: string;
   preparePreRequiredActions?: boolean;
 }
 

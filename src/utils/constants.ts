@@ -1,4 +1,6 @@
-export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+// export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+
+export const BASE_URL = "https://api-dev.debridge.io/";
 
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
@@ -55,10 +57,15 @@ export const WBNB = {
 
 export const WETH = {
   Polygon: "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+  Arbitrum: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
 }
 
 export const DAI = {
   Polygon: "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
+}
+
+export const POLYTRADE = {
+  Polygon: "0x692ac1e363ae34b6b489148152b12e2785a3d8d6",
 }
 
 // Used as a placeholder value for the amount - 256 bits, 8 repetitions of "deadbeef"
