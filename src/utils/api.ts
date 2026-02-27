@@ -6,7 +6,8 @@ import {
   BundleCancelResponse,
   BundleProposeBody,
   GetBundlesFilterParams,
-  PaginatedResponseMetadata
+  PaginatedResponseMetadata,
+  SubmitBundleResponse
 } from "../gasless-intents/types";
 import { BASE_URL, getEndpoints } from "./constants";
 import { privateKeyToAccount } from "viem/accounts";
@@ -25,7 +26,18 @@ export async function createBundle(requestBody: BundleProposeBody): Promise<Bund
   return response;
 }
 
-export async function submitBundle(requestBody) {
+/**
+ * Submits the bundle to the API, creating it if it doesn't exist, or using the existing one if the same `requestId` is provided. Returns a bundleId. 
+ * 
+ * A bundleId is deterministically computed as a hash of `(requestId + referralCode + intentIds)`.
+ * 
+ * intentId is computed deterministically from the intent constraints and the user's address. 
+ * 
+ * Idempotancy is enforced on the /submit endpoint using the `requestId` field.
+ * @param requestBody 
+ * @returns A unique bundleId. 
+ */
+export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
   const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 
   return response;
