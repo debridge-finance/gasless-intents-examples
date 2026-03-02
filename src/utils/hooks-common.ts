@@ -5,10 +5,10 @@ import { PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
  * Replaces the first PLACEHOLDER_TOKEN_AMOUNT sentinel with "{amount}".
  * Used for SimpleHook/Hook construction.
  */
-export function replaceAmountPlaceholder(encodedCalldata: string): string {
+export function replaceAmountPlaceholder(encodedCalldata: string, placeholderName: string = "amount"): string {
   return encodedCalldata.replace(
     clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT),
-    "{amount}"
+    `{${placeholderName}}`
   );
 }
 

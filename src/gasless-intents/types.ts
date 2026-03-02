@@ -334,7 +334,7 @@ export type ExtendedHook = {
   value: string;             // wei string; can be "{amountN}" for native transfers
   chainId: number;
   from: string;
-  placeHolders?: PlaceHolder[];
+  placeHolders: PlaceHolder[]; // Array required, can be empty
   gasCompensationInfo?: GasCompensationInfo;
 };
 
