@@ -55,8 +55,8 @@ export type Trade = {
   srcChainId: number;
   srcChainTokenIn: string;
   srcChainTokenInAmount: string;
-  srcChainTokenInMinAmount: string;
-  srcChainTokenInMaxAmount: string;
+  srcChainTokenInMinAmount?: string;
+  srcChainTokenInMaxAmount?: string;
 
   // Destination chain params
   dstChainId: number;
