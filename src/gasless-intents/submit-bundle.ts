@@ -1,39 +1,19 @@
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { getEnvConfig, clipHexPrefix } from "../utils";
-import { createBundle, submitBundle } from "../utils/api";
-import { processIntentBundle } from "../utils/signatures/intent-signatures";
+import { getEnvConfig, clipHexPrefix } from '@utils/index';
+import { createBundle, submitBundle } from '@utils/api';
+import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 
 import util from "util"
 import {
-  getPolyUsdcToPolyWETH,
-  getPolyMaticToBscWbnb,
-  getPolyMaticToWethTrade,
   getPolyUsdcToBscUsdcTrade,
-  getPolyUsdcToBscWbnbTrade,
-  getBscNativeToUsdc,
-  getPolyMaticToBscUsdc,
-  getBscNativeToPolNativeTrade,
   getPolyMaticToBscBnb,
-  getBaseEthToBscWbnb,
-  getArbitrumEthToBscWbnb, 
-  getOptimismEthToBscWbnb,
-  getArbitrumEthToBaseEth,
-  getPolyMaticToBaseUsdc,
-  getBscNativeToBaseUsdc,
-  getOptimismEthToBaseEth,
-  getBaseEthToBaseUsdc, 
-  getOptimismEthToSynthUSD, 
-  getArbitrumEthToWbtc, 
-  getBaseDegenToBaseUsdc, 
-  getPolyLinkToBaseUsdc,
-  getPolyMaticToWethTradeV1_1,
-  getPolygonDaiToUSDC
+  getPolyMaticToWethTradeV1_1
 } from "./trades";
 import { Bundle, BundleProposeBody, TradingAlgorithm } from "./types";
-import { getChainIdToWalletClientMap } from "../utils/wallet";
+import { getChainIdToWalletClientMap } from '@utils/wallet';
 
 async function main() {
   // Wallet setup

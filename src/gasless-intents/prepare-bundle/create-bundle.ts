@@ -1,5 +1,5 @@
-import { createBundle } from "../../utils/api";
-import { USDC } from "../../utils/constants";
+import { createBundle } from '@utils/api';
+import { USDC } from '@utils/constants';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { randomUUID } from 'crypto';
 

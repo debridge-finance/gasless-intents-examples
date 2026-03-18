@@ -4,12 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc && tsc-alias",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "@eslint/js": "^10.0.1",
+    "@types/ws": "^8.18.1",
+    "eslint": "^10.0.2",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.56.1"
   },
   "dependencies": {
     "@debridge-finance/dln-client": "^17.6.2",
@@ -19,6 +29,7 @@
     "dotenv": "^16.5.0",
     "ethers": "^6.13.5",
     "tweetnacl": "^1.0.3",
-    "viem": "^2.36.0"
+    "viem": "^2.36.0",
+    "ws": "^8.19.0"
   }
 }

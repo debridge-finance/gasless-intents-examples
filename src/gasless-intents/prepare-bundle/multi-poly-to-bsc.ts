@@ -1,7 +1,7 @@
-import { EVM_NATIVE_TOKEN, USDC, USDT } from "../../utils/constants";
+import { EVM_NATIVE_TOKEN, USDC, USDT } from '@utils/constants';
 import utils from "util";
 import { randomUUID } from 'crypto';
-import { createBundle } from "../../utils/api";
+import { createBundle } from '@utils/api';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 
 async function main() {
