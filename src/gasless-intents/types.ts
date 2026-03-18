@@ -109,7 +109,7 @@ export type BundleProposeBody = {
   tradingAlgorithm: TradingAlgorithm;
   trades: Array<Trade>;
   preHooks?: Array<any>;
-  postHooks: Array<Hook>;
+  postHooks?: Array<Hook>;
   referralCode?: number;
   approvalMode?: ApprovalMode; // Defaults to "approve" if not provided
   approveAmountFlag?: ApproveAmount; // Defaults to "none" if not provided

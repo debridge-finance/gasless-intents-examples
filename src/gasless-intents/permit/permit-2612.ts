@@ -2,13 +2,13 @@ import util from "util"
 import { randomUUID } from 'crypto';
 import { privateKeyToAccount } from "viem/accounts";
 
-import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { createBundle, submitBundle } from "../../utils/api";
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
 import { ApprovalMode, ApproveAmount, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
-import { processIntentBundle } from "../../utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "../../utils/wallet";
-import { CHAIN_IDS } from "../../utils/chains";
-import { UNI, USDC, USDT } from "../../utils/constants";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { USDC, USDT } from "@utils/constants";
 
 async function main() {
   const { privateKey } = getEnvConfig();

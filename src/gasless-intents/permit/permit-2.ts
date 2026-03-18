@@ -2,13 +2,17 @@ import util from "util"
 import { randomUUID } from 'crypto';
 import { privateKeyToAccount } from "viem/accounts";
 
-import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { createBundle, submitBundle } from "../../utils/api";
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
 import { ApprovalMode, ApproveAmount, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
-import { processIntentBundle } from "../../utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "../../utils/wallet";
-import { CHAIN_IDS } from "../../utils/chains";
-import { USDC, USDT } from "../../utils/constants";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { USDC, USDT } from "@utils/constants";
+
+/** 
+ * A prerequisite for this example is to run the src/gasless-intents/manual-permit2-approval-base.ts script to approve Permit2 for the USDT token on Base chain.
+*/
 
 async function main() {
   const { privateKey } = getEnvConfig();

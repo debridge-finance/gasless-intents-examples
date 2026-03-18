@@ -26,11 +26,9 @@ async function main() {
     abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
     functionName: "approve",
     args: [PERMIT2_ADDRESS, AMOUNT],
-    chain: undefined,
+    chain: base,
     account: owner,
   });
-
-  const hash2 = await 
 
   console.log("Permit2 approval tx hash:", hash);
 }
