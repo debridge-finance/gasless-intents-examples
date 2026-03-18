@@ -4,16 +4,16 @@ import {
 import { randomUUID } from 'crypto';
 import util from "util"
 
-import { getEnvConfig, toHexPrefixString } from "../../utils";
-import { createBundle, submitBundle } from "../../utils/api";
-import { processIntentBundle } from "../../utils/signatures/intent-signatures";
+import { getEnvConfig, toHexPrefixString } from '@utils/index';
+import { createBundle, submitBundle } from '@utils/api';
+import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import {
   getPolyMaticToWethTrade,
   getPolyUsdcToBscUsdcTrade,
   getPolyMaticToBscBnb,
   getPolyMaticToBscBnbStuck
 } from "../trades";
-import { getChainIdToWalletClientMap } from "../../utils/wallet";
+import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { Bundle, TradingAlgorithm } from '../types';
 
 async function main() {

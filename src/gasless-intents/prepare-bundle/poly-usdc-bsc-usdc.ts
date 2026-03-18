@@ -1,8 +1,8 @@
 import utils from "util";
 import { randomUUID } from 'crypto';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
-import { createBundle } from "../../utils/api";
-import { USDC } from "../../utils/constants";
+import { createBundle } from '@utils/api';
+import { USDC } from '@utils/constants';
 
 async function main() {
 

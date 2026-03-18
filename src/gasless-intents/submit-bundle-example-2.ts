@@ -1,18 +1,15 @@
-import { createWalletClient, http } from "viem";
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { polygon } from "viem/chains"
 import { getEnvConfig, toHexPrefixString } from "./../utils";
 import { createBundle, submitBundle } from "./../utils/api";
 import { processIntentBundle } from "./../utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
 
 import util from "util"
-import { getSameChainTrade, getCrossChainTrade } from "./../utils/trades";
-import { USDT } from "../utils/constants";
 import { BundleProposeBody, TradingAlgorithm } from "./types";
-import { getChainIdToWalletClientMap } from "../utils/wallet";
+import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { getPolyUsdcToBscUsdcTrade, getPolyUsdcToBscUsdt, getPolyUsdcToMatic, getPolyUsdcToPolyUsdt } from './trades';
 
 async function main() {
   // Wallet setup
@@ -33,19 +30,10 @@ async function main() {
     tradingAlgorithm: TradingAlgorithm.MARKET,
     referralCode: 110000002,
     trades: [
-      getSameChainTrade(account.address), // default USDC on Polygon -> MATIC on Polygon
-      getCrossChainTrade(account.address), // default USDC on Polygon -> USDC on BSC
-      getCrossChainTrade(account.address, {
-        // Only override what you want – everything else defaults
-        srcChainTokenInAmount: "1100000", // 1.1 USDC
-        srcChainTokenInMinAmount: "900000",
-        srcChainTokenInMaxAmount: "1000000",
-        dstChainTokenOut: USDT.BNB,        // Default is BSC_USDC, override to USDT
-      }),
-      getSameChainTrade(account.address, {
-        tokenOut: USDT.Polygon,
-        tokenOutRecipient: account.address
-      })
+      getPolyUsdcToMatic(account.address), // default USDC on Polygon -> MATIC on Polygon
+      getPolyUsdcToBscUsdcTrade(account.address), // default USDC on Polygon -> USDC on BSC
+      getPolyUsdcToBscUsdt(account.address),
+      getPolyUsdcToPolyUsdt(account.address)
     ],
     preHooks: [],
     postHooks: []

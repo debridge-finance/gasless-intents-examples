@@ -1,7 +1,7 @@
-import { getEnvConfig, clipHexPrefix, sortBundlesByIntentTimestampAscending } from "../../utils";
+import { getEnvConfig, clipHexPrefix, sortBundlesByIntentTimestampAscending } from '@utils/index';
 import { privateKeyToAccount } from "viem/accounts";
 import { Bundle, BundleCancelRequest, BundleStatus, CancelBundleReasonCodes, GetBundlesFilterParams } from "../types";
-import { cancelBundles, getBundles } from "../../utils/api";
+import { cancelBundles, getBundles } from '@utils/api';
 import { getAddress } from "viem";
 
 async function main() {

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { VersionedTransaction } from "@solana/web3.js";
-import { Bundle, BundleCancelRequest } from '../gasless-intents/types';
+import { Bundle, BundleCancelRequest } from '@gasless-intents/types';
 import { getAddress } from 'viem';
 
 export function getEnvConfig() {
@@ -29,12 +29,12 @@ export function getEnvConfig() {
 }
 
 
-export function getHeaders(extra?: HeadersInit): Headers {
+export function getHeaders(): Headers {
   const DE_BRIDGE_PARTNER_API_KEY = process.env.DE_BRIDGE_PARTNER_API_KEY;
 
   if (!DE_BRIDGE_PARTNER_API_KEY) throw new Error("Missing DE_BRIDGE_PARTNER_API_KEY in .env");
 
-  const headers = new Headers(extra);
+  const headers = new Headers();
 
   if (!headers.has("accept")) headers.set("accept", "application/json");
   if (!headers.has("content-type")) headers.set("content-type", "application/json");

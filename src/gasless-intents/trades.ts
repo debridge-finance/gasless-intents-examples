@@ -1,6 +1,6 @@
 import { Trade } from "./types";
-import { DAI, EVM_NATIVE_TOKEN, LINK, SOL_JUP, SOL_NATIVE, USDC, USDT, WBNB, WETH } from "../utils/constants";
-import { CHAIN_IDS } from "../utils/chains";
+import { DAI, EVM_NATIVE_TOKEN, LINK, SOL_JUP, SOL_NATIVE, USDC, USDT, WBNB, WETH } from '@utils/constants';
+import { CHAIN_IDS } from '@utils/chains';
 
 export function getPolyUsdcToBscUsdcTrade(signer: string): Trade {
   return {
@@ -490,6 +490,44 @@ export function getPolyUsdcToPolyWETH(signer: string): Trade {
     srcChainAuthorityAddress: signer,
     dstChainId: CHAIN_IDS.Polygon,
     dstChainTokenOut: WETH.Polygon,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+    affiliateFeePercent: null,
+    affiliateFeeRecipient: null,
+  };
+}
+
+export function getPolyUsdcToMatic(signer: string): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "100000",
+    srcChainTokenInMinAmount: "100000",
+    srcChainTokenInMaxAmount: "100000",
+    srcChainAuthorityAddress: signer,
+    dstChainId: CHAIN_IDS.Polygon,
+    dstChainTokenOut: EVM_NATIVE_TOKEN, // Matic on Polygon
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+    affiliateFeePercent: null,
+    affiliateFeeRecipient: null,
+  };
+}
+
+export function getPolyUsdcToPolyUsdt(signer: string): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "100000",
+    srcChainTokenInMinAmount: "100000",
+    srcChainTokenInMaxAmount: "100000",
+    srcChainAuthorityAddress: signer,
+    dstChainId: CHAIN_IDS.Polygon,
+    dstChainTokenOut: USDT.Polygon, // USDT on Polygon
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: signer,
     dstChainAuthorityAddress: signer,

@@ -1,5 +1,5 @@
-import { ByteArray, serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
-import { Action, Bundle, EIP712Data, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx } from '../../gasless-intents/types';
+import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
+import { Action, Bundle, EIP712Data, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx } from '@gasless-intents/types';
 import { getChainIdToWalletClientMap } from '../wallet';
 import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js';
 import { SOLANA_RPC_URL } from '../constants';
