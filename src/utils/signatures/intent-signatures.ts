@@ -12,7 +12,9 @@ export async function signAction(action: Action, walletClient: WalletClient | Ke
   switch (action.type) {
     case SignatureTypes.Sign7702Authorization:
     case SignatureTypes.Sign712:
-    case SignatureTypes.Sign712MetaMask: {
+    case SignatureTypes.Sign712MetaMask:
+    case SignatureTypes.EIP2612Permit:
+    case SignatureTypes.Permit2: {
       return evmActionSign(action, walletClient as WalletClient);
     }
     case SignatureTypes.Sign: {
@@ -102,7 +104,11 @@ async function evmActionSign(action: Action, walletClient: WalletClient): Promis
   }
 
   // EIP-712 Typed Data - Sign712
-  else if (action.type === SignatureTypes.Sign712 || action.type === SignatureTypes.Sign712MetaMask) {
+  else if (
+    action.type === SignatureTypes.Sign712 || 
+    action.type === SignatureTypes.Sign712MetaMask || 
+    action.type === SignatureTypes.EIP2612Permit || 
+    action.type === SignatureTypes.Permit2) {
     const data = action.data as EIP712Data;
     const { domain, types, message, primaryType } = data;
 

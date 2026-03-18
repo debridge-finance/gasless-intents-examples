@@ -83,6 +83,18 @@ export type Trade = {
   metadata?: null;
 }
 
+export enum ApprovalMode {
+  Approve = "approve",
+  Permit = "permit",
+  PermitWithFallback = "permitWithFallback",
+}
+
+export enum ApproveAmount {
+  ExactApproveAmount = "exactApproveAmount",
+  Unlimited = "unlimited",
+  None = "none"
+}
+
 export type BundleProposeBody = {
   // Client-side UUIDs
   requestId?: string;
@@ -99,6 +111,8 @@ export type BundleProposeBody = {
   preHooks?: Array<any>;
   postHooks: Array<Hook>;
   referralCode?: number;
+  approvalMode?: ApprovalMode; // Defaults to "approve" if not provided
+  approveAmountFlag?: ApproveAmount; // Defaults to "none" if not provided
 }
 
 export enum SignatureTypes {
@@ -107,7 +121,9 @@ export enum SignatureTypes {
   Sign7702Authorization = "Sign7702Authorization",
   Sign = "Sign", // Solana Hex Sign - Authorization
   SignTransaction = "SignTransaction", // Solana Versioned Transaction signing
-  Transaction = "Transaction" // Could be EVM or Solana - Solana doesn't have `value` and `to` fields.
+  Transaction = "Transaction", // Could be EVM or Solana - Solana doesn't have `value` and `to` fields.
+  EIP2612Permit = "Permit",
+  Permit2 = "Permit2"
 }
 
 // Type for EIP-712 data
