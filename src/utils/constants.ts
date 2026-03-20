@@ -42,7 +42,9 @@ export const USDC = {
 export const USDT = {
   Polygon: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
   BNB: "0x55d398326f99059ff775485246999027b3197955",
-  Solana: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+  Solana: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+  Arbitrum: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+  Base: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2"
 }
 
 export const LINK = {
@@ -59,6 +61,8 @@ export const WETH = {
 
 export const DAI = {
   Polygon: "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
+  Arbitrum: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+  Ethereum: "0x6b175474e89094c44da98b954eedeac495271d0f",
 }
 
 // Used as a placeholder value for the amount - 256 bits, 8 repetitions of "deadbeef"
@@ -66,4 +70,8 @@ export const PLACEHOLDER_TOKEN_AMOUNT = "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadb
 
 export const LINGO = {
   Base: "0xfb42Da273158B0F642F59F2Ba7cc1d5457481677"
+}
+
+export const UNI = {
+  Ethereum: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
 }
