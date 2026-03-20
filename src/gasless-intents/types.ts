@@ -86,13 +86,10 @@ export type Trade = {
 export enum ApprovalMode {
   Approve = "approve",
   Permit = "permit",
-  PermitWithFallback = "permitWithFallback",
 }
 
 export enum ApproveAmount {
-  ExactApproveAmount = "exactApproveAmount",
   Unlimited = "unlimited",
-  None = "none"
 }
 
 export type BundleProposeBody = {
@@ -122,7 +119,7 @@ export enum SignatureTypes {
   Sign = "Sign", // Solana Hex Sign - Authorization
   SignTransaction = "SignTransaction", // Solana Versioned Transaction signing
   Transaction = "Transaction", // Could be EVM or Solana - Solana doesn't have `value` and `to` fields.
-  EIP2612Permit = "Permit",
+  Permit = "Permit",
   Permit2 = "Permit2"
 }
 
