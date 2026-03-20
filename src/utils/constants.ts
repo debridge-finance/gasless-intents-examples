@@ -63,6 +63,8 @@ export const WETH = {
 
 export const DAI = {
   Polygon: "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
+  Arbitrum: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+  Ethereum: "0x6b175474e89094c44da98b954eedeac495271d0f",
 }
 
 // Used as a placeholder value for the amount - 256 bits, 8 repetitions of "deadbeef"
