@@ -279,9 +279,9 @@ export function getBscNativeToPolNativeTrade(signer: string): Trade {
   return {
     srcChainId: CHAIN_IDS.BNB,
     srcChainTokenIn: EVM_NATIVE_TOKEN, // USDC on Polygon (bridged), 6 decimals
-    srcChainTokenInAmount: "1000000000000000",      // 4$ USDC
-    srcChainTokenInMinAmount: "1000000000000000",   // 2$ USDC
-    srcChainTokenInMaxAmount: "1000000000000000",   // 3$ USDC
+    srcChainTokenInAmount: "1000000000000000",      // 1$ USDC
+    srcChainTokenInMinAmount: "1000000000000000",   // 1$ USDC
+    srcChainTokenInMaxAmount: "1000000000000000",   // 1$ USDC
 
     // Destination (BSC)
     dstChainId: CHAIN_IDS.Optimism,
