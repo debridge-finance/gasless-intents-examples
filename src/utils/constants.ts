@@ -1,6 +1,4 @@
-// export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
-
-export const BASE_URL = "https://api-dev.debridge.io"; // 0x219c915f73b86f625f1668a436b2f9712465a2625452396b9f1a195dc4f70cb7
+export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
 
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
