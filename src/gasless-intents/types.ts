@@ -99,8 +99,8 @@ export type BundleBase = {
 
   // Primitives
   trades: Array<Trade>;
-  preHooks?: Array<any>;
-  postHooks?: Array<Hook>;
+  preHooks?: Array<ExtendedHook | SimpleHook>;
+  postHooks?: Array<ExtendedHook | SimpleHook>;
 
   // Referral code for partner attribution
   referralCode?: number;
@@ -117,8 +117,6 @@ export type BundleBase = {
 export type BundleProposeBody = BundleBase & {
   expirationTimestamp: number; // Unix timestamp in seconds
   tradingAlgorithm: TradingAlgorithm;
-  preHooks?: Array<ExtendedHook | SimpleHook>;
-  postHooks?: Array<ExtendedHook | SimpleHook>;
 }
 
 export type SubmitBundleResponse = {
