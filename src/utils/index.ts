@@ -86,8 +86,6 @@ export async function getUrl(url: string) {
 }
 
 export async function postUrl(url: string, body: any) {
-  console.log("POST URL:", url);
-  console.log("REQUEST:", { method: "POST", headers: getHeaders(), body: JSON.stringify(body) });
   const response = await fetch(url, {
     method: "POST",
     headers: getHeaders(),

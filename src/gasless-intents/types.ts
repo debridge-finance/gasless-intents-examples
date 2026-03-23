@@ -1,3 +1,6 @@
+import { Keypair } from "@solana/web3.js";
+import { WalletClient } from "viem";
+
 export type GetBundlesFilterParams = {
   intentOwner?: string;
   intentAuthority?: string;
@@ -370,3 +373,14 @@ export type Tx = {
 export type SolanaSign = {
   data: string;
 }
+
+/**
+ * Umbrella for both EVM and Solana wallet clients.
+ */
+export type WalletClientLike = WalletClient | Keypair;
+
+/**
+ * Mapping of chainId to WalletClientLike, which can be either a Viem WalletClient 
+ * for EVM chains or a Solana Keypair for Solana chain.
+ */
+export type WalletClientMap = Record<number, WalletClientLike>;
