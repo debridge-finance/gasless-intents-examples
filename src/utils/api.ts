@@ -8,7 +8,7 @@ import {
   GetBundlesFilterParams,
   PaginatedResponseMetadata,
   SubmitBundleResponse
-} from "../gasless-intents/types";
+} from "@gasless-intents/types";
 import { BASE_URL, getEndpoints } from "./constants";
 import { privateKeyToAccount } from "viem/accounts";
 import { getWalletClients } from "./wallet";
@@ -23,7 +23,7 @@ const {
 export async function createBundle(requestBody: BundleProposeBody): Promise<Bundle> {
   const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
 
-  return response;
+  return response as Bundle;
 }
 
 /**
@@ -40,7 +40,7 @@ export async function createBundle(requestBody: BundleProposeBody): Promise<Bund
 export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
   const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 
-  return response;
+  return response as SubmitBundleResponse;
 }
 
 export async function getBundles(filters: GetBundlesFilterParams): Promise<PaginatedResponseMetadata & { bundles: Array<Bundle> }> {
@@ -54,11 +54,11 @@ export async function getBundles(filters: GetBundlesFilterParams): Promise<Pagin
   console.log("Fetching bundles...", url);
   const res = await getUrl(url);
 
-  return res;
+  return res as PaginatedResponseMetadata & { bundles: Array<Bundle> };
 }
 
 export async function getBundleById(bundleId: string): Promise<Bundle> {
-  return getUrl(`${BUNDLES_URL}/${bundleId}`);
+  return getUrl(`${BUNDLES_URL}/${bundleId}`) as Promise<Bundle>;
 }
 
 export async function cancelBundles(
@@ -77,5 +77,5 @@ export async function cancelBundles(
     signature,
   }
 
-  return postUrl(BUNDLE_CANCEL_URL, requestBody);
+  return postUrl(BUNDLE_CANCEL_URL, requestBody) as Promise<BundleCancelResponse>;
 }

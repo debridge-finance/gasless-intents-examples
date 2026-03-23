@@ -1,18 +1,10 @@
-import { ByteArray, serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from "viem";
-import {
-  Action,
-  Bundle,
-  EIP712Data,
-  Sign7702AuthorizationData,
-  SignatureTypes,
-  SolanaSign,
-  Tx,
-} from "../../gasless-intents/types";
-import { getChainIdToWalletClientMap } from "../wallet";
-import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
-import { SOLANA_RPC_URL } from "../constants";
-import { prepareSolanaTransaction, signHexMessageBySolanaKey } from "../solana";
-import { clipHexPrefix, toHexPrefixString } from "..";
+import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
+import { Action, Bundle, EIP712Data, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx } from '@gasless-intents/types';
+import { getChainIdToWalletClientMap } from '../wallet';
+import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js';
+import { SOLANA_RPC_URL } from '../constants';
+import { prepareSolanaTransaction, signHexMessageBySolanaKey } from '../solana';
+import { clipHexPrefix, toHexPrefixString } from '..';
 
 export async function signAction(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
@@ -20,7 +12,9 @@ export async function signAction(action: Action, walletClient: WalletClient | Ke
   switch (action.type) {
     case SignatureTypes.Sign7702Authorization:
     case SignatureTypes.Sign712:
-    case SignatureTypes.Sign712MetaMask: {
+    case SignatureTypes.Sign712MetaMask:
+    case SignatureTypes.Permit:
+    case SignatureTypes.Permit2: {
       return evmActionSign(action, walletClient as WalletClient);
     }
     case SignatureTypes.Sign: {
@@ -109,7 +103,11 @@ async function evmActionSign(action: Action, walletClient: WalletClient): Promis
   }
 
   // EIP-712 Typed Data - Sign712
-  else if (action.type === SignatureTypes.Sign712 || action.type === SignatureTypes.Sign712MetaMask) {
+  else if (
+    action.type === SignatureTypes.Sign712 || 
+    action.type === SignatureTypes.Sign712MetaMask || 
+    action.type === SignatureTypes.Permit || 
+    action.type === SignatureTypes.Permit2) {
     const data = action.data as EIP712Data;
     const { domain, types, message, primaryType } = data;
 

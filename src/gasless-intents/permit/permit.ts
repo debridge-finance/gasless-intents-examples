@@ -1,15 +1,14 @@
-import { privateKeyToAccount } from "viem/accounts";
 import util from "util"
 import { randomUUID } from 'crypto';
+import { privateKeyToAccount } from "viem/accounts";
 
-import { USDC } from '@utils/constants';
-import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getMorphoDepositPosthook } from '@utils/posthooks';
-import { createBundle, submitBundle } from '@utils/api';
-import { BundleProposeBody, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
-import { processIntentBundle } from '@utils/signatures/intent-signatures';
-import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
+import { ApprovalMode, ApproveAmount, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { USDC, USDT } from "@utils/constants";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -18,11 +17,24 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const baseUsdcMorphoDeposit = await getMorphoDepositPosthook(toHexPrefixString(USDC.Base), 8453, account.address);
-
-  console.log("Deposit Call PostHook Calldata:", baseUsdcMorphoDeposit);
-
+  const senderAddress = account.address;
+  
   const requestId = randomUUID();
+
+  const uniPermitTrade: Trade = {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: USDT.Arbitrum,
+    srcChainTokenInAmount: "1000000", // 1 USDT
+    srcChainTokenInMinAmount: "1000000", // 1 USDT
+    srcChainTokenInMaxAmount: "1000000", // 1 USDT
+    dstChainId: CHAIN_IDS.Polygon,
+    dstChainTokenOut: USDC.Polygon,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: senderAddress,
+    srcChainAuthorityAddress: senderAddress,
+    dstChainAuthorityAddress: senderAddress,
+    prependOperatingExpenses: true
+  }
 
   const requestBody: BundleProposeBody = {
     requestId,
@@ -30,13 +42,13 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
+    preHooks: [],
     trades: [
-      getPolygonUsdcToBaseUsdc(account.address),
-      getPolyMaticToBaseUsdc(account.address),
+      uniPermitTrade
     ],
-    postHooks: [
-      baseUsdcMorphoDeposit
-    ],
+    postHooks: [],
+    approvalMode: ApprovalMode.Permit,
+    approveAmountFlag: ApproveAmount.Unlimited
   }
 
   console.log("Creating bundle...");

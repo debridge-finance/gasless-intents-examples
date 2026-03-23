@@ -83,17 +83,35 @@ export type Trade = {
   metadata?: null;
 }
 
+export enum ApprovalMode {
+  Approve = "approve",
+  Permit = "permit",
+}
+
+export enum ApproveAmount {
+  Unlimited = "unlimited",
+}
+
 export type BundleBase = {
   // Client-side UUIDs
   requestId?: string; // Client-side UUID for idempotency, enforced on /submit endpoint
   userId?: string; // Client side user ID, enforced on /submit endpoint
 
-  // Flags
+  // Primitives
+  trades: Array<Trade>;
+  preHooks?: Array<any>;
+  postHooks?: Array<Hook>;
+
+  // Referral code for partner attribution
+  referralCode?: number;
+
+  // Bundle execution params
   enableAccountAbstraction: boolean;
   isAtomic: boolean;
 
-  trades: Array<Trade>;
-  referralCode?: number;
+  // Permit flags 
+  approvalMode?: ApprovalMode; // Defaults to "approve" if not provided
+  approveAmountFlag?: ApproveAmount; // Defaults to "none" if not provided
 }
 
 export type BundleProposeBody = BundleBase & {
@@ -114,7 +132,9 @@ export enum SignatureTypes {
   Sign7702Authorization = "Sign7702Authorization",
   Sign = "Sign", // Solana Hex Sign - Authorization
   SignTransaction = "SignTransaction", // Solana Versioned Transaction signing
-  Transaction = "Transaction" // Could be EVM or Solana - Solana doesn't have `value` and `to` fields.
+  Transaction = "Transaction", // Could be EVM or Solana - Solana doesn't have `value` and `to` fields.
+  Permit = "Permit",
+  Permit2 = "Permit2"
 }
 
 // Type for EIP-712 data

@@ -1,8 +1,7 @@
 import { createWalletClient, http } from "viem";
-import { getEnvConfig, toHexPrefixString } from "../utils";
+import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { base } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { EVM_NATIVE_TOKEN } from "../utils/constants";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -27,6 +26,8 @@ async function main() {
     data: "0x",
     to: owner.address,
   } as any);
+
+  console.log("Transaction hash:", hash);
 }
 
 main().catch((error) => {

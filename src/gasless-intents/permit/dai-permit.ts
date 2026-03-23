@@ -1,16 +1,19 @@
+import util from "util";
+import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
-import util from "util"
-import { randomUUID } from 'crypto';
 
-import { USDC } from '@utils/constants';
-import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getMorphoDepositPosthook } from '@utils/posthooks';
-import { createBundle, submitBundle } from '@utils/api';
-import { BundleProposeBody, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
-import { processIntentBundle } from '@utils/signatures/intent-signatures';
-import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
+import { ApprovalMode, ApproveAmount, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { DAI, USDC } from "@utils/constants";
 
+/**
+ * Debug – inspect the required actions returned by the API. DAI-style permit (selector 8fcbaf0c) is not supported.
+ * The action returned falls back to EIP712MetaMask approve(), unless Permit2 allowance conditions are met.
+ */
 async function main() {
   const { privateKey } = getEnvConfig();
 
@@ -18,26 +21,37 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const baseUsdcMorphoDeposit = await getMorphoDepositPosthook(toHexPrefixString(USDC.Base), 8453, account.address);
-
-  console.log("Deposit Call PostHook Calldata:", baseUsdcMorphoDeposit);
+  const senderAddress = account.address;
 
   const requestId = randomUUID();
 
+  const daiPermitTrade: Trade = {
+    srcChainId: CHAIN_IDS.Ethereum,
+    srcChainTokenIn: DAI.Ethereum,
+    srcChainTokenInAmount: "3000000000000000000", // 3 DAI
+    srcChainTokenInMinAmount: "3000000000000000000", // 3 DAI
+    srcChainTokenInMaxAmount: "3000000000000000000", // 3 DAI
+    dstChainId: CHAIN_IDS.Polygon,
+    dstChainTokenOut: USDC.Polygon,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: senderAddress,
+    srcChainAuthorityAddress: senderAddress,
+    dstChainAuthorityAddress: senderAddress,
+    prependOperatingExpenses: true,
+  };
+
   const requestBody: BundleProposeBody = {
     requestId,
-    expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
+    expirationTimestamp: Math.floor((new Date().getTime() * 2) / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [
-      getPolygonUsdcToBaseUsdc(account.address),
-      getPolyMaticToBaseUsdc(account.address),
-    ],
-    postHooks: [
-      baseUsdcMorphoDeposit
-    ],
-  }
+    preHooks: [],
+    trades: [daiPermitTrade],
+    postHooks: [],
+    approvalMode: ApprovalMode.Permit,
+    approveAmountFlag: ApproveAmount.Unlimited,
+  };
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
@@ -62,7 +76,7 @@ async function main() {
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,
-    signedData: signedDataArray
+    signedData: signedDataArray,
   };
 
   console.log("Payload prepared with signatures. Ready for submission.");

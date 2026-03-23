@@ -1,7 +1,5 @@
 export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
 
-// export const BASE_URL = "https://api-dev.debridge.io"; // 0x219c915f73b86f625f1668a436b2f9712465a2625452396b9f1a195dc4f70cb7
-
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
 
@@ -45,6 +43,8 @@ export const USDT = {
   Polygon: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
   BNB: "0x55d398326f99059ff775485246999027b3197955",
   Solana: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+  Arbitrum: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+  Base: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2"
 };
 
 export const LINK = {
@@ -62,7 +62,9 @@ export const WETH = {
 
 export const DAI = {
   Polygon: "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
-};
+  Arbitrum: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+  Ethereum: "0x6b175474e89094c44da98b954eedeac495271d0f",
+}
 
 export const POLYTRADE = {
   Polygon: "0x692ac1e363ae34b6b489148152b12e2785a3d8d6",
@@ -81,3 +83,4 @@ export const DE_BRIDGE_CONTRACTS = {
     IntentManager: "0xDDDDDDDdeB2E68Ee19832e356FCB5537124A9708",
   },
 };
+
