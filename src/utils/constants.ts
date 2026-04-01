@@ -35,6 +35,7 @@ export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" // 6 decima
 export const DBR_SOL = "DBRiDgJAMsM95moTzJs7M9LnkGErpbv9v6CUR1DXnUu5";
 
 export const USDC = {
+  Ethereum: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
   Polygon: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
   BNB: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
   Base: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -44,6 +45,7 @@ export const USDC = {
 }
 
 export const USDT = {
+  Ethereum: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
   Polygon: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
   BNB: "0x55d398326f99059ff775485246999027b3197955",
   Solana: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
@@ -60,7 +62,12 @@ export const WBNB = {
 }
 
 export const WETH = {
+  Ethereum: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   Polygon: "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+}
+
+export const WBTC = {
+  Ethereum: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
 }
 
 export const DAI = {

@@ -3,10 +3,12 @@ import { resolve } from "path";
 import { fetchTokenChart } from "@price/client";
 import { renderPriceChartSvg } from "@price/renderers/price-chart";
 import { ChartRange, ChartType } from "@price/types";
+import { CHAIN_IDS } from "@utils/chains";
+import { WETH } from "@utils/constants";
 
 // ── Edit these ──────────────────────────────────────────────
-const CHAIN_ID = 1;
-const TOKEN_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
+const CHAIN_ID = CHAIN_IDS.Ethereum;
+const TOKEN_ADDRESS = WETH.Ethereum;
 const TOKEN_LABEL = "WETH";
 const CHART_TYPE = ChartType.OHLC;
 const RANGE = ChartRange.FIVE_YEARS;

@@ -3,10 +3,12 @@ import { resolve } from "path";
 import { fetchTokenChart } from "@price/client";
 import { renderPriceChartSvg } from "@price/renderers/price-chart";
 import { ChartRange, ChartType } from "@price/types";
+import { CHAIN_IDS } from "@utils/chains";
+import { WBTC } from "@utils/constants";
 
 // ── Edit these ──────────────────────────────────────────────
-const CHAIN_ID = 1;
-const TOKEN_ADDRESS = "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"; // WBTC
+const CHAIN_ID = CHAIN_IDS.Ethereum;
+const TOKEN_ADDRESS = WBTC.Ethereum;
 const TOKEN_LABEL = "WBTC";
 const CHART_TYPE = ChartType.LINE;
 const RANGE = ChartRange.ALL;

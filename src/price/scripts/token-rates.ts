@@ -3,13 +3,15 @@ import { resolve } from "path";
 import { fetchTokenRates } from "@price/client";
 import { renderRatesTableSvg } from "@price/renderers/rates-table";
 import { TokenPriceRequestItem } from "@price/types";
+import { CHAIN_IDS } from "@utils/chains";
+import { USDT, USDC, WETH, WBTC } from "@utils/constants";
 
 // ── Edit these ──────────────────────────────────────────────
 const TOKENS: TokenPriceRequestItem[] = [
-  { chainId: 1, tokenAddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7" }, // USDT
-  { chainId: 1, tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" }, // USDC
-  { chainId: 1, tokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" }, // WETH
-  { chainId: 1, tokenAddress: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599" }, // WBTC
+  { chainId: CHAIN_IDS.Ethereum, tokenAddress: USDT.Ethereum },
+  { chainId: CHAIN_IDS.Ethereum, tokenAddress: USDC.Ethereum },
+  { chainId: CHAIN_IDS.Ethereum, tokenAddress: WETH.Ethereum },
+  { chainId: CHAIN_IDS.Ethereum, tokenAddress: WBTC.Ethereum },
 ];
 
 const OUTPUT = "output/token-rates.svg";

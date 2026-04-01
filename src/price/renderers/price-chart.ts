@@ -58,10 +58,14 @@ function axisFormat(range: string): { format: string; title: string } {
 }
 
 function buildLineSpec(data: LineChartResponse, title: string, theme: ChartTheme): any {
+  const now = new Date().toISOString();
+  const lastPoint = data.points[data.points.length - 1];
   const points = data.points.map((p) => ({
     time: new Date(p.t * 1000).toISOString(),
     rate: p.rate,
   }));
+  // Extend to current time so the axis shows "now"
+  points.push({ time: now, rate: lastPoint.rate });
 
   return {
     $schema: "https://vega.github.io/schema/vega-lite/v5.json",
@@ -83,6 +87,8 @@ function buildLineSpec(data: LineChartResponse, title: string, theme: ChartTheme
 }
 
 function buildOhlcSpec(data: OHLCChartResponse, title: string, theme: ChartTheme): any {
+  const now = new Date().toISOString();
+  const lastPoint = data.points[data.points.length - 1];
   const points = data.points.map((p) => ({
     time: new Date(p.t * 1000).toISOString(),
     open: p.o,
@@ -92,6 +98,8 @@ function buildOhlcSpec(data: OHLCChartResponse, title: string, theme: ChartTheme
     volume: p.v,
     direction: p.c >= p.o ? "up" : "down",
   }));
+  // Extend to current time so the axis shows "now"
+  points.push({ time: now, open: lastPoint.c, high: lastPoint.c, low: lastPoint.c, close: lastPoint.c, volume: 0, direction: "up" });
 
   return {
     $schema: "https://vega.github.io/schema/vega-lite/v5.json",
