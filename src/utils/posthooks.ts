@@ -1,15 +1,15 @@
 import { clipHexPrefix, toHexPrefixString } from ".";
-import { ExtendedHook, GasCompensationInfo, Hook, PlaceHolder, SimpleHook } from "../gasless-intents/types";
+import { ExtendedHook, GasCompensationInfo, PlaceHolder } from "../gasless-intents/types";
 import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
 import { createAaveSupplyCall, createAaveWithdrawCall, createDepositCall, createTransferCall } from "./contract-calls";
 import { replaceAmountPlaceholder, replaceNamedPlaceholders } from "./hooks-common";
 import { getVaultAddressByToken } from "./morpho/get-vault-address";
 
-export async function getMorphoDepositPosthook(
+export async function getMorphoDepositHook(
   tokenAddress: `0x${string}`,
   chainId: number,
   beneficiaryAddress: `0x${string}`,
-): Promise<Hook> {
+): Promise<ExtendedHook> {
   const vaultAddress = await getVaultAddressByToken(tokenAddress, chainId);
 
   if (!vaultAddress || vaultAddress.length === 0 || vaultAddress === EVM_NATIVE_TOKEN) {
@@ -24,15 +24,20 @@ export async function getMorphoDepositPosthook(
 
   postHookTransaction.data = replaceAmountPlaceholder(postHookTransaction.data);
 
-  const result: Hook = {
+  const placeholder: PlaceHolder = {
+    nameVariable: "amount",
+    tokenAddress,
+    address: beneficiaryAddress,
+  };
+
+  const result: ExtendedHook = {
     isAtomic: true,
     data: postHookTransaction.data,
     to: postHookTransaction.to,
     value: postHookTransaction.value.toString(),
     chainId,
-    tokenAddress,
+    placeHolders: [placeholder],
     from: beneficiaryAddress,
-    preparePreRequiredActions: true,
   };
 
   return result;
@@ -81,16 +86,21 @@ export async function getSendNativeAssetPosthook(
   chainId: number,
   senderAddress: `0x${string}`,
   beneficiaryAddress: `0x${string}`,
-): Promise<Hook> {
-  const result: Hook = {
+): Promise<ExtendedHook> {
+  const placeholder: PlaceHolder = {
+    nameVariable: "amount1",
+    tokenAddress: EVM_NATIVE_TOKEN,
+    address: senderAddress,
+  };
+
+  const result: ExtendedHook = {
     isAtomic: true,
     data: "0x",
     to: beneficiaryAddress,
-    value: "{amount}",
+    value: "{amount1}",
     chainId,
-    tokenAddress: EVM_NATIVE_TOKEN,
     from: senderAddress,
-    preparePreRequiredActions: true,
+    placeHolders: [placeholder],
   };
 
   return result;
@@ -102,21 +112,26 @@ export async function getSendErc20SimpleHook(
   senderAddress: `0x${string}`,
   beneficiaryAddress: `0x${string}`,
   additionalAmount?: bigint,
-): Promise<SimpleHook> {
+): Promise<ExtendedHook> {
   const postHookTransaction = createTransferCall(beneficiaryAddress, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
 
+  
+  const placeholder: PlaceHolder = {
+    nameVariable: "amount1",
+    tokenAddress,
+    address: senderAddress,
+    additionalAmount: additionalAmount ? additionalAmount.toString() : undefined,
+  }
   postHookTransaction.data = replaceAmountPlaceholder(postHookTransaction.data);
 
-  const posthook: SimpleHook = {
+  const posthook: ExtendedHook = {
     isAtomic: true,
     data: postHookTransaction.data,
     to: tokenAddress,
     value: "0",
     chainId,
-    tokenAddress,
+    placeHolders: [placeholder],
     from: senderAddress,
-    preparePreRequiredActions: true,
-    additionalAmount: additionalAmount ? additionalAmount.toString() : undefined,
   };
 
   return posthook;
@@ -127,9 +142,9 @@ export async function getAaveSupplyHook(
   tokenAddress: `0x${string}`,
   chainId: number,
   beneficiaryAddress: `0x${string}`,
-): Promise<Hook> {
+): Promise<ExtendedHook> {
   if (!aaveContractAddress || aaveContractAddress.length === 0 || aaveContractAddress === EVM_NATIVE_TOKEN) {
-    throw new Error(`Invalid AAVE contract address - ${tokenAddress} on chain ${chainId}`);
+    throw new Error(`Invalid AAVE contract address ${aaveContractAddress} for token ${tokenAddress} on chain ${chainId}`);
   }
 
   const hookTransaction = createAaveSupplyCall(
@@ -143,15 +158,20 @@ export async function getAaveSupplyHook(
 
   hookTransaction.data = toHexPrefixString(modifiedCalldata);
 
-  const result: Hook = {
+  const placeholder: PlaceHolder = {
+    nameVariable: "amount",
+    tokenAddress,
+    address: beneficiaryAddress,
+  };
+
+  const result: ExtendedHook = {
     isAtomic: true,
     data: hookTransaction.data,
     to: hookTransaction.to,
     value: hookTransaction.value.toString(),
     chainId,
-    tokenAddress,
+    placeHolders: [placeholder],
     from: beneficiaryAddress,
-    preparePreRequiredActions: true,
   };
 
   return result;
@@ -165,7 +185,7 @@ export async function getAaveSupplyExtendedHook(
   placeholderName: string,
 ): Promise<ExtendedHook> {
   if (!aaveContractAddress || aaveContractAddress.length === 0 || aaveContractAddress === EVM_NATIVE_TOKEN) {
-    throw new Error(`Invalid AAVE contract address - ${tokenAddress} on chain ${chainId}`);
+    throw new Error(`Invalid AAVE contract address ${aaveContractAddress} for token ${tokenAddress} on chain ${chainId}`);
   }
 
   const hookTransaction = createAaveSupplyCall(
@@ -207,7 +227,7 @@ export async function getAaveWithdrawExtendedHook(
   amountToWithdraw?: bigint,
 ): Promise<ExtendedHook> {
   if (!aaveContractAddress || aaveContractAddress.length === 0 || aaveContractAddress === EVM_NATIVE_TOKEN) {
-    throw new Error(`Invalid AAVE contract address - ${tokenAddress} on chain ${chainId}`);
+    throw new Error(`Invalid AAVE contract address ${aaveContractAddress} for token ${tokenAddress} on chain ${chainId}`);
   }
 
   const hookTransaction = createAaveWithdrawCall(

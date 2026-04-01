@@ -1,5 +1,14 @@
 import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from "viem";
-import { Action, Bundle, EIP712Data, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx, WalletClientMap } from "@gasless-intents/types";
+import {
+  Action,
+  Bundle,
+  EIP712Data,
+  Sign7702AuthorizationData,
+  SignatureTypes,
+  SolanaSign,
+  Tx,
+  WalletClientMap,
+} from "@gasless-intents/types";
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import { SOLANA_RPC_URL } from "../constants";
 import { prepareSolanaTransaction, signHexMessageBySolanaKey } from "../solana";
@@ -186,11 +195,11 @@ export async function processIntentBundle(
   bundle: Bundle,
   walletClientMap: WalletClientMap,
 ): Promise<Array<{ actionId: string; signedData: string }>> {
-  return [
-    ...await collectSignaturesFromItems(bundle.intents, (i) => i.intent.intentChainId, walletClientMap),
-    ...await collectSignaturesFromItems(bundle.preHooks, (h) => h.hook.chainId, walletClientMap),
-    ...await collectSignaturesFromItems(bundle.postHooks, (h) => h.hook.chainId, walletClientMap),
-  ];
+  // tmp debugging, TODO: FIX
+  const a = await collectSignaturesFromItems(bundle.intents, (i) => i.intent.intentChainId, walletClientMap);
+  const b = await collectSignaturesFromItems(bundle.preHooks, (h) => h.hook.chainId, walletClientMap);
+  const c = await collectSignaturesFromItems(bundle.postHooks, (h) => h.hook.chainId, walletClientMap);
+  return [...a, ...b, ...c];
 }
 
 async function sign7702Authorization(walletClient: WalletClient, data: Sign7702AuthorizationData): Promise<`0x${string}`> {

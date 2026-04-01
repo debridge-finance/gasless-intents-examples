@@ -2,18 +2,23 @@ import { privateKeyToAccount } from "viem/accounts";
 import util from "util";
 import { randomUUID } from "crypto";
 
-import { AAVE_V3_POOL_ARBITRUM, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
-import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { getAaveWithdrawExtendedHook, getMorphoDepositExtendedHook } from "@utils/posthooks";
-import { createBundle, submitBundle } from "@utils/api";
-import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../../types";
-import { getArbitrumUsdcToBaseUsdc } from "../../trades";
-import { processIntentBundle } from "@utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "@utils/wallet";
-import { CHAIN_IDS } from "@utils/chains";
-import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
+import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "../../utils/constants";
+import { toHexPrefixString, getEnvConfig } from "../../utils";
+import { getAaveSupplyHook } from "@utils/hooks";
+import { createBundle, submitBundle } from "../../utils/api";
+import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../types";
+import { getPolygonUsdcToArbitrumUsdc, getPolyMaticToArbitrumUsdc } from "../trades";
+import { processIntentBundle } from "../../utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "../../utils/wallet";
+import { CHAIN_IDS } from "../../utils/chains";
 import { createApproveCall } from "@utils/contract-calls";
 import { replaceNamedPlaceholders } from "@utils/hooks-common";
+
+/**
+ * Fund requirements:
+ * - Polygon: 3 USDC
+ * – Polygon: 0.1 POLY
+ */
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -22,54 +27,41 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  // TODO: Figure out the amount
-  const amountToRebalance = "3204714"; // 3.204714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
+  const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
 
-  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawExtendedHook(
+  const arbitrumUsdcAaveDeposit = await getAaveSupplyHook(
     AAVE_V3_POOL_ARBITRUM,
     toHexPrefixString(USDC.Arbitrum),
     CHAIN_IDS.Arbitrum,
     account.address,
-    "aaveDepositAmount",
-    BigInt(amountToRebalance),
-  );
-
-  const morphoDeposit = await getMorphoDepositExtendedHook(
-    toHexPrefixString(USDC.Base),
-    CHAIN_IDS.Base,
     account.address,
-    "morphoDepositAmount",
   );
 
-  const morphoVaultAddress = await getVaultAddressByToken(USDC.Base, CHAIN_IDS.Base);
-
-  if (!morphoVaultAddress) {
-    throw new Error(`No Morpho vault found for ${USDC.Base} on ${CHAIN_IDS.Base}`);
-  }
-
-  const approveUsdcForMorphoCall = createApproveCall(
-    toHexPrefixString(USDC.Base),
-    toHexPrefixString(morphoVaultAddress), // Morpho Aave V3 on Base - https://docs.morpho.xyz/deployment-addresses#base
+  const approveCall = createApproveCall(
+    toHexPrefixString(USDC.Arbitrum),
+    toHexPrefixString(AAVE_V3_POOL_ARBITRUM),
     BigInt(PLACEHOLDER_TOKEN_AMOUNT),
   );
 
-  const placeholderMorphoDeposit: PlaceHolder = {
-    nameVariable: "morphoApproveAmount",
-    tokenAddress: USDC.Base,
+  const placeholder: PlaceHolder = {
+    nameVariable: "amount",
+    tokenAddress: USDC.Arbitrum,
     address: account.address,
-  }
+  };
 
-  approveUsdcForMorphoCall.data = replaceNamedPlaceholders(approveUsdcForMorphoCall.data, [placeholderMorphoDeposit.nameVariable]);
+  approveCall.data = replaceNamedPlaceholders(approveCall.data, [placeholder.nameVariable]);
 
-  const approveMorphoDepositHook: ExtendedHook = {
+  const approvePrehook: ExtendedHook = {
     isAtomic: true,
-    data: approveUsdcForMorphoCall.data,
-    to: approveUsdcForMorphoCall.to,
-    value: approveUsdcForMorphoCall.value.toString(),
-    chainId: CHAIN_IDS.Base,
+    data: approveCall.data,
+    to: approveCall.to,
+    value: approveCall.value.toString(),
+    chainId: CHAIN_IDS.Arbitrum,
     from: account.address,
-    placeHolders: [placeholderMorphoDeposit]
-  }
+    placeHolders: [placeholder],
+  };
+
+  console.log("Deposit Call PostHook Calldata:", arbitrumUsdcAaveDeposit);
 
   const requestId = randomUUID();
 
@@ -80,9 +72,8 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [getArbitrumUsdcToBaseUsdc(account.address, amountToRebalance)],
-    preHooks: [arbitrumUsdcAaveWithdraw],
-    postHooks: [morphoDeposit],
+    trades: [getPolygonUsdcToArbitrumUsdc(account.address), getPolyMaticToArbitrumUsdc(account.address)],
+    postHooks: [approvePrehook, arbitrumUsdcAaveDeposit],
   };
 
   console.log("Creating bundle...");

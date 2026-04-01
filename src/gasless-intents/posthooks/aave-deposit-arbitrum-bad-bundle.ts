@@ -4,12 +4,10 @@ import { randomUUID } from "crypto";
 
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
 import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { getAaveWithdrawExtendedHook } from "@utils/posthooks";
+import { getAaveSupplyHook } from "@utils/posthooks";
 import { createBundle, submitBundle } from "@utils/api";
-import { BundleProposeBody, TradingAlgorithm } from "../../types";
-import {
-  getArbitrumUsdcToArbitrumEth,
-} from "../../trades";
+import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { getPolygonUsdcToArbitrumUsdc, getPolyMaticToArbitrumUsdc } from "../trades";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
@@ -21,30 +19,25 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const amountToRebalance = "3204714"; // 3.204714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
-
-  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawExtendedHook(
+  const arbitrumUsdcAaveDeposit = await getAaveSupplyHook(
     AAVE_V3_POOL_ARBITRUM,
     toHexPrefixString(USDC.Arbitrum),
     CHAIN_IDS.Arbitrum,
     account.address,
-    "aaveDepositAmount",
-    BigInt(amountToRebalance),
   );
 
-  console.log("Withdraw Call PreHook Calldata:", arbitrumUsdcAaveWithdraw);
+  console.log("Deposit Call PostHook Calldata:", arbitrumUsdcAaveDeposit);
 
   const requestId = randomUUID();
 
   const requestBody: BundleProposeBody = {
     requestId,
-    referralCode: 110000002,
     expirationTimestamp: Math.floor((new Date().getTime() * 2) / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [getArbitrumUsdcToArbitrumEth(account.address, amountToRebalance)],
-    preHooks: [arbitrumUsdcAaveWithdraw],
+    trades: [getPolygonUsdcToArbitrumUsdc(account.address), getPolyMaticToArbitrumUsdc(account.address)],
+    postHooks: [arbitrumUsdcAaveDeposit],
   };
 
   console.log("Creating bundle...");
@@ -64,10 +57,9 @@ async function main() {
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
-  // Prepare the bundle with signatures - but don't submit yet
+  // Prepare the bundle with intent signatures for submission
   const submitPayload = {
     ...bundle,
-    referralCode: 110000002,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,

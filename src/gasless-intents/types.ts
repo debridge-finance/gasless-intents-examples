@@ -38,8 +38,8 @@ export type BundleCancelRequest = {
     intentOwner?: string,
     intentAuthority?: string
   },
-  creationTimestamp: string,
-  expirationTimestamp: string,
+  creationTimestamp?: string,
+  expirationTimestamp?: string,
   signature?: string,
   reasonCode?: CancelBundleReasonCodes,
 }
@@ -102,8 +102,8 @@ export type BundleBase = {
 
   // Primitives
   trades: Array<Trade>;
-  preHooks?: Array<ExtendedHook | SimpleHook>;
-  postHooks?: Array<ExtendedHook | SimpleHook>;
+  preHooks?: Array<ExtendedHook>;
+  postHooks?: Array<ExtendedHook>;
 
   // Referral code for partner attribution
   referralCode?: number;
@@ -323,18 +323,6 @@ export type PaginatedResponseMetadata = {
   totalPages: number;
 }
 
-export type Hook = {
-  isAtomic: boolean;
-  data: string;
-  to: string;
-  value: string;
-  chainId: number;
-  tokenAddress: string;
-  from: string;
-  preparePreRequiredActions?: boolean;
-  additionalAmount?: string; // Optional field for ERC-20 post-hooks that need to reserve extra tokens for the post-hook action
-}
-
 export type PlaceHolder = {
   nameVariable: string;      // e.g. "amount1" — matches {amount1} in data
   tokenAddress: string;      // token used for cumulative amount lookup
@@ -358,8 +346,6 @@ export type ExtendedHook = {
   placeHolders: PlaceHolder[]; // Array required, can be empty
   gasCompensationInfo?: GasCompensationInfo;
 };
-
-export type SimpleHook = Hook;  // Alias for semantic clarity alongside ExtendedHook
 
 /**
  * `to` and `value` are only available for EVM transactions.

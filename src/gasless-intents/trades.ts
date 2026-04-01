@@ -780,9 +780,9 @@ export function getPolygonUsdcToArbitrumUsdc(signer: string): Trade {
   return {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: "3000000", // 3 USDC
-    srcChainTokenInMinAmount: "3000000",
-    srcChainTokenInMaxAmount: "3000000",
+    srcChainTokenInAmount: "4000000", // 4 USDC
+    srcChainTokenInMinAmount: "4000000",
+    srcChainTokenInMaxAmount: "4000000",
     dstChainId: CHAIN_IDS.Arbitrum,
     dstChainTokenOut: USDC.Arbitrum,
     dstChainTokenOutAmount: "auto",

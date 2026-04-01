@@ -1,27 +1,20 @@
 export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
 
+// export const BASE_URL = "https://api-dev.debridge.io";
+
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
 
 export const BUNDLES = "/bundles";
 
-export const BUNDLES_URL = `${BASE_URL}${V1_BASE}${BUNDLES}`;
-
 export const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
 
-export function getEndpoints(baseUrl: string) {
-  const BUNDLES_URL = `${baseUrl}${V1_BASE}${BUNDLES}`;
-  const BUNDLE_PROPOSE_URL = `${baseUrl}${V1_1_BASE}${BUNDLES}`;
-  const BUNDLE_SUBMIT_URL = `${baseUrl}${V1_1_BASE}${BUNDLES}/submit`;
-  const BUNDLE_CANCEL_URL = `${baseUrl}${V1_BASE}${BUNDLES}/cancel`;
-
-  return {
-    BUNDLES_URL,
-    BUNDLE_PROPOSE_URL,
-    BUNDLE_SUBMIT_URL,
-    BUNDLE_CANCEL_URL,
-  };
-}
+export const ENDPOINTS = {
+  BUNDLES_URL: `${BASE_URL}${V1_BASE}${BUNDLES}`,
+  BUNDLE_PROPOSE_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}`,
+  BUNDLE_SUBMIT_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}/submit`,
+  BUNDLE_CANCEL_URL: `${BASE_URL}${V1_BASE}${BUNDLES}/cancel`,
+};
 
 // Tokens
 
@@ -44,7 +37,7 @@ export const USDT = {
   BNB: "0x55d398326f99059ff775485246999027b3197955",
   Solana: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
   Arbitrum: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
-  Base: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2"
+  Base: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2",
 };
 
 export const LINK = {
@@ -64,7 +57,7 @@ export const DAI = {
   Polygon: "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
   Arbitrum: "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
   Ethereum: "0x6b175474e89094c44da98b954eedeac495271d0f",
-}
+};
 
 export const POLYTRADE = {
   Polygon: "0x692ac1e363ae34b6b489148152b12e2785a3d8d6",
@@ -84,3 +77,6 @@ export const DE_BRIDGE_CONTRACTS = {
   },
 };
 
+// Pools
+
+export const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";

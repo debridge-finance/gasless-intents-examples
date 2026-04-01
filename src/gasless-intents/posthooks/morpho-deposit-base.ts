@@ -4,12 +4,13 @@ import { randomUUID } from 'crypto';
 
 import { USDC } from '@utils/constants';
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getMorphoDepositPosthook } from '@utils/posthooks';
+import { getMorphoDepositHook } from '@utils/posthooks';
 import { createBundle, submitBundle } from '@utils/api';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { CHAIN_IDS } from "@utils/chains";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -18,7 +19,7 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const baseUsdcMorphoDeposit = await getMorphoDepositPosthook(toHexPrefixString(USDC.Base), 8453, account.address);
+  const baseUsdcMorphoDeposit = await getMorphoDepositHook(toHexPrefixString(USDC.Base), CHAIN_IDS.Base, account.address);
 
   console.log("Deposit Call PostHook Calldata:", baseUsdcMorphoDeposit);
 

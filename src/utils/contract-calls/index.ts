@@ -57,7 +57,7 @@ export function createDepositCall(vaultAddress: Address, amount: bigint, receive
 /** AAVE V3 */
 
 export function createAaveSupplyCall(
-  contractAddress: string,
+  contractAddress: `0x${string}`,
   assetAddress: `0x${string}`,
   supplyAmount: bigint,
   onBehalfOf: `0x${string}`,
@@ -77,7 +77,7 @@ export function createAaveSupplyCall(
 }
 
 export function createAaveWithdrawCall(
-  contractAddress: string,
+  contractAddress: `0x${string}`,
   assetAddress: `0x${string}`,
   withdrawAmount: bigint,
   to: `0x${string}`,
