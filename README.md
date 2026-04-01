@@ -26,7 +26,7 @@ pre/post-hooks, and working with both EVM and Solana chains.
 | **Solana Trade Scenarios**   | Mixed cross-chain and same-chain Solana bundles                              | EVM + Solana | [`solana-trade-scenarios/`](src/gasless-intents/solana-trade-scenarios/)                                    |
 | **WebSockets**               | Real-time bundle status tracking via WebSocket client + HTML tracker         | EVM          | [`web-sockets/`](src/gasless-intents/web-sockets/)                                                          |
 | **EIP-7702 Authorization**   | Manual account abstraction authorization on Base                             | EVM (Base)   | [`manual-authorization-base.ts`](src/gasless-intents/manual-authorization-base.ts)                          |
-| **Price API**                | Token rates table and price chart with SVG output                            | Any chain    | [`price/`](src/price/)                                                                                      |
+| **Price API**                | Token rates table and price chart with SVG output                            | Any chain    | [`price/examples/`](src/price/examples/)                                                                    |
 
 ## Quick Start
 
@@ -129,11 +129,14 @@ introduced with MetaMask delegation framework, enabling account abstraction with
 
 `token-rates.ts` fetches current USD prices for a set of tokens via `POST /v1/token/price` and renders a table as an SVG file.
 `token-chart.ts` fetches historical price data via `GET /v1/token/chart` (line or OHLC) and renders a chart as an SVG file.
-Both scripts write SVG output to the `output/` directory.
+Additional chart scripts demonstrate longer time ranges (`THREE_MONTHS`, `SIX_MONTHS`, `FIVE_YEARS`, `ALL`).
+All scripts write SVG output to the `output/` directory.
 
 ```bash
-npm run example:rates    # → output/token-rates.svg
-npm run example:chart    # → output/token-chart-DAY.svg
+npx tsx src/price/examples/chart-three-months.ts   # → output/token-chart-line-THREE_MONTHS.svg
+npx tsx src/price/examples/chart-six-months.ts     # → output/token-chart-line-SIX_MONTHS.svg
+npx tsx src/price/examples/chart-five-years.ts     # → output/token-chart-line-FIVE_YEARS.svg
+npx tsx src/price/examples/chart-all.ts            # → output/token-chart-line-ALL.svg
 ```
 
 > **Note:** The `canvas` npm package (used by Vega for server-side SVG rendering) has native bindings. On Ubuntu/WSL, install system libraries first:
@@ -173,7 +176,9 @@ src/
 │   ├── manual-authorization-base.ts  # EIP-7702 authorization
 │   ├── trades.ts               # Trade factory functions
 │   └── types.ts                # Shared TypeScript types
-├── price/                      # Price API examples (token rates, charts)
+├── price/                      # Price API
+│   ├── examples/               # Runnable scripts (rates, charts by range)
+│   ├── renderers/              # Vega-Lite SVG renderers
 └── utils/                      # Shared utilities
     ├── api.ts                  # createBundle, submitBundle, getBundles, cancelBundles
     ├── chains.ts               # Chain ID constants

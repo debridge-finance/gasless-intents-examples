@@ -7,10 +7,7 @@
     "build": "tsc && tsc-alias",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "example:rates": "npx tsx src/price/token-rates.ts",
-    "example:chart": "npx tsx src/price/token-chart.ts"
+    "lint:fix": "eslint src/ --fix"
   },
   "author": "",
   "license": "ISC",
