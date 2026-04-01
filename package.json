@@ -8,7 +8,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example:rates": "npx tsx src/price/token-rates.ts",
+    "example:chart": "npx tsx src/price/token-chart.ts"
   },
   "author": "",
   "license": "ISC",
@@ -26,9 +28,12 @@
     "@debridge-finance/solana-utils": "^5.2.0",
     "@solana/web3.js": "^1.98.2",
     "bs58": "^6.0.0",
+    "canvas": "^3.2.3",
     "dotenv": "^16.5.0",
     "ethers": "^6.13.5",
     "tweetnacl": "^1.0.3",
+    "vega": "^6.2.0",
+    "vega-lite": "^6.4.2",
     "viem": "^2.36.0",
     "ws": "^8.19.0"
   }

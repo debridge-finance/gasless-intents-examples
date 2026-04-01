@@ -26,6 +26,7 @@ pre/post-hooks, and working with both EVM and Solana chains.
 | **Solana Trade Scenarios**   | Mixed cross-chain and same-chain Solana bundles                              | EVM + Solana | [`solana-trade-scenarios/`](src/gasless-intents/solana-trade-scenarios/)                                    |
 | **WebSockets**               | Real-time bundle status tracking via WebSocket client + HTML tracker         | EVM          | [`web-sockets/`](src/gasless-intents/web-sockets/)                                                          |
 | **EIP-7702 Authorization**   | Manual account abstraction authorization on Base                             | EVM (Base)   | [`manual-authorization-base.ts`](src/gasless-intents/manual-authorization-base.ts)                          |
+| **Price API**                | Token rates table and price chart with SVG output                            | Any chain    | [`price/`](src/price/)                                                                                      |
 
 ## Quick Start
 
@@ -124,6 +125,20 @@ your EOA to a
 [EIP7702StatelessDeleGator](https://github.com/MetaMask/delegation-framework/blob/main/documents/EIP7702DeleGator.md) contract,
 introduced with MetaMask delegation framework, enabling account abstraction without deploying a separate smart account.
 
+### Price API
+
+`token-rates.ts` fetches current USD prices for a set of tokens via `POST /v1/token/price` and renders a table as an SVG file.
+`token-chart.ts` fetches historical price data via `GET /v1/token/chart` (line or OHLC) and renders a chart as an SVG file.
+Both scripts write SVG output to the `output/` directory.
+
+```bash
+npm run example:rates    # → output/token-rates.svg
+npm run example:chart    # → output/token-chart-DAY.svg
+```
+
+> **Note:** The `canvas` npm package (used by Vega for server-side SVG rendering) has native bindings. On Ubuntu/WSL, install system libraries first:
+> `sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
+
 ## Common Patterns
 
 - **Bundle lifecycle**: `createBundle()` → collect signatures via `processIntentBundle()` → `submitBundle()`
@@ -158,6 +173,7 @@ src/
 │   ├── manual-authorization-base.ts  # EIP-7702 authorization
 │   ├── trades.ts               # Trade factory functions
 │   └── types.ts                # Shared TypeScript types
+├── price/                      # Price API examples (token rates, charts)
 └── utils/                      # Shared utilities
     ├── api.ts                  # createBundle, submitBundle, getBundles, cancelBundles
     ├── chains.ts               # Chain ID constants

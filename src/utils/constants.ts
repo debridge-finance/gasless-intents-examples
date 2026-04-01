@@ -23,6 +23,10 @@ export function getEndpoints(baseUrl: string) {
   }
 }
 
+// Price API (no /gasless prefix)
+export const PRICE_RATES_URL = `${BASE_URL}/v1/token/price`;
+export const PRICE_CHART_URL = `${BASE_URL}/v1/token/chart`;
+
 // Tokens
 
 export const SOL_NATIVE = "11111111111111111111111111111111"
