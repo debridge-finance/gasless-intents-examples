@@ -1,4 +1,4 @@
-import { TokenPriceResponseItem } from "../types";
+import { TokenPriceResponseItem } from "@price/types";
 
 // vega 6+ is ESM-only; use dynamic import() for CJS compatibility
 async function loadVega() {

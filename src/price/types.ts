@@ -5,7 +5,11 @@ export enum ChartRange {
   DAY = "DAY",
   WEEK = "WEEK",
   MONTH = "MONTH",
+  THREE_MONTHS = "THREE_MONTHS",
+  SIX_MONTHS = "SIX_MONTHS",
   YEAR = "YEAR",
+  FIVE_YEARS = "FIVE_YEARS",
+  ALL = "ALL",
 }
 
 export enum ChartType {

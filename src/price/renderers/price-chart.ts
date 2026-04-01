@@ -1,4 +1,4 @@
-import { ChartResponse, ChartType, LineChartResponse, OHLCChartResponse } from "../types";
+import { ChartResponse, ChartType, ChartRange, LineChartResponse, OHLCChartResponse } from "@price/types";
 
 // vega 6+ is ESM-only; use dynamic import() for CJS compatibility
 async function loadVega() {
@@ -35,6 +35,28 @@ export const LIGHT_THEME: ChartTheme = {
   downColor: "#f44336",
 };
 
+function axisFormat(range: string): { format: string; title: string } {
+  switch (range) {
+    case ChartRange.HOUR:
+    case ChartRange.DAY:
+      return { format: "%H:%M", title: "Time" };
+    case ChartRange.WEEK:
+      return { format: "%a %d", title: "Date" };
+    case ChartRange.MONTH:
+      return { format: "%b %d", title: "Date" };
+    case ChartRange.THREE_MONTHS:
+    case ChartRange.SIX_MONTHS:
+      return { format: "%b %d", title: "Date" };
+    case ChartRange.YEAR:
+      return { format: "%b %Y", title: "Date" };
+    case ChartRange.FIVE_YEARS:
+    case ChartRange.ALL:
+      return { format: "%b %Y", title: "Date" };
+    default:
+      return { format: "%b %d, %Y", title: "Date" };
+  }
+}
+
 function buildLineSpec(data: LineChartResponse, title: string, theme: ChartTheme): any {
   const points = data.points.map((p) => ({
     time: new Date(p.t * 1000).toISOString(),
@@ -54,7 +76,7 @@ function buildLineSpec(data: LineChartResponse, title: string, theme: ChartTheme
     data: { values: points },
     mark: { type: "line", color: theme.lineColor, strokeWidth: 2 },
     encoding: {
-      x: { field: "time", type: "temporal", title: "Time", axis: { format: "%H:%M", labelAngle: -45 } },
+      x: { field: "time", type: "temporal", title: axisFormat(data.range).title, axis: { format: axisFormat(data.range).format, labelAngle: -45 } },
       y: { field: "rate", type: "quantitative", title: "Price (USD)", scale: { zero: false } },
     },
   };
@@ -83,7 +105,7 @@ function buildOhlcSpec(data: OHLCChartResponse, title: string, theme: ChartTheme
     },
     data: { values: points },
     encoding: {
-      x: { field: "time", type: "temporal", title: "Time", axis: { format: "%H:%M", labelAngle: -45 } },
+      x: { field: "time", type: "temporal", title: axisFormat(data.range).title, axis: { format: axisFormat(data.range).format, labelAngle: -45 } },
       color: {
         field: "direction",
         type: "nominal",

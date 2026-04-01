@@ -1,8 +1,8 @@
 import { writeFileSync, mkdirSync } from "fs";
 import { resolve } from "path";
-import { fetchTokenRates } from "./client";
-import { renderRatesTableSvg } from "./renderers/rates-table";
-import { TokenPriceRequestItem } from "./types";
+import { fetchTokenRates } from "@price/client";
+import { renderRatesTableSvg } from "@price/renderers/rates-table";
+import { TokenPriceRequestItem } from "@price/types";
 
 // ── Edit these ──────────────────────────────────────────────
 const TOKENS: TokenPriceRequestItem[] = [
@@ -31,6 +31,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("\n FATAL ERROR in script execution:", error);
+  console.error("\n🚨 FATAL ERROR in script execution:", error);
   process.exitCode = 1;
 });

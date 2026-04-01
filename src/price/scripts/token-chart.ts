@@ -1,8 +1,8 @@
 import { writeFileSync, mkdirSync } from "fs";
 import { resolve } from "path";
-import { fetchTokenChart } from "./client";
-import { renderPriceChartSvg } from "./renderers/price-chart";
-import { ChartRange, ChartType } from "./types";
+import { fetchTokenChart } from "@price/client";
+import { renderPriceChartSvg } from "@price/renderers/price-chart";
+import { ChartRange, ChartType } from "@price/types";
 
 // ── Edit these ──────────────────────────────────────────────
 const CHAIN_ID = 1;
@@ -41,6 +41,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("\n FATAL ERROR in script execution:", error);
+  console.error("\n🚨 FATAL ERROR in script execution:", error);
   process.exitCode = 1;
 });
