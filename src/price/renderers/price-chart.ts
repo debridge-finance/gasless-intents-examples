@@ -78,7 +78,7 @@ function buildLineSpec(data: LineChartResponse, title: string, theme: ChartTheme
       axis: { gridColor: theme.axisColor, domainColor: theme.axisColor, tickColor: theme.axisColor, labelColor: theme.textColor, titleColor: theme.textColor },
     },
     data: { values: points },
-    mark: { type: "line", color: theme.lineColor, strokeWidth: 2 },
+    mark: { type: "line", color: theme.lineColor, strokeWidth: 1.5 },
     encoding: {
       x: { field: "time", type: "temporal", title: axisFormat(data.range).title, axis: { format: axisFormat(data.range).format, labelAngle: -45 } },
       y: { field: "rate", type: "quantitative", title: "Price (USD)", scale: { zero: false } },
@@ -101,41 +101,68 @@ function buildOhlcSpec(data: OHLCChartResponse, title: string, theme: ChartTheme
   // Extend to current time so the axis shows "now"
   points.push({ time: now, open: lastPoint.c, high: lastPoint.c, low: lastPoint.c, close: lastPoint.c, volume: 0, direction: "up" });
 
+  const { format, title: xTitle } = axisFormat(data.range);
+
+  // Scale bar width to data density — leave ~30% gap between bars
+  const chartWidth = 720;
+  const barWidth = Math.max(1, Math.floor((chartWidth / points.length) * 0.7));
+  const wickWidth = Math.max(0.5, barWidth <= 3 ? 0.5 : 1);
+
   return {
     $schema: "https://vega.github.io/schema/vega-lite/v5.json",
-    width: 720,
-    height: 360,
     padding: 24,
     title: { text: title, color: theme.textColor, fontSize: 16 },
     config: {
       background: theme.background,
       axis: { gridColor: theme.axisColor, domainColor: theme.axisColor, tickColor: theme.axisColor, labelColor: theme.textColor, titleColor: theme.textColor },
+      concat: { spacing: 2 },
     },
     data: { values: points },
-    encoding: {
-      x: { field: "time", type: "temporal", title: axisFormat(data.range).title, axis: { format: axisFormat(data.range).format, labelAngle: -45 } },
-      color: {
-        field: "direction",
-        type: "nominal",
-        scale: { domain: ["up", "down"], range: [theme.upColor, theme.downColor] },
-        legend: null,
-      },
-    },
-    layer: [
-      // High-low wicks
+    vconcat: [
+      // Price panel (candlesticks)
       {
-        mark: { type: "rule" },
+        width: chartWidth,
+        height: 300,
         encoding: {
-          y: { field: "low", type: "quantitative", title: "Price (USD)", scale: { zero: false } },
-          y2: { field: "high" },
+          x: { field: "time", type: "temporal", axis: { format, labels: false, title: null, grid: true, gridOpacity: 0.3 } },
+          color: {
+            field: "direction",
+            type: "nominal",
+            scale: { domain: ["up", "down"], range: [theme.upColor, theme.downColor] },
+            legend: null,
+          },
         },
+        layer: [
+          {
+            mark: { type: "rule", strokeWidth: wickWidth },
+            encoding: {
+              y: { field: "low", type: "quantitative", title: "Price (USD)", scale: { zero: false } },
+              y2: { field: "high" },
+            },
+          },
+          {
+            mark: { type: "bar", width: barWidth },
+            encoding: {
+              y: { field: "open", type: "quantitative" },
+              y2: { field: "close" },
+            },
+          },
+        ],
       },
-      // Open-close bodies
+      // Volume panel
       {
-        mark: { type: "bar", width: 8 },
+        width: chartWidth,
+        height: 60,
+        mark: { type: "bar", width: barWidth },
         encoding: {
-          y: { field: "open", type: "quantitative" },
-          y2: { field: "close" },
+          x: { field: "time", type: "temporal", title: xTitle, axis: { format, labelAngle: -45, gridOpacity: 0.3 } },
+          y: { field: "volume", type: "quantitative", title: "Volume", axis: { tickCount: 3 } },
+          color: {
+            field: "direction",
+            type: "nominal",
+            scale: { domain: ["up", "down"], range: [theme.upColor, theme.downColor] },
+            legend: null,
+          },
         },
       },
     ],
