@@ -139,6 +139,62 @@ export function extractSignAction(payload) {
   return null;
 }
 
+/**
+ * Refreshes Solana blockhashes in preHook actions BEFORE signing.
+ *
+ * Prehook builders use a placeholder blockhash ("11111111111111111111111111111111").
+ * The API returns this placeholder unchanged. We must replace it with a fresh
+ * blockhash from the Solana RPC before signing, otherwise validators will reject
+ * the transaction.
+ *
+ * Only refreshes SignTransaction actions of type "Hook" (not "Compensation").
+ * GasCompensation transactions are handled by the API.
+ */
+export async function refreshSolanaPreHookBlockhashes(
+  bundle: { preHooks?: Array<{ requiredActions?: Array<any>; hook?: { chainId?: number } }> },
+  solanaChainId: number,
+  solRpcUrl: string,
+): Promise<void> {
+  const preHooks = bundle.preHooks;
+  if (!preHooks || !Array.isArray(preHooks)) return;
+
+  const hasSolanaHook = preHooks.some(
+    (h) => h.hook?.chainId === solanaChainId,
+  );
+  if (!hasSolanaHook) return;
+
+  const connection = new Connection(solRpcUrl, "confirmed");
+  const { blockhash: newBlockhash } = await connection.getLatestBlockhash({
+    commitment: "confirmed",
+  });
+
+  for (const hook of preHooks) {
+    if (hook.hook?.chainId !== solanaChainId) continue;
+
+    for (const action of hook.requiredActions ?? []) {
+      if (action.type !== "SignTransaction") continue;
+      if (!Array.isArray(action.actions) || !action.actions.includes("Hook")) continue;
+      if (typeof action.data?.data === "string") {
+        action.data.data = refreshVersionedTxBlockhash(action.data.data, newBlockhash);
+      }
+    }
+  }
+}
+
+function refreshVersionedTxBlockhash(txHex: string, newBlockhash: string): string {
+  const cleanHex = txHex.startsWith("0x") ? txHex.slice(2) : txHex;
+  const buf = Buffer.from(cleanHex, "hex");
+  const vtx = VersionedTransaction.deserialize(buf);
+
+  vtx.message.recentBlockhash = newBlockhash;
+
+  // Zero out signatures — changing blockhash invalidates them
+  vtx.signatures = vtx.signatures.map(() => new Uint8Array(64));
+
+  const serialized = vtx.serialize();
+  return `0x${Buffer.from(serialized).toString("hex")}`;
+}
+
 export function signHexMessageBySolanaKey(
   messageHex: string,
   keypair: Keypair

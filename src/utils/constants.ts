@@ -19,6 +19,7 @@ export const ENDPOINTS = {
 // Tokens
 
 export const SOL_NATIVE = "11111111111111111111111111111111";
+export const WSOL = "So11111111111111111111111111111111111111112";
 export const EVM_NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";
 export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"; // 6 decimals https://solscan.io/token/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
 export const DBR_SOL = "DBRiDgJAMsM95moTzJs7M9LnkGErpbv9v6CUR1DXnUu5";
@@ -78,5 +79,9 @@ export const DE_BRIDGE_CONTRACTS = {
 };
 
 // Pools
+
+export const CASH = {
+  Solana: "CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH",
+};
 
 export const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
