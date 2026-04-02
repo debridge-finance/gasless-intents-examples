@@ -16,29 +16,26 @@ import { buildSolanaSystemTransferTxHexWithAmountPlaceholder } from "../../../pr
 
 /**
  * Solana prehook example: System transfer with {amount.8} placeholder + WSOL gas compensation, no trades.
- *
- * Maps to taf-backend-ts test case 2: "Solana preHook + native WSOL compensation 201 (with memo and placeholder)"
  */
 async function main() {
   const { privateKey, solPrivateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
   const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey));
-  const solAddress = solanaKey.publicKey.toBase58();
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account, solanaKey);
 
-  console.log(`Solana Address: ${solAddress}`);
+  console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`);
   console.log(`EVM Address: ${account.address}`);
 
   const prehook: ExtendedHook = {
     isAtomic: true,
     data: buildSolanaSystemTransferTxHexWithAmountPlaceholder({
-      payer: solAddress,
-      recipient: solAddress,
+      payer: solanaKey.publicKey.toBase58(),
+      recipient: solanaKey.publicKey.toBase58(),
       placeholder: '{amount.8}',
     }),
-    from: solAddress,
+    from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
     to: WSOL,
     value: '0',
@@ -46,14 +43,14 @@ async function main() {
       {
         nameVariable: 'amount',
         tokenAddress: WSOL,
-        address: solAddress,
+        address: solanaKey.publicKey.toBase58(),
         additionalAmount: '2000000',
       }
     ],
     gasCompensationInfo: {
       chainId: CHAIN_IDS.Solana,
       tokenAddress: WSOL,
-      sender: solAddress,
+      sender: solanaKey.publicKey.toBase58(),
     },
   };
 

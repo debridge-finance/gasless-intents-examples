@@ -16,28 +16,25 @@ import { buildSolanaVersionedMemoTxHex } from "../../../prehooks/solana/memo";
 
 /**
  * Solana prehook example: Memo instruction + SPL USDC gas compensation, no trades.
- *
- * Maps to taf-backend-ts test case 5: "Solana preHook + SPL USDC compensation 201 (with memo)"
  */
 async function main() {
   const { privateKey, solPrivateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
   const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey));
-  const solAddress = solanaKey.publicKey.toBase58();
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account, solanaKey);
 
-  console.log(`Solana Address: ${solAddress}`);
+  console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`);
   console.log(`EVM Address: ${account.address}`);
 
   const prehook: ExtendedHook = {
     isAtomic: true,
     data: buildSolanaVersionedMemoTxHex({
-      payer: solAddress,
+      payer: solanaKey.publicKey.toBase58(),
       memo: 'test-prehook-spl',
     }),
-    from: solAddress,
+    from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
     to: WSOL,
     value: '0',
@@ -45,7 +42,7 @@ async function main() {
     gasCompensationInfo: {
       chainId: CHAIN_IDS.Solana,
       tokenAddress: USDC.Solana,
-      sender: solAddress,
+      sender: solanaKey.publicKey.toBase58(),
     },
   };
 

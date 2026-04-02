@@ -18,28 +18,25 @@ import { buildSolanaVersionedMemoTxHex } from "../../../prehooks/solana/memo";
  * Solana prehook example: Memo instruction (no gas compensation) + cross-chain trade Solana -> Base.
  *
  * Note: gasCompensationInfo is NOT allowed when trades are present.
- *
- * Maps to taf-backend-ts test case 9: "Solana preHook + trade Solana -> Base (EVM) 201 (with memo)"
  */
 async function main() {
   const { privateKey, solPrivateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
   const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey));
-  const solAddress = solanaKey.publicKey.toBase58();
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account, solanaKey);
 
-  console.log(`Solana Address: ${solAddress}`);
+  console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`);
   console.log(`EVM Address: ${account.address}`);
 
   const prehook: ExtendedHook = {
     isAtomic: true,
     data: buildSolanaVersionedMemoTxHex({
-      payer: solAddress,
+      payer: solanaKey.publicKey.toBase58(),
       memo: 'test-prehook',
     }),
-    from: solAddress,
+    from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
     to: WSOL,
     value: '0',
@@ -57,7 +54,7 @@ async function main() {
     dstChainTokenOut: EVM_NATIVE_TOKEN,
     dstChainTokenOutAmount: 'auto',
     dstChainTokenOutRecipient: account.address,
-    srcChainAuthorityAddress: solAddress,
+    srcChainAuthorityAddress: solanaKey.publicKey.toBase58(),
     dstChainAuthorityAddress: account.address,
     prependOperatingExpenses: true,
   };
