@@ -24,7 +24,7 @@ export function buildSolanaSystemTransferTxHexWithAmountPlaceholder(params: {
   const recipientKey = typeof params.recipient === "string" ? new PublicKey(params.recipient) : params.recipient;
 
   const recentBlockhash = params.recentBlockhash || PLACEHOLDER_BLOCKHASH;
-  const placeholder = `{${params.placeholderName}.8}`;
+  const placeholder = `{${params.placeholderName}.8}`; // Add ".8" suffix to indicate 8-byte length for the placeholder
 
   // Sentinel as BigInt for the transfer instruction; Little Endian hex to find and replace in serialized tx.
   const sentinel = generateSentinel(8);
