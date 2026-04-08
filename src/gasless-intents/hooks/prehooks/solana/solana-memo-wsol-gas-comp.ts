@@ -11,7 +11,7 @@ import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../..
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { refreshSolanaPreHookBlockhashes } from '@utils/solana';
-import { SOLANA_RPC_URL } from '@utils/constants';
+
 import { buildSolanaVersionedMemoTxHex } from "../../../prehooks/solana/memo";
 
 /**
@@ -65,7 +65,7 @@ async function main() {
   console.log(`PreHooks count: ${bundle.preHooks?.length}`);
 
   // Refresh Solana blockhashes before signing — builders use a placeholder blockhash
-  await refreshSolanaPreHookBlockhashes(bundle, CHAIN_IDS.Solana, SOLANA_RPC_URL);
+  await refreshSolanaPreHookBlockhashes(bundle);
 
   const signedData = await processIntentBundle(bundle, chainIdToWalletClientMap);
   console.log(`Generated ${signedData.length} signatures`);
