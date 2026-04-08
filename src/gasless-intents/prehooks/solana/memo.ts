@@ -21,17 +21,6 @@ export function buildSolanaVersionedMemoTxHex(params: {
 
   const recentBlockhash = params.recentBlockhash || PLACEHOLDER_BLOCKHASH;
 
-  {
-    const memoPreview = String(params.memo || "");
-    const preview = memoPreview.length > 64 ? `${memoPreview.slice(0, 64)}...` : memoPreview;
-    const data = {
-      payer: payerKey.toBase58(),
-      memoLen: memoPreview.length,
-      memoPreview: preview,
-      recentBlockhash,
-    };
-  }
-
   const memoIx = new TransactionInstruction({
     keys: [],
     programId: MEMO_PROGRAM_ID,
@@ -48,17 +37,7 @@ export function buildSolanaVersionedMemoTxHex(params: {
   const tx = new VersionedTransaction(messageV0);
 
   const serialized = tx.serialize();
-
   const hex = Buffer.from(serialized).toString("hex");
-
-  {
-    const data = {
-      serializedLen: serialized.length,
-      hexLen: hex.length,
-      hexPrefix: `0x${hex.slice(0, 32)}`,
-      versionPrefix: `0x${hex.slice(0, 2)}`,
-    };
-  }
 
   return `0x${hex}`;
 }
