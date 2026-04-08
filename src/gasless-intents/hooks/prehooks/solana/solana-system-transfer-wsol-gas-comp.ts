@@ -28,20 +28,20 @@ async function main() {
   console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`);
   console.log(`EVM Address: ${account.address}`);
 
+  const placeholderName = "amount";
+
   const prehook: ExtendedHook = {
     isAtomic: true,
     data: buildSolanaSystemTransferTxHexWithAmountPlaceholder({
       payer: solanaKey.publicKey.toBase58(),
       recipient: solanaKey.publicKey.toBase58(),
-      placeholder: '{amount.8}',
+      placeholderName
     }),
     from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
-    to: WSOL,
-    value: '0',
     placeHolders: [
       {
-        nameVariable: 'amount',
+        nameVariable: placeholderName,
         tokenAddress: WSOL,
         address: solanaKey.publicKey.toBase58(),
         additionalAmount: '2000000',

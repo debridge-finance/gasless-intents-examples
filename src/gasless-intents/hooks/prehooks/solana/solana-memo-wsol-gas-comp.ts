@@ -36,8 +36,6 @@ async function main() {
     }),
     from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
-    to: WSOL,
-    value: '0',
     placeHolders: [],
     gasCompensationInfo: {
       chainId: CHAIN_IDS.Solana,

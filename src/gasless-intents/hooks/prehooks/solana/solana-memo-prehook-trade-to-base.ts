@@ -38,8 +38,6 @@ async function main() {
     }),
     from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
-    to: WSOL,
-    value: '0',
     placeHolders: [],
     // No gasCompensationInfo - not allowed when trades are present
   };

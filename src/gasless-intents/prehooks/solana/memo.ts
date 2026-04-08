@@ -4,6 +4,7 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from "@solana/web3.js";
+import { toHexPrefixString } from "@utils/index";
 
 const MEMO_PROGRAM_ID = new PublicKey(
   "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
@@ -39,5 +40,5 @@ export function buildSolanaVersionedMemoTxHex(params: {
   const serialized = tx.serialize();
   const hex = Buffer.from(serialized).toString("hex");
 
-  return `0x${hex}`;
+  return toHexPrefixString(hex);
 }
