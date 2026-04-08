@@ -47,8 +47,8 @@ async function main() {
     cancelAuthority: {
       intentOwner: intentOwner,
     },
-    // creationTimestamp,
-    // expirationTimestamp,
+    creationTimestamp,
+    expirationTimestamp,
     reasonCode
   };
 
