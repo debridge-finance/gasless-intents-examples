@@ -1,4 +1,7 @@
-export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+// export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+
+// TODO: Remove.
+export const BASE_URL = "https://api-dev.debridge.io/"
 
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
@@ -29,7 +32,8 @@ export const PRICE_CHART_URL = `${BASE_URL}/v1/token/chart`;
 
 // Tokens
 
-export const SOL_NATIVE = "11111111111111111111111111111111"
+export const SOL_NATIVE = "11111111111111111111111111111111";
+export const WSOL = "So11111111111111111111111111111111111111112";
 export const EVM_NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";
 export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" // 6 decimals https://solscan.io/token/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
 export const DBR_SOL = "DBRiDgJAMsM95moTzJs7M9LnkGErpbv9v6CUR1DXnUu5";
