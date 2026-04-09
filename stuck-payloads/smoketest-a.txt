@@ -1,0 +1,813 @@
+{
+  requestId: "589c23bf-3c65-4065-8430-fe72574521c4",
+  preHooks: [
+  ],
+  postHooks: [
+  ],
+  trades: [
+    {
+      srcChainTokenIn: {
+        chainId: 8453,
+        address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+        amount: "2500000",
+        approximateOperatingExpense: "0",
+        mutatedWithOperatingExpense: false,
+        approximateUsdValue: 2.5,
+        originApproximateUsdValue: 2.5,
+      },
+      dstChainTokenOut: {
+        chainId: 56,
+        address: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 18,
+        amount: "2128572900364517770",
+        maxTheoreticalAmount: "2128572900364517770",
+        recommendedAmount: "2128572900364517770",
+        withoutPartnerFeeBpsAmount: "2128572900364517770",
+        withoutAdditionalTakerRewardsAmount: "2128572900364517770",
+        approximateUsdValue: 2.128572,
+        recommendedApproximateUsdValue: 2.128572,
+        withoutPartnerFeeBpsApproximateUsdValue: 2.128572,
+        withoutAdditionalTakerRewardsApproximateUsdValue: 2.128572,
+        maxTheoreticalApproximateUsdValue: 2.128572,
+      },
+      costsDetails: [
+        {
+          chain: "8453",
+          tokenIn: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          tokenOut: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+          amountIn: "2500000",
+          amountOut: "2499000",
+          type: "DlnProtocolFee",
+          payload: {
+            feeAmount: "1000",
+            feeBps: "4",
+          },
+        },
+        {
+          chain: "56",
+          tokenIn: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          tokenOut: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          amountIn: "2499000000000000000",
+          amountOut: "2498000400000000000",
+          type: "TakerMargin",
+          payload: {
+            feeAmount: "999600000000000",
+            feeBps: "4",
+          },
+        },
+        {
+          chain: "56",
+          tokenIn: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          tokenOut: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          amountIn: "2498000400000000000",
+          amountOut: "2128572900364517770",
+          type: "EstimatedOperatingExpenses",
+          payload: {
+            feeAmount: "369427499635482230",
+          },
+        },
+      ],
+      prependedOperatingExpenseCost: "0",
+      srcChainAuthorityAddress: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      dstChainTokenOutRecipient: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      dstChainAuthorityAddress: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      userPoints: 218.25,
+      integratorPoints: 54.56,
+      actualUserPoints: 0,
+      usdPriceImpact: -14.857119999999995,
+      relatedIntentId: "0x5b32b46a1bfa19a60da021eb2c6052b2a043701c6cb434ce89cab3d8ac94c54b",
+    },
+    {
+      srcChainTokenIn: {
+        chainId: 42161,
+        address: "0x0000000000000000000000000000000000000000",
+        name: "Ethereum",
+        symbol: "ETH",
+        decimals: 18,
+        amount: "1406033973137249",
+        approximateOperatingExpense: "452407683836402",
+        mutatedWithOperatingExpense: false,
+        approximateUsdValue: 3.067629,
+        originApproximateUsdValue: 3.067629,
+      },
+      dstChainTokenOut: {
+        chainId: 56,
+        address: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 18,
+        amount: "2871427099635482230",
+        maxTheoreticalAmount: "6145087579457013570",
+        recommendedAmount: "2871427099635482230",
+        withoutPartnerFeeBpsAmount: "6126652316718642530",
+        withoutAdditionalTakerRewardsAmount: "6126652316718642530",
+        approximateUsdValue: 2.871427,
+        recommendedApproximateUsdValue: 2.871427,
+        withoutPartnerFeeBpsApproximateUsdValue: 6.126652,
+        withoutAdditionalTakerRewardsApproximateUsdValue: 6.126652,
+        maxTheoreticalApproximateUsdValue: 6.145087,
+      },
+      costsDetails: [
+        {
+          chain: "42161",
+          tokenIn: "0x0000000000000000000000000000000000000000",
+          tokenOut: "0x0000000000000000000000000000000000000000",
+          amountIn: "1406033973137249",
+          amountOut: "1405471559547995",
+          type: "DlnProtocolFee",
+          payload: {
+            feeAmount: "562413589254",
+            feeBps: "4",
+          },
+        },
+        {
+          chain: "56",
+          tokenIn: "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+          tokenOut: "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+          amountIn: "1405471559547995",
+          amountOut: "1404909370924176",
+          type: "TakerMargin",
+          payload: {
+            feeAmount: "562188623819",
+            feeBps: "4",
+          },
+        },
+        {
+          chain: "56",
+          tokenIn: "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+          tokenOut: "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+          amountIn: "1404909370924176",
+          amountOut: "2365146040375327",
+          type: "EstimatedOperatingExpenses",
+          payload: {
+            feeAmount: "632454439624673",
+          },
+        },
+        {
+          chain: "56",
+          tokenIn: "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
+          tokenOut: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          amountIn: "2365146040375327",
+          amountOut: "5158385954247798535",
+          type: "AfterSwap",
+          payload: {
+            amountOutBeforeCorrection: "6144790397951352574",
+          },
+        },
+        {
+          chain: "56",
+          tokenIn: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          tokenOut: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          amountIn: "5158385954247798535",
+          amountOut: "5142910796385055140",
+          type: "AfterSwapEstimatedSlippage",
+          payload: {
+            feeAmount: "15475157862743395",
+            feeBps: "30",
+            estimatedVolatilityBps: "11",
+          },
+        },
+      ],
+      prependedOperatingExpenseCost: "0",
+      srcChainAuthorityAddress: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      dstChainTokenOutRecipient: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      dstChainAuthorityAddress: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      userPoints: 218.3,
+      integratorPoints: 54.57,
+      actualUserPoints: 0,
+      usdPriceImpact: -6.395884248062591,
+      relatedIntentId: "0xc5ceb06eb1a9e81caa7217258492447023d920659d457ef9111c8cb57240d0e0",
+    },
+  ],
+  intents: [
+    {
+      requiredActions: [
+        {
+          type: "Sign712MetaMask",
+          actions: [
+            "Budget",
+          ],
+          data: {
+            domain: {
+              chainId: 8453,
+              name: "DelegationManager",
+              version: "1",
+              verifyingContract: "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+            },
+            types: {
+              Caveat: [
+                {
+                  name: "enforcer",
+                  type: "address",
+                },
+                {
+                  name: "terms",
+                  type: "bytes",
+                },
+              ],
+              Delegation: [
+                {
+                  name: "delegate",
+                  type: "address",
+                },
+                {
+                  name: "delegator",
+                  type: "address",
+                },
+                {
+                  name: "authority",
+                  type: "bytes32",
+                },
+                {
+                  name: "caveats",
+                  type: "Caveat[]",
+                },
+                {
+                  name: "salt",
+                  type: "uint256",
+                },
+              ],
+            },
+            primaryType: "Delegation",
+            message: {
+              delegate: "0xE547d2EeD6DD60796013b485D284C17Da1194C82",
+              delegator: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+              authority: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+              caveats: [
+                {
+                  enforcer: "0x146713078D39eCC1F5338309c28405ccf85Abfbb",
+                  terms: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA029130000000000000000000000000000000000000000000000000000000000000000095ea7b3000000000000000000000000ddddddddd4b6472c5002f95610b194d1161223d000000000000000000000000000000000000000000000000000000000002625a0",
+                  args: "0x",
+                },
+                {
+                  enforcer: "0xC8B5D93463c893401094cc70e66A206fb5987997",
+                  terms: "0x000000000000000000000000000000008090d7ccbd5b4f898de4ce4dada06bcc",
+                  args: "0x",
+                },
+                {
+                  enforcer: "0x1046bb45C8d673d4ea75321280DB34899413c069",
+                  terms: "0x00000000000000000000000000000000000000000000000000000000d3af4332",
+                  args: "0x",
+                },
+              ],
+              salt: "0",
+              signature: "0x",
+            },
+          },
+          details: {
+            transactionCalls: [
+              {
+                data: "0x095ea7b3000000000000000000000000ddddddddd4b6472c5002f95610b194d1161223d000000000000000000000000000000000000000000000000000000000002625a0",
+                to: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+                value: "0",
+              },
+            ],
+            allowanceHolder: "0xddddddddd4B6472c5002F95610b194D1161223d0",
+            tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          },
+          actionId: "8090d7cc-bd5b-4f89-8de4-ce4dada06bcc",
+          actionCosts: [
+            {
+              costChainId: 8453,
+              costTokenAddress: "0x0000000000000000000000000000000000000000",
+              amount: "365560000000",
+              approximateUsdValue: 0.000797,
+              type: "NETWORK_COST",
+              networkDetails: {
+                gasLimit: "56240",
+                baseFee: "6500000",
+                maxFeePerGas: "6500000",
+                maxPriorityFeePerGas: "0",
+              },
+              details: {
+                originalChainId: 8453,
+              },
+            },
+          ],
+          description: "The maximum cumulative amount authorized for intents execution, as defined by the sigBudget signature. Applies to both EVM (in flow without Permit2) and Solana (SVM). Stored in Token (SPL/ERC) contracts. See the scheme above to see the difference in flows for EVM (direct approval vs flow with Permit2)",
+        },
+        {
+          type: "Sign712",
+          actions: [
+            "Intent",
+          ],
+          data: {
+            domain: {
+              name: "DeBridgeIntentManager",
+              version: "1",
+              chainId: 8453,
+              verifyingContract: "0xDDDDDDDdeB2E68Ee19832e356FCB5537124A9708",
+            },
+            types: {
+              EIP712Domain: [
+                {
+                  name: "name",
+                  type: "string",
+                },
+                {
+                  name: "version",
+                  type: "string",
+                },
+                {
+                  name: "chainId",
+                  type: "uint256",
+                },
+                {
+                  name: "verifyingContract",
+                  type: "address",
+                },
+              ],
+              SignedIntent: [
+                {
+                  name: "intentId",
+                  type: "bytes32",
+                },
+              ],
+            },
+            primaryType: "SignedIntent",
+            message: {
+              intentId: "0x5b32b46a1bfa19a60da021eb2c6052b2a043701c6cb434ce89cab3d8ac94c54b",
+            },
+          },
+          actionId: "21bcadfe-3e03-4814-b8d2-0aa2104dc5bd",
+          actionCosts: [
+          ],
+          description: "Set of constraints that intent execution must comply with.",
+        },
+      ],
+      intent: {
+        intentId: "0x5b32b46a1bfa19a60da021eb2c6052b2a043701c6cb434ce89cab3d8ac94c54b",
+        intentChainId: 8453,
+        intentAuthority: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+        intentOwner: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+        expirationTimestamp: 3551478578,
+        intentTimestamp: 1775739293,
+        srcAllowedSender: [
+          "0xE547d2EeD6DD60796013b485D284C17Da1194C82",
+        ],
+        allowedCancelBeneficiary: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+        inputToken: [
+          {
+            address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            minPartialAmount: "2500000",
+            maxPartialAmount: "2500000",
+            constraintBudget: "2500000",
+          },
+        ],
+        giveToken: [
+          {
+            inputTokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            giveTokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            numerator: "1000000",
+            denominator: "6",
+          },
+        ],
+        takeToken: [
+          {
+            fromTokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            takeTokenAddress: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+            takeTokenChainId: 56,
+            numerator: "851429160145807108",
+            denominator: "6",
+          },
+        ],
+        receiverDetails: [
+          {
+            address: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+            destinationChainIds: [
+              56,
+            ],
+          },
+        ],
+        dstAuthorityAddress: [
+          {
+            address: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+            destinationChainIds: [
+              56,
+            ],
+          },
+        ],
+      },
+    },
+    {
+      requiredActions: [
+        {
+          type: "Sign712MetaMask",
+          actions: [
+            "Wrap",
+          ],
+          data: {
+            domain: {
+              chainId: 42161,
+              name: "DelegationManager",
+              version: "1",
+              verifyingContract: "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+            },
+            types: {
+              Caveat: [
+                {
+                  name: "enforcer",
+                  type: "address",
+                },
+                {
+                  name: "terms",
+                  type: "bytes",
+                },
+              ],
+              Delegation: [
+                {
+                  name: "delegate",
+                  type: "address",
+                },
+                {
+                  name: "delegator",
+                  type: "address",
+                },
+                {
+                  name: "authority",
+                  type: "bytes32",
+                },
+                {
+                  name: "caveats",
+                  type: "Caveat[]",
+                },
+                {
+                  name: "salt",
+                  type: "uint256",
+                },
+              ],
+            },
+            primaryType: "Delegation",
+            message: {
+              delegate: "0xE547d2EeD6DD60796013b485D284C17Da1194C82",
+              delegator: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+              authority: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+              caveats: [
+                {
+                  enforcer: "0x146713078D39eCC1F5338309c28405ccf85Abfbb",
+                  terms: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab10000000000000000000000000000000000000000000000000004fec7cb82cf61d0e30db0",
+                  args: "0x",
+                },
+                {
+                  enforcer: "0xC8B5D93463c893401094cc70e66A206fb5987997",
+                  terms: "0x00000000000000000000000000000000401803b7bd85425cb13377b12f0ea67e",
+                  args: "0x",
+                },
+                {
+                  enforcer: "0x1046bb45C8d673d4ea75321280DB34899413c069",
+                  terms: "0x00000000000000000000000000000000000000000000000000000000d3af4332",
+                  args: "0x",
+                },
+              ],
+              salt: "0",
+              signature: "0x",
+            },
+          },
+          details: {
+            transactionCalls: [
+              {
+                data: "0xd0e30db0",
+                to: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+                value: "1406033973137249",
+              },
+            ],
+          },
+          actionId: "401803b7-bd85-425c-b133-77b12f0ea67e",
+          actionCosts: [
+            {
+              costChainId: 42161,
+              costTokenAddress: "0x0000000000000000000000000000000000000000",
+              amount: "1094721076800",
+              approximateUsdValue: 0.002388,
+              type: "NETWORK_COST",
+              networkDetails: {
+                gasLimit: "42071",
+                baseFee: "26020800",
+                maxFeePerGas: "26020800",
+                maxPriorityFeePerGas: "0",
+              },
+              details: {
+                originalChainId: 42161,
+              },
+            },
+          ],
+          description: "Wraps native tokens (e.g., ETH) into their ERC-20 equivalent (e.g., WETH) to enable token operations in the intent.",
+        },
+        {
+          type: "Sign712MetaMask",
+          actions: [
+            "Budget",
+          ],
+          data: {
+            domain: {
+              chainId: 42161,
+              name: "DelegationManager",
+              version: "1",
+              verifyingContract: "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+            },
+            types: {
+              Caveat: [
+                {
+                  name: "enforcer",
+                  type: "address",
+                },
+                {
+                  name: "terms",
+                  type: "bytes",
+                },
+              ],
+              Delegation: [
+                {
+                  name: "delegate",
+                  type: "address",
+                },
+                {
+                  name: "delegator",
+                  type: "address",
+                },
+                {
+                  name: "authority",
+                  type: "bytes32",
+                },
+                {
+                  name: "caveats",
+                  type: "Caveat[]",
+                },
+                {
+                  name: "salt",
+                  type: "uint256",
+                },
+              ],
+            },
+            primaryType: "Delegation",
+            message: {
+              delegate: "0xE547d2EeD6DD60796013b485D284C17Da1194C82",
+              delegator: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+              authority: "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+              caveats: [
+                {
+                  enforcer: "0x146713078D39eCC1F5338309c28405ccf85Abfbb",
+                  terms: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab10000000000000000000000000000000000000000000000000000000000000000095ea7b3000000000000000000000000ddddddddd4b6472c5002f95610b194d1161223d00000000000000000000000000000000000000000000000000004fec7cb82cf61",
+                  args: "0x",
+                },
+                {
+                  enforcer: "0xC8B5D93463c893401094cc70e66A206fb5987997",
+                  terms: "0x00000000000000000000000000000000c0e8e90aab6e4a4ea9af248cf92bef88",
+                  args: "0x",
+                },
+                {
+                  enforcer: "0x1046bb45C8d673d4ea75321280DB34899413c069",
+                  terms: "0x00000000000000000000000000000000000000000000000000000000d3af4332",
+                  args: "0x",
+                },
+              ],
+              salt: "0",
+              signature: "0x",
+            },
+          },
+          details: {
+            transactionCalls: [
+              {
+                data: "0x095ea7b3000000000000000000000000ddddddddd4b6472c5002f95610b194d1161223d00000000000000000000000000000000000000000000000000004fec7cb82cf61",
+                to: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+                value: "0",
+              },
+            ],
+            allowanceHolder: "0xddddddddd4B6472c5002F95610b194D1161223d0",
+            tokenAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+          },
+          actionId: "c0e8e90a-ab6e-4a4e-a9af-248cf92bef88",
+          actionCosts: [
+            {
+              costChainId: 42161,
+              costTokenAddress: "0x0000000000000000000000000000000000000000",
+              amount: "1443916492200",
+              approximateUsdValue: 0.00315,
+              type: "NETWORK_COST",
+              networkDetails: {
+                gasLimit: "55441",
+                baseFee: "26044200",
+                maxFeePerGas: "26044200",
+                maxPriorityFeePerGas: "0",
+              },
+              details: {
+                originalChainId: 42161,
+              },
+            },
+          ],
+          description: "The maximum cumulative amount authorized for intents execution, as defined by the sigBudget signature. Applies to both EVM (in flow without Permit2) and Solana (SVM). Stored in Token (SPL/ERC) contracts. See the scheme above to see the difference in flows for EVM (direct approval vs flow with Permit2)",
+        },
+        {
+          type: "Sign712",
+          actions: [
+            "Intent",
+          ],
+          data: {
+            domain: {
+              name: "DeBridgeIntentManager",
+              version: "1",
+              chainId: 42161,
+              verifyingContract: "0xDDDDDDDdeB2E68Ee19832e356FCB5537124A9708",
+            },
+            types: {
+              EIP712Domain: [
+                {
+                  name: "name",
+                  type: "string",
+                },
+                {
+                  name: "version",
+                  type: "string",
+                },
+                {
+                  name: "chainId",
+                  type: "uint256",
+                },
+                {
+                  name: "verifyingContract",
+                  type: "address",
+                },
+              ],
+              SignedIntent: [
+                {
+                  name: "intentId",
+                  type: "bytes32",
+                },
+              ],
+            },
+            primaryType: "SignedIntent",
+            message: {
+              intentId: "0xc5ceb06eb1a9e81caa7217258492447023d920659d457ef9111c8cb57240d0e0",
+            },
+          },
+          actionId: "ad73a51d-f6ae-4a1d-9123-6994f861ae69",
+          actionCosts: [
+          ],
+          description: "Set of constraints that intent execution must comply with.",
+        },
+      ],
+      intent: {
+        intentId: "0xc5ceb06eb1a9e81caa7217258492447023d920659d457ef9111c8cb57240d0e0",
+        intentChainId: 42161,
+        intentAuthority: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+        intentOwner: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+        expirationTimestamp: 3551478578,
+        intentTimestamp: 1775739293,
+        srcAllowedSender: [
+          "0xE547d2EeD6DD60796013b485D284C17Da1194C82",
+        ],
+        allowedCancelBeneficiary: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+        inputToken: [
+          {
+            address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+            minPartialAmount: "1406033973137249",
+            maxPartialAmount: "1406033973137249",
+            constraintBudget: "1406033973137249",
+          },
+        ],
+        giveToken: [
+          {
+            inputTokenAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+            giveTokenAddress: "0x0000000000000000000000000000000000000000",
+            numerator: "1000000000000000000",
+            denominator: "18",
+          },
+        ],
+        takeToken: [
+          {
+            fromTokenAddress: "0x0000000000000000000000000000000000000000",
+            takeTokenAddress: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+            takeTokenChainId: 56,
+            numerator: "2042217438906214770905",
+            denominator: "18",
+          },
+        ],
+        receiverDetails: [
+          {
+            address: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+            destinationChainIds: [
+              56,
+            ],
+          },
+        ],
+        dstAuthorityAddress: [
+          {
+            address: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+            destinationChainIds: [
+              56,
+            ],
+          },
+        ],
+      },
+    },
+  ],
+  bundleCosts: [
+    {
+      costChainId: 42161,
+      costTokenAddress: "0x0000000000000000000000000000000000000000",
+      amount: "1020759013204",
+      approximateUsdValue: 0.002227,
+      type: "PROTOCOL_COST",
+      feeBps: 4,
+      details: {
+        originalChainId: 8453,
+      },
+    },
+    {
+      costChainId: 56,
+      costTokenAddress: "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+      amount: "1020337600734",
+      approximateUsdValue: 0.002226,
+      type: "SOLVER_COST",
+      feeBps: 4,
+      details: {
+        originalChainId: 56,
+      },
+    },
+    {
+      costChainId: 56,
+      costTokenAddress: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+      amount: "0",
+      approximateUsdValue: 0,
+      type: "PARTNER_COST",
+      feeBps: 0,
+      details: {
+        originalChainId: 56,
+      },
+    },
+    {
+      costChainId: 8453,
+      costTokenAddress: "0x0000000000000000000000000000000000000000",
+      amount: "182335748518150",
+      approximateUsdValue: 0.397727,
+      type: "NETWORK_COST",
+      details: {
+        originalChainId: 8453,
+      },
+    },
+    {
+      costChainId: 42161,
+      costTokenAddress: "0x0000000000000000000000000000000000000000",
+      amount: "215700403406937",
+      approximateUsdValue: 0.470606,
+      type: "NETWORK_COST",
+      details: {
+        originalChainId: 42161,
+      },
+    },
+  ],
+  accumulativeTokenOutput: [
+    {
+      amount: "5000000000000000000",
+      chainId: 56,
+      tokenAddress: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+      recipientAddress: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      approximateUsdValue: 5,
+    },
+  ],
+  accumulativeTokenInput: [
+    {
+      amount: "2500000",
+      chainId: 8453,
+      tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      spenderAddress: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      approximateUsdValue: 2.5,
+    },
+    {
+      amount: "1406033973137249",
+      chainId: 42161,
+      tokenAddress: "0x0000000000000000000000000000000000000000",
+      spenderAddress: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+      approximateUsdValue: 3.067629,
+    },
+  ],
+  enableAccountAbstraction: true,
+  isAtomic: true,
+  signedData: [
+    {
+      actionId: "8090d7cc-bd5b-4f89-8de4-ce4dada06bcc",
+      signedData: "0xcba82b7f92a333a0599d80fae6828e9d4a2eaeccce1025dd63fccbd590de1d4e5277bacb3b6542234f140dcf754241b5af42e1579b52e9f5e548480025721dc41c",
+    },
+    {
+      actionId: "21bcadfe-3e03-4814-b8d2-0aa2104dc5bd",
+      signedData: "0x155883455fa7c17be9d601d9d459f87a615f2d09478d3b689af0708d5f33917f5aebfe5053590c94022dd244c877d82415ac260ea9457108fbf87dfdd6d427701b",
+    },
+    {
+      actionId: "401803b7-bd85-425c-b133-77b12f0ea67e",
+      signedData: "0x612a397e1c6000100043e9e37ff47b6c85850508d58822305143a03e775d70040e6220d337567a985fa133f8d0f3a2e9715d84f738559517ce8c9594e2128db21b",
+    },
+    {
+      actionId: "c0e8e90a-ab6e-4a4e-a9af-248cf92bef88",
+      signedData: "0xafc93453f258de058761e0bd6418552a39e139c56590c750ba43f793afafb9f54fb6c659389a91046ee3d0d2b0fac1b9c5fbff3d4d42cd27b823667ee0a1d8391c",
+    },
+    {
+      actionId: "ad73a51d-f6ae-4a1d-9123-6994f861ae69",
+      signedData: "0x1c9bb9ee08015aec60cfb37e1baf22c04877904308ef84a9794704a2397705144732dee2f1e96e25b15b6ffc45e4d474ff29877b3e216f6e05e71840c5a119021c",
+    },
+  ],
+}
