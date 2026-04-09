@@ -758,3 +758,27 @@ export function getPolygonDaiToUSDC(signer: string): Trade {
     prependOperatingExpenses: true
   };
 }
+
+export type PlaceHolder = {
+  nameVariable: string;      // e.g. "amount1" — matches {amount1} in data
+  tokenAddress: string;      // token used for cumulative amount lookup
+  address: string;           // user address for grouping key
+  additionalAmount?: string; // optional offset added to cumulative amount
+};
+
+export type GasCompensationInfo = {
+  tokenAddress: string;
+  chainId: number;
+  sender: string;
+};
+
+export type ExtendedHook = {
+  isAtomic: boolean;
+  data: string;              // hex calldata with {amount1}, {amount2}, etc.
+  to: string;
+  value: string;             // wei string; can be "{amountN}" for native transfers
+  chainId: number;
+  from: string;
+  placeHolders: PlaceHolder[]; // Array required, can be empty
+  gasCompensationInfo?: GasCompensationInfo;
+};

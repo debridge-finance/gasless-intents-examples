@@ -90,3 +90,7 @@ export const LINGO = {
 export const UNI = {
   Ethereum: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
 }
+
+// Pools
+
+export const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
