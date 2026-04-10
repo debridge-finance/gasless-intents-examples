@@ -1,3 +1,6 @@
+import { Keypair } from "@solana/web3.js";
+import { WalletClient } from "viem";
+
 export type GetBundlesFilterParams = {
   intentOwner?: string;
   intentAuthority?: string;
@@ -35,8 +38,8 @@ export type BundleCancelRequest = {
     intentOwner?: string,
     intentAuthority?: string
   },
-  creationTimestamp: string,
-  expirationTimestamp: string,
+  creationTimestamp?: string,
+  expirationTimestamp?: string,
   signature?: string,
   reasonCode?: CancelBundleReasonCodes,
 }
@@ -55,8 +58,8 @@ export type Trade = {
   srcChainId: number;
   srcChainTokenIn: string;
   srcChainTokenInAmount: string;
-  srcChainTokenInMinAmount: string;
-  srcChainTokenInMaxAmount: string;
+  srcChainTokenInMinAmount?: string;
+  srcChainTokenInMaxAmount?: string;
 
   // Destination chain params
   dstChainId: number;
@@ -92,24 +95,36 @@ export enum ApproveAmount {
   Unlimited = "unlimited",
 }
 
-export type BundleProposeBody = {
+export type BundleBase = {
   // Client-side UUIDs
-  requestId?: string;
-  userId?: string;
+  requestId?: string; // Client-side UUID for idempotency, enforced on /submit endpoint
+  userId?: string; // Client side user ID, enforced on /submit endpoint
 
-  // Timestamps
-  expirationTimestamp: number; // Unix timestamp in seconds
+  // Primitives
+  trades: Array<Trade>;
+  preHooks?: Array<ExtendedHook>;
+  postHooks?: Array<ExtendedHook>;
 
-  // Flags
+  // Referral code for partner attribution
+  referralCode?: number;
+
+  // Bundle execution params
   enableAccountAbstraction: boolean;
   isAtomic: boolean;
-  tradingAlgorithm: TradingAlgorithm;
-  trades: Array<Trade>;
-  preHooks?: Array<any>;
-  postHooks?: Array<Hook>;
-  referralCode?: number;
+
+  // Permit flags 
   approvalMode?: ApprovalMode; // Defaults to "approve" if not provided
   approveAmountFlag?: ApproveAmount; // Defaults to "none" if not provided
+}
+
+export type BundleProposeBody = BundleBase & {
+  expirationTimestamp: number; // Unix timestamp in seconds
+  tradingAlgorithm: TradingAlgorithm;
+}
+
+export type SubmitBundleResponse = {
+  bundleId: string; 
+  message?: string; // Optional message field for additional info (e.g. if a duplicate bundle is detected based on requestId)
 }
 
 export enum SignatureTypes {
@@ -150,8 +165,8 @@ export type Sign7702AuthorizationData = {
 export type ActionData =
   | (EIP712Data & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never })
   | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never })
-  | Tx
-  | SolanaSign;
+  | (Tx & { domain?: never; contractAddress?: never })
+  | (SolanaSign & { domain?: never; contractAddress?: never; to?: never; value?: never });
 
 export type Action = {
   type: SignatureTypes;
@@ -167,43 +182,50 @@ export enum ActionType {
   // Shared
   Budget = "Budget",
   Intent = "Intent",
-  Wrap = "Wrap", 
-  
+  Wrap = "Wrap",
+
   // EVM only
   Delegate = "Delegate",
   Hook = "Hook",
 
   // Solana Only
   Compensation = "Compensation",
+  GasCompensation = "GasCompensation",
   Operation = "Operation",
 }
 
 export type ActionCostItem = {
-  chainId: number;
-  tokenAddress: string;
+  costChainId: number;
+  costTokenAddress: string;
   amount: string;
   approximateUsdValue: number;
   type: ActionCostItemType;
-  networkDetails?: NetworkDetails // EVM-chains only
+  networkDetails?: NetworkDetails; // EVM-chains only
+  details?: {
+    originalChainId: number;
+  };
 }
 
 export enum ActionCostItemType {
-  PROTOCOL_COST = "PROTOCOL_COST", 
-  SOLVER_COST = "SOLVER_COST", 
-  PARTNER_COST = "PARTNER_COST", 
-  SOLVER_EXECUTION_COST = "SOLVER_EXECUTION_COST"
+  PROTOCOL_COST = "PROTOCOL_COST",
+  SOLVER_COST = "SOLVER_COST",
+  PARTNER_COST = "PARTNER_COST",
+  SOLVER_EXECUTION_COST = "SOLVER_EXECUTION_COST",
+  NETWORK_COST = "NETWORK_COST",
 }
 
 export type NetworkDetails = {
   gasLimit: string;
-  gasPrice: string;
+  gasPrice?: string;
   baseFee: string;
   maxFeePerGas: string;
   maxPriorityFeePerGas: string;
 }
 
 export type ActionDetails = {
-  transactionCalls: Array<Tx>
+  transactionCalls: Array<Tx>;
+  allowanceHolder?: string;
+  tokenAddress?: string;
 }
 
 export type Receiver = {
@@ -215,15 +237,22 @@ export type InputToken = {
   address: string;
   minPartialAmount: string;
   maxPartialAmount: string;
-  constrainBudget: string;
+  constraintBudget: string;
 }
 
 export type TakeToken = {
-  fromTokenChainId: number;
   fromTokenAddress: string;
   takeTokenAddress: string;
   takeTokenChainId: number;
-  price: string;
+  numerator: string;
+  denominator: string;
+}
+
+export type GiveToken = {
+  inputTokenAddress: string;
+  giveTokenAddress: string;
+  numerator: string;
+  denominator: string;
 }
 
 export type Intent = {
@@ -233,10 +262,11 @@ export type Intent = {
   intentOwner: string;
   expirationTimestamp: number;
   intentTimestamp: number;
-  intentType: string;
   srcAllowedSender: string[];
-  inputTokens: InputToken[];
-  takeTokens: TakeToken[];
+  allowedCancelBeneficiary: string;
+  inputToken: InputToken[];
+  giveToken?: GiveToken[];
+  takeToken: TakeToken[];
   receiverDetails: Receiver[];
   dstAuthorityAddress: Receiver[];
 }
@@ -254,11 +284,9 @@ export type TokenResult = {
   tokenAddress: string // The token address for the output token
 }
 
-export type PostHookPayload = {
+export type HookPayload = {
   requiredActions: Array<Action>;
-  hook: {
-    chainId: number;
-  }
+  hook: ExtendedHook & { version: string };
 }
 
 export enum TradeStatus {
@@ -276,25 +304,112 @@ export enum BundleStatus {
   created = "created",
 }
 
+// --- Response types (returned by /propose, /submit, /bundles endpoints) ---
+
+export type TradeTokenIn = {
+  chainId: number;
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  amount: string;
+  approximateOperatingExpense: string;
+  mutatedWithOperatingExpense: boolean;
+  approximateUsdValue: number;
+  originApproximateUsdValue: number;
+}
+
+export type TradeTokenOut = {
+  chainId: number;
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  amount: string;
+  maxTheoreticalAmount: string;
+  recommendedAmount: string;
+  withoutPartnerFeeBpsAmount: string;
+  withoutAdditionalTakerRewardsAmount: string;
+  approximateUsdValue: number;
+  recommendedApproximateUsdValue: number;
+  withoutPartnerFeeBpsApproximateUsdValue: number;
+  withoutAdditionalTakerRewardsApproximateUsdValue: number;
+  maxTheoreticalApproximateUsdValue: number;
+}
+
+export type CostDetail = {
+  chain: string;
+  tokenIn: string;
+  tokenOut: string;
+  amountIn: string;
+  amountOut: string;
+  type: string;
+  payload: Record<string, string | number>;
+}
+
+export type ComparedAggregator = {
+  name: string;
+  amount: string;
+  priceDrop: number;
+  approximateUsdValue: number;
+  imageUrl: string;
+}
+
+export type TradeResult = {
+  srcChainTokenIn: TradeTokenIn;
+  dstChainTokenOut: TradeTokenOut;
+  costsDetails: Array<CostDetail>;
+  prependedOperatingExpenseCost?: string;
+  srcChainAuthorityAddress: string;
+  dstChainTokenOutRecipient: string;
+  dstChainAuthorityAddress: string;
+  userPoints: number;
+  integratorPoints: number;
+  actualUserPoints: number;
+  usdPriceImpact: number;
+  relatedIntentId: string;
+  comparedAggregators?: Array<ComparedAggregator>;
+}
+
+export type BundleCost = {
+  costChainId: number;
+  costTokenAddress: string;
+  amount: string;
+  approximateUsdValue: number;
+  type: ActionCostItemType;
+  feeBps?: number;
+  details?: {
+    originalChainId: number;
+  };
+}
+
+export type TokenInput = {
+  amount: string;
+  chainId: number;
+  tokenAddress: string;
+  spenderAddress: string;
+  approximateUsdValue: number;
+}
+
 export type Bundle = {
-  intents: Array<IntentPayload>,
-  postHooks: Array<PostHookPayload>,
-  tokenResult: Array<TokenResult>,
-  trades: Array<Trade>,
-  status?: BundleStatus
+  requestId: string;
+  referralCode?: number;
+  preHooks: Array<HookPayload>;
+  postHooks: Array<HookPayload>;
+  trades: Array<TradeResult>;
+  intents: Array<IntentPayload>;
+  bundleCosts: Array<BundleCost>;
+  accumulativeTokenOutput: Array<TokenResult>;
+  accumulativeTokenInput: Array<TokenInput>;
+  status?: BundleStatus;
+  partnerCancelAuthority?: Array<string>;
 
-  // Flags
-  enableAccountAbstraction: boolean,
-  isAtomic: boolean,
-
-  // Optional fields
-  requestId?: string, // Client-side UUID for idempotency, enforced on /submit endpoint
-  userId?: string,  // Client side user ID, enforced on /submit endpoint
-  partnerCancelAuthority?: Array<string>,
-  referralCode?: number
+  // Included when submitting via /submit endpoint
+  enableAccountAbstraction?: boolean;
+  isAtomic?: boolean;
 
   // Signatures
-  signedData?: Array<{ actionId: string, signedData: string }>;
+  signedData?: Array<{ actionId: string; signedData: string }>;
 
   // Only when cancelled
   cancel?: CancelBundleData;
@@ -315,16 +430,29 @@ export type PaginatedResponseMetadata = {
   totalPages: number;
 }
 
-export type Hook = {
-  isAtomic: boolean;
-  data: string;
-  to: string;
-  value: string;
-  chainId: number;
+export type PlaceHolder = {
+  nameVariable: string;      // e.g. "amount1" — matches {amount1} in data
+  tokenAddress: string;      // token used for cumulative amount lookup
+  address: string;           // user address for grouping key
+  additionalAmount?: string; // optional offset added to cumulative amount
+};
+
+export type GasCompensationInfo = {
   tokenAddress: string;
+  chainId: number;
+  sender: string;
+};
+
+export type ExtendedHook = {
+  isAtomic: boolean;
+  data: string;              // hex calldata with {amount1}, {amount2}, etc.
+  to?: string;               // EVM-only
+  value?: string;            // EVM-only; wei string; can be "{amountN}" for native transfers
+  chainId: number;
   from: string;
-  preparePreRequiredActions?: boolean;
-}
+  placeHolders: PlaceHolder[]; // Array required, can be empty
+  gasCompensationInfo?: GasCompensationInfo;
+};
 
 /**
  * `to` and `value` are only available for EVM transactions.
@@ -338,3 +466,14 @@ export type Tx = {
 export type SolanaSign = {
   data: string;
 }
+
+/**
+ * Umbrella for both EVM and Solana wallet clients.
+ */
+export type WalletClientLike = WalletClient | Keypair;
+
+/**
+ * Mapping of chainId to WalletClientLike, which can be either a Viem WalletClient 
+ * for EVM chains or a Solana Keypair for Solana chain.
+ */
+export type WalletClientMap = Record<number, WalletClientLike>;
