@@ -1,10 +1,10 @@
-import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from 'viem';
-import { Action, Bundle, EIP712Data, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx } from '@gasless-intents/types';
-import { getChainIdToWalletClientMap } from '../wallet';
-import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js';
-import { SOLANA_RPC_URL } from '../constants';
-import { prepareSolanaTransaction, signHexMessageBySolanaKey } from '../solana';
-import { clipHexPrefix, toHexPrefixString } from '..';
+import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from "viem";
+import { Action, Bundle, EIP712Data, Sign7702AuthorizationData, SignatureTypes, SolanaSign, Tx } from "@gasless-intents/types";
+import { getChainIdToWalletClientMap } from "../wallet";
+import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
+import { SOLANA_RPC_URL } from "../constants";
+import { prepareSolanaTransaction, signHexMessageBySolanaKey } from "../solana";
+import { clipHexPrefix, toHexPrefixString } from "..";
 
 export async function signAction(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
@@ -47,7 +47,6 @@ async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<string> 
   const data = tx.data as `0x${string}`;
   const value = tx.value !== undefined ? BigInt(tx.value) : undefined;
 
-
   const hash = await walletClient.sendTransaction({
     account: walletClient.account,
     chain: walletClient.chain,
@@ -72,15 +71,15 @@ async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
 async function solanaAuthorizationSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
   const signingData = (action.data as SolanaSign).data;
   const signatures = signHexMessageBySolanaKey(signingData, keypair);
-  return toHexPrefixString(signatures.hex)
+  return toHexPrefixString(signatures.hex);
 }
 
 function solanaVersionedTransactionSign(action: Action, keypair: Keypair): string {
   const signingData = (action.data as SolanaSign).data;
-  const versionedTransaction = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(signingData), 'hex'));
+  const versionedTransaction = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(signingData), "hex"));
   versionedTransaction.sign([keypair]);
 
-  return toHexPrefixString(Buffer.from(versionedTransaction.serialize()).toString('hex'));
+  return toHexPrefixString(Buffer.from(versionedTransaction.serialize()).toString("hex"));
 }
 
 async function evmActionSign(action: Action, walletClient: WalletClient): Promise<string> {
@@ -97,24 +96,24 @@ async function evmActionSign(action: Action, walletClient: WalletClient): Promis
     const authData = {
       chainId,
       contractAddress,
-      nonce
-    }
+      nonce,
+    };
 
     return await sign7702Authorization(walletClient, authData);
   }
 
   // EIP-712 Typed Data - Sign712
   else if (
-    action.type === SignatureTypes.Sign712 || 
-    action.type === SignatureTypes.Sign712MetaMask || 
-    action.type === SignatureTypes.Permit || 
-    action.type === SignatureTypes.Permit2) {
+    action.type === SignatureTypes.Sign712 ||
+    action.type === SignatureTypes.Sign712MetaMask ||
+    action.type === SignatureTypes.Permit ||
+    action.type === SignatureTypes.Permit2
+  ) {
     const data = action.data as EIP712Data;
     const { domain, types, message, primaryType } = data;
 
     return sign712(walletClient, { domain, types, primaryType, message });
-  }
-  else {
+  } else {
     throw new Error("Unknown signing method");
   }
 }
@@ -125,9 +124,9 @@ async function evmActionSign(action: Action, walletClient: WalletClient): Promis
  */
 export async function collectIntentSignatures(
   requiredActions: Array<Action>,
-  walletClient: WalletClient | Keypair
-): Promise<Array<{ actionId: string, signedData: string }>> {
-  const signatures: Array<{ actionId: string, signedData: string }> = [];
+  walletClient: WalletClient | Keypair,
+): Promise<Array<{ actionId: string; signedData: string }>> {
+  const signatures: Array<{ actionId: string; signedData: string }> = [];
 
   if (!requiredActions || requiredActions.length === 0) {
     console.log("No actions to sign in this intent");
@@ -140,7 +139,7 @@ export async function collectIntentSignatures(
       const signature = await signAction(action, walletClient);
       signatures.push({
         actionId: action.actionId,
-        signedData: signature
+        signedData: signature,
       });
       console.log(`Successfully signed action ${action.actionId}`);
     } catch (error) {
@@ -158,9 +157,9 @@ export async function collectIntentSignatures(
  */
 export async function processIntentBundle(
   bundle: Bundle,
-  walletClient: ReturnType<typeof getChainIdToWalletClientMap>
-): Promise<Array<{ actionId: string, signedData: string }>> {
-  const allSignatures: Array<{ actionId: string, signedData: string }> = [];
+  walletClient: ReturnType<typeof getChainIdToWalletClientMap>,
+): Promise<Array<{ actionId: string; signedData: string }>> {
+  const allSignatures: Array<{ actionId: string; signedData: string }> = [];
 
   // Process intents
   if (bundle.intents && Array.isArray(bundle.intents)) {
@@ -175,6 +174,15 @@ export async function processIntentBundle(
   // Process post-hooks (if present)
   if (bundle.postHooks && Array.isArray(bundle.postHooks)) {
     for (const hook of bundle.postHooks) {
+      if (hook.requiredActions && Array.isArray(hook.requiredActions)) {
+        const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient[hook.hook.chainId]);
+        allSignatures.push(...hookSignatures);
+      }
+    }
+  }
+
+  if (bundle.preHooks && Array.isArray(bundle.preHooks)) {
+    for (const hook of bundle.preHooks) {
       if (hook.requiredActions && Array.isArray(hook.requiredActions)) {
         const hookSignatures = await collectIntentSignatures(hook.requiredActions, walletClient[hook.hook.chainId]);
         allSignatures.push(...hookSignatures);
@@ -201,7 +209,7 @@ async function sign7702Authorization(walletClient: WalletClient, data: Sign7702A
     s: authorization.s,
     yParity: authorization.yParity,
     v: authorization.v,
-  } as SerializeSignatureParameters<'hex'>);
+  } as SerializeSignatureParameters<"hex">);
 
   return signature;
 }

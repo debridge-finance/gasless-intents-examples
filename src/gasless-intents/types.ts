@@ -279,6 +279,7 @@ export enum BundleStatus {
 export type Bundle = {
   intents: Array<IntentPayload>,
   postHooks: Array<PostHookPayload>,
+  preHooks: Array<PostHookPayload>
   tokenResult: Array<TokenResult>,
   trades: Array<Trade>,
   status?: BundleStatus
@@ -338,3 +339,28 @@ export type Tx = {
 export type SolanaSign = {
   data: string;
 }
+
+export type PlaceHolder = {
+  nameVariable: string;      // e.g. "amount1" — matches {amount1.N} in data
+  tokenAddress: string;      // token used for cumulative amount lookup
+  address: string;           // user address for grouping key
+  additionalAmount?: string; // optional offset added to cumulative amount
+};
+
+export type GasCompensationInfo = {
+  tokenAddress: string;
+  chainId: number;
+  sender: string;
+};
+
+export type ExtendedHook = {
+  isAtomic: boolean;
+  data: string;              // hex calldata with {amount1}, {amount2}, etc.
+  to: string;
+  value: string;             // wei string; can be "{amountN}" for native transfers
+  chainId: number;
+  from: string;
+  placeHolders: PlaceHolder[]; // Array required, can be empty
+  gasCompensationInfo?: GasCompensationInfo;
+  gasLimit?: string; // Optional gas limit for the hook transaction, EVM only
+};
