@@ -2,6 +2,9 @@ import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import nacl from "tweetnacl";
 import bs58 from 'bs58';
 import { clipHexPrefix } from "..";
+import { ActionType, Bundle, SignatureTypes, SolanaSign } from "@gasless-intents/types";
+import { SOLANA_RPC_URL } from "../constants";
+import { CHAIN_IDS } from "../chains";
 
 export function extractTransactionHexData(obj: any): string[] {
   const result: string[] = [];
@@ -137,6 +140,52 @@ export function extractSignAction(payload) {
     }
   }
   return null;
+}
+
+/**
+ * Refreshes Solana blockhashes in preHook actions BEFORE signing.
+ *
+ * Prehook builders use a placeholder blockhash ("11111111111111111111111111111111").
+ * The API returns this placeholder unchanged. We must replace it with a fresh
+ * blockhash from the Solana RPC before signing, otherwise validators will reject
+ * the transaction.
+ *
+ * Only refreshes SignTransaction actions of type "Hook" (not "Compensation").
+ * GasCompensation transactions are handled by the API.
+ */
+export async function refreshSolanaPreHookBlockhashes(bundle: Bundle): Promise<void> {
+  const preHooks = bundle.preHooks;
+  if (!preHooks?.length) return;
+
+  const connection = new Connection(SOLANA_RPC_URL, "confirmed");
+  const { blockhash } = await connection.getLatestBlockhash({ commitment: "confirmed" });
+
+  for (const hook of preHooks) {
+    if (hook.hook?.chainId !== CHAIN_IDS.Solana) continue;
+
+    for (const action of hook.requiredActions ?? []) {
+      if (action.type !== SignatureTypes.SignTransaction) continue;
+      if (!action.actions?.includes(ActionType.Hook)) continue;
+      const solanaData = action.data as SolanaSign;
+      if (typeof solanaData.data !== "string") continue;
+
+      solanaData.data = refreshVersionedTxBlockhash(solanaData.data, blockhash);
+    }
+  }
+}
+
+function refreshVersionedTxBlockhash(txHex: string, newBlockhash: string): string {
+  const cleanHex = txHex.startsWith("0x") ? txHex.slice(2) : txHex;
+  const buf = Buffer.from(cleanHex, "hex");
+  const vtx = VersionedTransaction.deserialize(buf);
+
+  vtx.message.recentBlockhash = newBlockhash;
+
+  // Zero out signatures — changing blockhash invalidates them
+  vtx.signatures = vtx.signatures.map(() => new Uint8Array(64));
+
+  const serialized = vtx.serialize();
+  return `0x${Buffer.from(serialized).toString("hex")}`;
 }
 
 export function signHexMessageBySolanaKey(

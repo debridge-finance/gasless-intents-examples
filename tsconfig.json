@@ -12,7 +12,8 @@
     "lib": ["ES2020"],
     "paths": {
       "@gasless-intents/*": ["src/gasless-intents/*"],
-      "@utils/*": ["src/utils/*"]
+      "@utils/*": ["src/utils/*"],
+      "@price/*": ["src/price/*"]
     }
   },
   "include": ["src/**/*.ts"]
