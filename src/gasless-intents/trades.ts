@@ -712,9 +712,9 @@ export function getPolygonUsdcToBaseUsdc(signer: string): Trade {
   return {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: "7000000",
-    srcChainTokenInMinAmount: "7000000",
-    srcChainTokenInMaxAmount: "7000000",
+    srcChainTokenInAmount: "2300000",
+    srcChainTokenInMinAmount: "2300000",
+    srcChainTokenInMaxAmount: "2300000",
     dstChainId: CHAIN_IDS.Base,
     dstChainTokenOut: USDC.Base,
     dstChainTokenOutAmount: "auto",
@@ -729,11 +729,28 @@ export function getPolygonUsdcToBaseEth(signer: string): Trade {
   return {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: "7000000",
-    srcChainTokenInMinAmount: "7000000",
-    srcChainTokenInMaxAmount: "7000000",
+    srcChainTokenInAmount: "2300000",
+    srcChainTokenInMinAmount: "2300000",
+    srcChainTokenInMaxAmount: "2300000",
     dstChainId: CHAIN_IDS.Base,
     dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getBaseUsdcToPolygonUsdc(signer: string, amount: string = "10000000"): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Base,
+    srcChainTokenIn: USDC.Base,
+    srcChainTokenInAmount: amount,
+    srcChainTokenInMinAmount: amount,
+    srcChainTokenInMaxAmount: amount,
+    dstChainId: CHAIN_IDS.Polygon,
+    dstChainTokenOut: USDC.Polygon,
     dstChainTokenOutAmount: "auto",
     srcChainAuthorityAddress: signer,
     dstChainTokenOutRecipient: signer,
@@ -780,9 +797,9 @@ export function getPolygonUsdcToArbitrumUsdc(signer: string): Trade {
   return {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: "4000000", // 4 USDC
-    srcChainTokenInMinAmount: "4000000",
-    srcChainTokenInMaxAmount: "4000000",
+    srcChainTokenInAmount: "3000000", // 3 USDC
+    srcChainTokenInMinAmount: "3000000",
+    srcChainTokenInMaxAmount: "3000000",
     dstChainId: CHAIN_IDS.Arbitrum,
     dstChainTokenOut: USDC.Arbitrum,
     dstChainTokenOutAmount: "auto",

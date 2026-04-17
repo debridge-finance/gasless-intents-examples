@@ -2,15 +2,18 @@ import { privateKeyToAccount } from "viem/accounts";
 import util from "util"
 import { randomUUID } from 'crypto';
 
-import { USDC } from '@utils/constants';
+import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from '@utils/constants';
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getMorphoDepositHook } from '@utils/posthooks';
+import { getMorphoDepositExtendedHook } from '@utils/posthooks';
 import { createBundle, submitBundle } from '@utils/api';
-import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { CHAIN_IDS } from "@utils/chains";
+import { createApproveCall } from "@utils/contract-calls";
+import { replaceNamedPlaceholders } from "@utils/hooks-common";
+import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -19,7 +22,45 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const baseUsdcMorphoDeposit = await getMorphoDepositHook(toHexPrefixString(USDC.Base), CHAIN_IDS.Base, account.address);
+  const baseUsdcMorphoDeposit = await getMorphoDepositExtendedHook(
+    toHexPrefixString(USDC.Base),
+    CHAIN_IDS.Base,
+    account.address,
+    "morphoDepositAmount",
+  );
+
+  const morphoVaultAddress = await getVaultAddressByToken(USDC.Base, CHAIN_IDS.Base);
+
+  if (!morphoVaultAddress) {
+    throw new Error(`No Morpho vault found for ${USDC.Base} on ${CHAIN_IDS.Base}`);
+  }
+
+  const approveUsdcForMorphoCall = createApproveCall(
+    toHexPrefixString(USDC.Base),
+    toHexPrefixString(morphoVaultAddress),
+    BigInt(PLACEHOLDER_TOKEN_AMOUNT),
+  );
+
+  const morphoApprovePlaceholder: PlaceHolder = {
+    nameVariable: "morphoApproveAmount",
+    tokenAddress: USDC.Base,
+    address: account.address,
+  };
+
+  approveUsdcForMorphoCall.data = replaceNamedPlaceholders(
+    approveUsdcForMorphoCall.data,
+    [morphoApprovePlaceholder.nameVariable],
+  );
+
+  const approveMorphoDepositHook: ExtendedHook = {
+    isAtomic: true,
+    data: approveUsdcForMorphoCall.data,
+    to: approveUsdcForMorphoCall.to,
+    value: approveUsdcForMorphoCall.value.toString(),
+    chainId: CHAIN_IDS.Base,
+    from: account.address,
+    placeHolders: [morphoApprovePlaceholder],
+  };
 
   console.log("Deposit Call PostHook Calldata:", baseUsdcMorphoDeposit);
 
@@ -27,6 +68,7 @@ async function main() {
 
   const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 110000002,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
@@ -35,9 +77,7 @@ async function main() {
       getPolygonUsdcToBaseUsdc(account.address),
       getPolyMaticToBaseUsdc(account.address),
     ],
-    postHooks: [
-      baseUsdcMorphoDeposit
-    ],
+    postHooks: [approveMorphoDepositHook, baseUsdcMorphoDeposit],
   }
 
   console.log("Creating bundle...");
@@ -60,6 +100,7 @@ async function main() {
   // Prepare the bundle with intent signatures for submission
   const submitPayload = {
     ...bundle,
+    referralCode: 110000002,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,

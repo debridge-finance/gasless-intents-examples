@@ -61,7 +61,7 @@ export async function getMorphoDepositExtendedHook(
     beneficiaryAddress,
   );
 
-  hookTransaction.data = hookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), placeholderName);
+  hookTransaction.data = hookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), `{${placeholderName}}`);
 
   const placeholder: PlaceHolder = {
     nameVariable: placeholderName,
@@ -106,7 +106,42 @@ export async function getSendNativeAssetPosthook(
   return result;
 }
 
-export async function getSendErc20SimpleHook(
+export async function getSendNativeAssetPrehook(
+  chainId: number,
+  senderAddress: `0x${string}`,
+  beneficiaryAddress: `0x${string}`,
+  amount?: bigint,
+): Promise<ExtendedHook> {
+  if (amount !== undefined) {
+    return {
+      isAtomic: true,
+      data: "0x",
+      to: beneficiaryAddress,
+      value: amount.toString(),
+      chainId,
+      from: senderAddress,
+      placeHolders: [],
+    };
+  }
+
+  const placeholder: PlaceHolder = {
+    nameVariable: "amount1",
+    tokenAddress: EVM_NATIVE_TOKEN,
+    address: senderAddress,
+  };
+
+  return {
+    isAtomic: true,
+    data: "0x",
+    to: beneficiaryAddress,
+    value: "{amount1}",
+    chainId,
+    from: senderAddress,
+    placeHolders: [placeholder],
+  };
+}
+
+export async function getSendErc20Hook(
   tokenAddress: `0x${string}`,
   chainId: number,
   senderAddress: `0x${string}`,
@@ -122,7 +157,7 @@ export async function getSendErc20SimpleHook(
     address: senderAddress,
     additionalAmount: additionalAmount ? additionalAmount.toString() : undefined,
   }
-  postHookTransaction.data = replaceAmountPlaceholder(postHookTransaction.data);
+  postHookTransaction.data = replaceNamedPlaceholders(postHookTransaction.data, [placeholder.nameVariable]);
 
   const posthook: ExtendedHook = {
     isAtomic: true,
@@ -195,7 +230,7 @@ export async function getAaveSupplyExtendedHook(
     beneficiaryAddress,
   );
 
-  const modifiedCalldata = hookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), placeholderName);
+  const modifiedCalldata = hookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), `{${placeholderName}}`);
 
   hookTransaction.data = toHexPrefixString(modifiedCalldata);
 
@@ -237,7 +272,7 @@ export async function getAaveWithdrawExtendedHook(
     beneficiaryAddress,
   );
 
-  const modifiedCalldata = hookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), placeholderName);
+  const modifiedCalldata = hookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), `{${placeholderName}}`);
 
   hookTransaction.data = toHexPrefixString(modifiedCalldata);
 

@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
 
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getSendNativeAssetPosthook } from '@utils/posthooks';
+import { getSendNativeAssetPrehook } from '@utils/posthooks';
 import { createBundle, submitBundle } from '@utils/api';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "../trades";
@@ -21,9 +21,10 @@ async function main() {
   const senderAddress = account.address;
   const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
 
-  const polygonSendNativeHook = await getSendNativeAssetPosthook(polygon.id, senderAddress, beneficiaryAddress);
+  const sendAmount = BigInt("1000000000000000000"); // 1 MATIC (18 decimals)
+  const polygonSendNativeHook = await getSendNativeAssetPrehook(polygon.id, senderAddress, beneficiaryAddress, sendAmount);
 
-  console.log("Send Native PostHook Calldata:", polygonSendNativeHook);
+  console.log("Send Native PreHook Calldata:", polygonSendNativeHook);
 
   const requestId = randomUUID();
 
@@ -33,9 +34,7 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    preHooks: [
-      polygonSendNativeHook
-    ],
+    preHooks: [polygonSendNativeHook],
     trades: [
       getPolygonUsdcToBaseEth(account.address),
       getPolyMaticToBaseEth(account.address),

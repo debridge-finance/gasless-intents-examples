@@ -21,7 +21,7 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const amountToRebalance = "3204714"; // 3.204714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
+  const amountToRebalance = "1504714"; // 1.504714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
 
   const arbitrumUsdcAaveWithdraw = await getAaveWithdrawExtendedHook(
     AAVE_V3_POOL_ARBITRUM,

@@ -22,7 +22,6 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  // TODO: Figure out the amount
   const amountToRebalance = "3204714"; // 3.204714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
 
   const arbitrumUsdcAaveWithdraw = await getAaveWithdrawExtendedHook(
@@ -82,7 +81,7 @@ async function main() {
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [getArbitrumUsdcToBaseUsdc(account.address, amountToRebalance)],
     preHooks: [arbitrumUsdcAaveWithdraw],
-    postHooks: [morphoDeposit],
+    postHooks: [approveMorphoDepositHook, morphoDeposit],
   };
 
   console.log("Creating bundle...");

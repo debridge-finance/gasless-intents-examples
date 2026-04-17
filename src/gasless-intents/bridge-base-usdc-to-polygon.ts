@@ -1,43 +1,31 @@
-import { privateKeyToAccount } from "viem/accounts";
 import util from "util";
 import { randomUUID } from "crypto";
+import { privateKeyToAccount } from "viem/accounts";
 
-import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
-import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { getAaveSupplyHook } from "@utils/posthooks";
+import { clipHexPrefix, getEnvConfig } from "@utils/index";
 import { createBundle, submitBundle } from "@utils/api";
-import { BundleProposeBody, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToArbitrumUsdc, getPolyMaticToArbitrumUsdc } from "../trades";
+import { BundleProposeBody, TradingAlgorithm } from "./types";
+import { getBaseUsdcToPolygonUsdc } from "./trades";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
-import { CHAIN_IDS } from "@utils/chains";
 
 async function main() {
   const { privateKey } = getEnvConfig();
 
-  const account = privateKeyToAccount(toHexPrefixString(privateKey));
+  const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
-
-  const arbitrumUsdcAaveDeposit = await getAaveSupplyHook(
-    AAVE_V3_POOL_ARBITRUM,
-    toHexPrefixString(USDC.Arbitrum),
-    CHAIN_IDS.Arbitrum,
-    account.address,
-  );
-
-  console.log("Deposit Call PostHook Calldata:", arbitrumUsdcAaveDeposit);
 
   const requestId = randomUUID();
 
   const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 110000002,
     expirationTimestamp: Math.floor((new Date().getTime() * 2) / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [getPolygonUsdcToArbitrumUsdc(account.address), getPolyMaticToArbitrumUsdc(account.address)],
-    postHooks: [arbitrumUsdcAaveDeposit],
+    trades: [getBaseUsdcToPolygonUsdc(account.address)], // 10 USDC
   };
 
   console.log("Creating bundle...");
@@ -46,18 +34,15 @@ async function main() {
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
 
-  // Log the first intent for debugging
   if (bundle.intents && bundle.intents.length > 0) {
     console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
   }
 
-  // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
   const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
-  // Prepare the bundle with intent signatures for submission
   const submitPayload = {
     ...bundle,
     requestId: requestBody.requestId,
@@ -75,6 +60,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("\n🚨 FATAL ERROR in script execution:", error);
+  console.error("\nFATAL ERROR in script execution:", error);
   process.exitCode = 1;
 });
