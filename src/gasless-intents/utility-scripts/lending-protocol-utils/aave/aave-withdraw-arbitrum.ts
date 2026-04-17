@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { arbitrum } from "viem/chains";
 import { createAaveWithdrawCall } from "@utils/contract-calls";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
-import { getEnvConfig, toHexPrefixString } from "../../../utils";
+import { getEnvConfig, toHexPrefixString } from "@utils/index";
 
 const USDC_DECIMALS = 6;
 const WITHDRAW_AMOUNT = BigInt("1000000"); // 1 USDC

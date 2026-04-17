@@ -5,7 +5,7 @@ import { base } from "viem/chains";
 import { USDC } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
-import { getEnvConfig, toHexPrefixString } from "../../../utils";
+import { getEnvConfig, toHexPrefixString } from "@utils/index";
 
 const USDC_DECIMALS = 6;
 

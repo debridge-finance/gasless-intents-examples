@@ -5,7 +5,7 @@ import { base } from "viem/chains";
 import { USDC } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
-import { getEnvConfig, toHexPrefixString } from "../../../utils";
+import { getEnvConfig, toHexPrefixString } from "@utils/index";
 
 const USDC_DECIMALS = 6;
 const WITHDRAW_AMOUNT = BigInt("1000000"); // 1 USDC
@@ -105,15 +105,13 @@ async function main() {
     console.log(`\n--- Sending Withdraw Transaction ---`);
     console.log(`Withdrawing ${formatUnits(WITHDRAW_AMOUNT, USDC_DECIMALS)} USDC from Morpho Vault...`);
 
-    const withdrawData = {
-      abi: ERC4626_ABI,
-      functionName: "withdraw" as const,
-      args: [WITHDRAW_AMOUNT, account.address, account.address] as const,
-    };
-
     const txHash = await walletClient.writeContract({
-      address: vaultHex as `0x${string}`,
-      ...withdrawData,
+      account,
+      chain: base,
+      address: vaultHex,
+      abi: ERC4626_ABI,
+      functionName: "withdraw",
+      args: [WITHDRAW_AMOUNT, account.address, account.address],
     });
 
     console.log(`Withdraw transaction sent!`);
