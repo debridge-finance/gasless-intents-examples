@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { arbitrum } from "viem/chains";
 import { createApproveCall, createAaveSupplyCall } from "@utils/contract-calls";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
-import { getEnvConfig, toHexPrefixString } from "../../utils";
+import { getEnvConfig, toHexPrefixString } from "../../../utils";
 
 const USDC_DECIMALS = 6;
 const SUPPLY_AMOUNT = BigInt(process.env.USDC_AMOUNT || "1000000"); // Default: 1 USDC

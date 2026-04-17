@@ -3,7 +3,7 @@ import { createPublicClient, http, formatUnits, parseAbi } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arbitrum } from "viem/chains";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
-import { getEnvConfig, toHexPrefixString } from "../../utils";
+import { getEnvConfig, toHexPrefixString } from "../../../utils";
 
 const USDC_DECIMALS = 6;
 
