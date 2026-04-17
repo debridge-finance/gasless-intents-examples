@@ -1,8 +1,8 @@
 import { createWalletClient, http, parseAbi } from "viem";
-import { getEnvConfig, toHexPrefixString } from "../utils";
+import { getEnvConfig, toHexPrefixString } from "../../utils";
 import { arbitrum } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { DAI } from "../utils/constants";
+import { DAI } from "../../utils/constants";
 
 const ALLOWANCE_HOLDER_CONTRACT = "0xddddddddd4B6472c5002F95610b194D1161223d0";
 
