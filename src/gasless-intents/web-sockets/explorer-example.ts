@@ -1,27 +1,22 @@
-import { PARTNER_WS_URL } from "@utils/constants";
+import { EXPLORER_WS_URL } from "@utils/constants";
 import { DebridgeWsClient } from "./DebridgeWsClient";
 import { WSConfig, WsFilterMap } from "./types";
 import { log } from "./log-utils";
 import { openWsPayloadSink } from "./_saveWsPayload";
 
-// Edit these values to your needs.
+// Pre-submit explorer WS subscription: filter by the partner referralCode used by
+// submit-bundle-poly-to-base.ts, so we capture the bundle from `created` through
+// `fulfilled` in a single session.
 const CONFIG: WSConfig = {
-  url: PARTNER_WS_URL,
-  // Provide all supported filters here; one subscription will be sent per key.
-  // Max 100 entries per filter, aside from `referralCode`. Only 1 `referralCode` per client.
+  url: EXPLORER_WS_URL,
   filters: {
     bundleId: [],
     referralCode: ["110000002"],
-    intentOwner: [
-      "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8"
-    ],
-    intentAuthority: [
-      "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8"
-    ],
-    cancelPartnerAuthority: ["0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8"],
+    intentOwner: [],
+    intentAuthority: [],
+    cancelPartnerAuthority: [],
     userId: [],
   } as WsFilterMap,
-  // Optional reconnect configuration
   reconnect: {
     enabled: true,
     baseMs: 500,
@@ -29,10 +24,8 @@ const CONFIG: WSConfig = {
   },
 };
 
-// ---------------- Entrypoint ----------------
-
 (async () => {
-  const sink = openWsPayloadSink("ws-sink");
+  const sink = openWsPayloadSink("explorer-by-referral");
   log(`Persisting events to ${sink.path}`);
 
   const client = new DebridgeWsClient({
@@ -41,7 +34,6 @@ const CONFIG: WSConfig = {
     onRaw: (raw) => sink.write({ event: null, raw }),
   });
 
-  // Graceful shutdown
   const shutdown = () => {
     log("Shutting down ...");
     client.close();

@@ -12,7 +12,11 @@ const AAVE_V3_WITHDRAW_ABI = parseAbi(["function withdraw(address asset, uint256
 
 const AAVE_V3_SUPPLY_ABI = parseAbi(["function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode)"]);
 
-export function createApproveCall(tokenAddress: Address, spenderAddress: Address, amount: bigint): CallParameters {
+export function createApproveCall(
+  tokenAddress: Address,
+  spenderAddress: Address,
+  amount: bigint,
+): { to: Address; data: string; value: bigint } {
   const data = encodeFunctionData({
     abi: ERC20_APPROVE_ABI,
     functionName: "approve",

@@ -5,6 +5,7 @@ async function main() {
   const filters: GetBundlesFilterParams = {
     intentOwner: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
     intentAuthority: "0x55A8f5cce1d53D9Ff84EC0962882b447E5914dB8",
+    sort: "-createdAt",
     page: 1,
     pageSize: 25
   };

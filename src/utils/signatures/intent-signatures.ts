@@ -1,7 +1,7 @@
 import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from "viem";
 import {
   Action,
-  Bundle,
+  BundleProposeResponse,
   EIP712Data,
   Sign7702AuthorizationData,
   SignatureTypes,
@@ -91,6 +91,10 @@ function solanaVersionedTransactionSign(action: Action, keypair: Keypair): strin
 }
 
 async function evmActionSign(action: Action, walletClient: WalletClient): Promise<string> {
+  if (!walletClient.chain) {
+    throw new Error("Wallet client has no chain information");
+  }
+  
   // EIP-7702 Authorization
   if (action.type === SignatureTypes.Sign7702Authorization) {
     // Cast to Sign7702AuthorizationData to access specific properties
@@ -192,7 +196,7 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
  * Returns all signatures for both intents and post-hooks
  */
 export async function processIntentBundle(
-  bundle: Bundle,
+  bundle: BundleProposeResponse,
   walletClientMap: WalletClientMap,
 ): Promise<Array<{ actionId: string; signedData: string }>> {
   // tmp debugging, TODO: FIX
@@ -205,6 +209,10 @@ export async function processIntentBundle(
 async function sign7702Authorization(walletClient: WalletClient, data: Sign7702AuthorizationData): Promise<`0x${string}`> {
   if (!data.chainId) {
     throw new Error("chainId not specified");
+  }
+
+  if (!walletClient.account) {
+    throw new Error("Wallet client has no default account set");
   }
 
   const authorization = await walletClient.signAuthorization({
