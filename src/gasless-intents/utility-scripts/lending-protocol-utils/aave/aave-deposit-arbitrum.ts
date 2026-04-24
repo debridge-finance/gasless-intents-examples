@@ -1,17 +1,14 @@
 import "dotenv/config";
-import { createWalletClient, createPublicClient, http, formatUnits, parseAbi } from "viem";
+import { createWalletClient, createPublicClient, http, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arbitrum } from "viem/chains";
 import { createApproveCall, createAaveSupplyCall } from "@utils/contract-calls";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
 import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { Erc20Abi } from "@utils/abis";
 
 const USDC_DECIMALS = 6;
 const SUPPLY_AMOUNT = BigInt(process.env.USDC_AMOUNT || "1000000"); // Default: 1 USDC
-
-const ERC20_BALANCE_ABI = parseAbi([
-  "function balanceOf(address account) view returns (uint256)",
-]);
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -41,7 +38,7 @@ async function main() {
   // --- Check USDC Balance ---
   const usdcBalance = await publicClient.readContract({
     address: toHexPrefixString(USDC.Arbitrum),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -161,7 +158,7 @@ async function main() {
   // Check updated balance
   const newBalance = await publicClient.readContract({
     address: toHexPrefixString(USDC.Arbitrum),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;

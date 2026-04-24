@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createWalletClient, createPublicClient, http, formatUnits, parseAbi } from "viem";
+import { createWalletClient, createPublicClient, http, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { createApproveCall, createDepositCall } from "@utils/contract-calls";
@@ -7,17 +7,10 @@ import { USDC } from "@utils/constants";
 import { getEnvConfig, toHexPrefixString } from "@utils/index";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 import { CHAIN_IDS } from "@utils/chains";
+import { Erc20Abi, Erc4626Abi } from "@utils/abis";
 
 const USDC_DECIMALS = 6;
 const DEPOSIT_AMOUNT = BigInt("1000000"); // Default: 1 USDC
-
-const ERC20_BALANCE_ABI = parseAbi([
-  "function balanceOf(address account) view returns (uint256)",
-]);
-
-const ERC4626_DECIMALS_ABI = parseAbi([
-  "function decimals() view returns (uint8)",
-]);
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -55,7 +48,7 @@ async function main() {
   // --- Check USDC Balance ---
   const usdcBalance = await publicClient.readContract({
     address: toHexPrefixString(USDC.Base),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -73,13 +66,13 @@ async function main() {
   // --- Check Vault Share Balance (before) ---
   const vaultDecimals = await publicClient.readContract({
     address: toHexPrefixString(vaultAddress),
-    abi: ERC4626_DECIMALS_ABI,
+    abi: Erc4626Abi.Decimals,
     functionName: "decimals",
   } as any) as number;
 
   const sharesBefore = await publicClient.readContract({
     address: toHexPrefixString(vaultAddress),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -194,14 +187,14 @@ async function main() {
 
   const sharesAfter = await publicClient.readContract({
     address: toHexPrefixString(vaultAddress),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
 
   const newUsdcBalance = await publicClient.readContract({
     address: toHexPrefixString(USDC.Base),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
