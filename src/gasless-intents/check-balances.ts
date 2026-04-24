@@ -4,10 +4,7 @@ import { polygon, bsc, base, arbitrum, optimism, mainnet } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
-import {
-  USDC, USDT, LINK, WBNB, WETH, WBTC, DAI, LINGO, UNI,
-  SOL_JUP, DBR_SOL, SOLANA_RPC_URL,
-} from "@utils/constants";
+import { USDC, USDT, LINK, WBNB, WETH, WBTC, DAI, LINGO, SOL_JUP, DBR_SOL, SOLANA_RPC_URL } from "@utils/constants";
 
 // --- Config ---
 
@@ -26,9 +23,9 @@ type ChainName = "Ethereum" | "Polygon" | "BNB" | "Base" | "Arbitrum" | "Optimis
 function createClients() {
   return {
     Ethereum: createPublicClient({ chain: mainnet, transport: http() }),
-    Polygon:  createPublicClient({ chain: polygon, transport: http(process.env.POLYGON_RPC_URL) }),
-    BNB:      createPublicClient({ chain: bsc, transport: http(process.env.BNB_RPC_URL) }),
-    Base:     createPublicClient({ chain: base, transport: http(process.env.BASE_RPC_URL) }),
+    Polygon: createPublicClient({ chain: polygon, transport: http(process.env.POLYGON_RPC_URL) }),
+    BNB: createPublicClient({ chain: bsc, transport: http(process.env.BNB_RPC_URL) }),
+    Base: createPublicClient({ chain: base, transport: http(process.env.BASE_RPC_URL) }),
     Arbitrum: createPublicClient({ chain: arbitrum, transport: http(process.env.ARB_RPC_URL) }),
     Optimism: createPublicClient({ chain: optimism, transport: http(process.env.OPTIMISM_RPC_URL) }),
   };
@@ -47,29 +44,29 @@ const nativeSymbols: Record<ChainName, string> = {
 const tokenRegistry: Record<string, Partial<Record<ChainName | "Solana", { address: string; decimals: number }>>> = {
   USDC: {
     Ethereum: { address: USDC.Ethereum, decimals: 6 },
-    Polygon:  { address: USDC.Polygon, decimals: 6 },
-    BNB:      { address: USDC.BNB, decimals: 18 },
-    Base:     { address: USDC.Base, decimals: 6 },
+    Polygon: { address: USDC.Polygon, decimals: 6 },
+    BNB: { address: USDC.BNB, decimals: 18 },
+    Base: { address: USDC.Base, decimals: 6 },
     Arbitrum: { address: USDC.Arbitrum, decimals: 6 },
     Optimism: { address: USDC.Optimism, decimals: 6 },
-    Solana:   { address: USDC.Solana, decimals: 6 },
+    Solana: { address: USDC.Solana, decimals: 6 },
   },
   USDT: {
     Ethereum: { address: USDT.Ethereum, decimals: 6 },
-    Polygon:  { address: USDT.Polygon, decimals: 6 },
-    BNB:      { address: USDT.BNB, decimals: 18 },
+    Polygon: { address: USDT.Polygon, decimals: 6 },
+    BNB: { address: USDT.BNB, decimals: 18 },
     Arbitrum: { address: USDT.Arbitrum, decimals: 6 },
-    Base:     { address: USDT.Base, decimals: 6 },
-    Solana:   { address: USDT.Solana, decimals: 6 },
+    Base: { address: USDT.Base, decimals: 6 },
+    Solana: { address: USDT.Solana, decimals: 6 },
   },
   DAI: {
-    Polygon:  { address: DAI.Polygon, decimals: 18 },
+    Polygon: { address: DAI.Polygon, decimals: 18 },
     Arbitrum: { address: DAI.Arbitrum, decimals: 18 },
     Ethereum: { address: DAI.Ethereum, decimals: 18 },
   },
   WETH: {
     Ethereum: { address: WETH.Ethereum, decimals: 18 },
-    Polygon:  { address: WETH.Polygon, decimals: 18 },
+    Polygon: { address: WETH.Polygon, decimals: 18 },
   },
   LINK: {
     Polygon: { address: LINK.Polygon, decimals: 18 },
@@ -82,9 +79,6 @@ const tokenRegistry: Record<string, Partial<Record<ChainName | "Solana", { addre
   },
   LINGO: {
     Base: { address: LINGO.Base, decimals: 18 },
-  },
-  UNI: {
-    Ethereum: { address: UNI.Ethereum, decimals: 18 },
   },
   WSOL: {
     Solana: { address: "So11111111111111111111111111111111111111112", decimals: 9 },
@@ -163,7 +157,7 @@ async function main() {
         nativeBalance: formatUnits(nativeBalance, 18),
         tokenBalances,
       };
-    })
+    }),
   );
 
   // Solana: native + all SPL tokens in one call

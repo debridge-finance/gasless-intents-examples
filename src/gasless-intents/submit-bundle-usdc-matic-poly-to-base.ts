@@ -1,51 +1,68 @@
-import util from "util"
-import { randomUUID } from 'crypto';
-import { privateKeyToAccount } from "viem/accounts";
-import { base } from "viem/chains";
-
-import { USDC } from '@utils/constants';
-import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getSendErc20SimpleHook } from '@utils/posthooks';
+import {
+  privateKeyToAccount
+} from 'viem/accounts'
+import { getEnvConfig, clipHexPrefix } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
-import { BundleProposeBody, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
+import { randomUUID } from 'crypto';
+
+import util from "util"
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "./types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { CHAIN_IDS } from '@utils/chains';
+import { EVM_NATIVE_TOKEN, USDC } from '@utils/constants';
 
 async function main() {
+  // Wallet setup
   const { privateKey } = getEnvConfig();
 
-  const account = privateKeyToAccount(toHexPrefixString(privateKey));
+  const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const senderAddress = account.address;
-  const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
-
-  const sendErc20Posthook = await getSendErc20SimpleHook(toHexPrefixString(USDC.Base), base.id, senderAddress, beneficiaryAddress);
-
-  console.log("Send ERC20 PostHook Calldata:", sendErc20Posthook);
-
   const requestId = randomUUID();
 
+  const usdcPolyToUsdcBase: Trade = {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "600000", // 0.6 USDC
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: account.address,
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true
+  }
+
+  const usdcMaticToUsdcEth: Trade = {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "1000000000000000000", // 1 MATIC
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: account.address,
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true
+  }
+
+  // Trades body
   const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 110000002,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [
-      getPolygonUsdcToBaseUsdc(account.address),
-      getPolyMaticToBaseUsdc(account.address),
-    ],
-    postHooks: [
-      sendErc20Posthook
-    ],
+    trades: [usdcPolyToUsdcBase, usdcMaticToUsdcEth],
+    postHooks: [],
   }
+
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
-
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
 
@@ -61,7 +78,7 @@ async function main() {
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
   // Prepare the bundle with intent signatures for submission
-  const submitPayload = {
+  const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,

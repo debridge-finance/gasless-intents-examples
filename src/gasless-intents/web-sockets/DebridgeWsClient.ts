@@ -5,15 +5,24 @@ import {
   ClientMessage,
   isServerEnvelope,
   ServerEvent,
+  ServerMessage,
   WSConfig,
   WsFilterMap,
   WsFilterWrapper,
 } from "./types";
 import { warn, log, err } from "./log-utils";
 
+/** Extra fields accepted by the client beyond the documented WSConfig. */
+type WSConfigExt = WSConfig & {
+  /** Called for every parsed server envelope, before the built-in switch logs it. Use for persistence. */
+  onEvent?: (msg: ServerMessage) => void;
+  /** Called for every raw (unparseable / non-envelope) message. */
+  onRaw?: (raw: string) => void;
+};
+
 // TODO: Implement runtime filter updates
 export class DebridgeWsClient {
-  private config: WSConfig;
+  private config: WSConfigExt;
   private url: string;
   private ws: WebSocket | null = null;
   private connected = false;
@@ -27,7 +36,7 @@ export class DebridgeWsClient {
   private awaitingPong = false;
   private lastPongAt = 0;
 
-  constructor(config: any) {
+  constructor(config: WSConfigExt) {
     this.url = config.url;
     this.config = config;
   }
@@ -79,9 +88,12 @@ export class DebridgeWsClient {
     try {
       const msg = JSON.parse(text);
       if (!isServerEnvelope(msg)) {
+        this.config.onRaw?.(text);
         log("[RAW]", text);
         return;
       }
+
+      this.config.onEvent?.(msg);
 
       switch (msg.event) {
         case ServerEvent.subscribe:
@@ -89,6 +101,9 @@ export class DebridgeWsClient {
           break;
         case ServerEvent.bundle_update:
           log("[UPDATE]", JSON.stringify(msg.data, null, 2));
+          break;
+        case ServerEvent.explorer_bundle_update:
+          log("[EXPLORER UPDATE]", JSON.stringify(msg.data, null, 2));
           break;
         case ServerEvent.unsubscribed:
           log("[INFO] Unsubscribed →", JSON.stringify(msg.data));
@@ -111,7 +126,7 @@ export class DebridgeWsClient {
     log(`Disconnected. Code: ${code}, Reason: ${reason || "N/A"}`);
     if (this.closing) return;
 
-    if (this.config.reconnect.enabled) {
+    if (this.config.reconnect?.enabled) {
       const delay = Math.max(0, this.config.reconnect.baseMs ?? 1000);
       this.reconnectAttempts++;
       log(`Reconnecting in ${delay}ms ... (attempt ${this.reconnectAttempts})`);
