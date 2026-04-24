@@ -2,6 +2,7 @@ export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
 
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
+export const V1_EXPLORER_BASE = "/v1/explorer";
 
 export const BUNDLES = "/bundles";
 
@@ -12,7 +13,15 @@ export const ENDPOINTS = {
   BUNDLE_PROPOSE_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}`,
   BUNDLE_SUBMIT_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}/submit`,
   BUNDLE_CANCEL_URL: `${BASE_URL}${V1_BASE}${BUNDLES}/cancel`,
+  EXPLORER_BUNDLES_URL: `${BASE_URL}${V1_EXPLORER_BASE}${BUNDLES}`,
 };
+
+export const EXPLORER_BUNDLE_BY_ID_URL = (id: string) =>
+  `${BASE_URL}${V1_EXPLORER_BASE}${BUNDLES}/${id}`;
+
+// WebSocket URLs
+export const PARTNER_WS_URL = "wss://api-gaslessb2b.debridge.finance/ws";
+export const EXPLORER_WS_URL = "wss://api-gaslessb2b.debridge.finance/ws/explorer";
 
 // Price API (no /gasless prefix)
 export const PRICE_RATES_URL = `${BASE_URL}/v1/token/price`;

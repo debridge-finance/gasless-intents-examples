@@ -268,7 +268,7 @@ export type Intent = {
   giveToken?: GiveToken[];
   takeToken: TakeToken[];
   receiverDetails: Receiver[];
-  dstAuthorityAddress: Receiver[];
+  dstAuthorityAddresses: Receiver[];
 }
 
 export type IntentPayload = {
@@ -391,8 +391,32 @@ export type TokenInput = {
   approximateUsdValue: number;
 }
 
+export type BundleProposeResponse = {
+  requestId?: string;
+  referralCode?: number;
+  preHooks: Array<HookPayload>;
+  postHooks: Array<HookPayload>;
+  trades: Array<TradeResult>;
+  intents: Array<IntentPayload>;
+  bundleCosts: Array<BundleCost>;
+  accumulativeTokenOutput: Array<TokenResult>;
+  accumulativeTokenInput: Array<TokenInput>;
+  status?: BundleStatus;
+  partnerCancelAuthority?: Array<string>;
+
+  // Included when submitting via /submit endpoint
+  enableAccountAbstraction?: boolean;
+  isAtomic?: boolean;
+
+  // Signatures
+  signedData?: Array<{ actionId: string; signedData: string }>;
+
+  // Only when cancelled
+  cancel?: CancelBundleData;
+}
+
 export type Bundle = {
-  requestId: string;
+  requestId?: string;
   referralCode?: number;
   preHooks: Array<HookPayload>;
   postHooks: Array<HookPayload>;
@@ -431,10 +455,10 @@ export type PaginatedResponseMetadata = {
 }
 
 export type PlaceHolder = {
-  nameVariable: string;      // e.g. "amount1" — matches {amount1} in data
-  tokenAddress: string;      // token used for cumulative amount lookup
-  address: string;           // user address for grouping key
-  additionalAmount?: string; // optional offset added to cumulative amount
+  nameVariable: string;             // e.g. "amount1" — matches {amount1} in data
+  tokenAddress: string;             // token used for cumulative amount lookup
+  address: string;                  // user address for grouping key
+  additionalAmount?: string | null; // optional offset added to cumulative amount
 };
 
 export type GasCompensationInfo = {

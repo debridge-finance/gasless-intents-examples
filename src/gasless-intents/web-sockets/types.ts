@@ -1,4 +1,5 @@
 import { Bundle } from "../types";
+import { ExplorerBundleDetail } from "../explorer.types";
 
 /** Individual filter keys accepted by the WS API. */
 export enum WsFilterKey {
@@ -58,8 +59,17 @@ export type ClientMessage = SubscribeMessage | UnsubscribeMessage;
 export enum ServerEvent {
   subscribe = "subscribe",
   bundle_update = "bundle_update",
+  /** Emitted by the Bundle Aggregator Service (explorer) WS. */
+  explorer_bundle_update = "explorer_bundle_update",
   unsubscribed = "unsubscribed",
   error = "error"
+}
+
+/** Envelope content of an explorer_bundle_update server message (BAS). */
+export interface ExplorerBundleUpdateData {
+  action: "explorer_bundle_update";
+  timestamp: number;
+  bundle: ExplorerBundleDetail;
 }
 
 /** Generic server envelope; `data` shape depends on `event`. */
@@ -92,6 +102,7 @@ export interface ServerErrorData {
 /** Discriminated unions for server messages. */
 export type SubscribeAckMessage = ServerEnvelope<ServerEvent.subscribe, SubscribeAckData>;
 export type BundleUpdateMessage = ServerEnvelope<ServerEvent.bundle_update, Bundle>;
+export type ExplorerBundleUpdateMessage = ServerEnvelope<ServerEvent.explorer_bundle_update, ExplorerBundleUpdateData>;
 export type UnsubscribedMessage = ServerEnvelope<ServerEvent.unsubscribed, UnsubscribedData>;
 export type ServerErrorMessage = ServerEnvelope<ServerEvent.error, ServerErrorData>;
 
@@ -99,6 +110,7 @@ export type ServerErrorMessage = ServerEnvelope<ServerEvent.error, ServerErrorDa
 export type ServerMessage =
   | SubscribeAckMessage
   | BundleUpdateMessage
+  | ExplorerBundleUpdateMessage
   | UnsubscribedMessage
   | ServerErrorMessage;
 
@@ -127,6 +139,10 @@ export function isServerEnvelope(x: unknown): x is ServerMessage {
 
 export function isBundleUpdate(m: ServerMessage): m is BundleUpdateMessage {
   return m.event === ServerEvent.bundle_update;
+}
+
+export function isExplorerBundleUpdate(m: ServerMessage): m is ExplorerBundleUpdateMessage {
+  return m.event === ServerEvent.explorer_bundle_update;
 }
 
 export function isServerError(m: ServerMessage): m is ServerErrorMessage {

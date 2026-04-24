@@ -1,16 +1,14 @@
-import {
-  privateKeyToAccount
-} from 'viem/accounts'
-import { getEnvConfig, clipHexPrefix } from '@utils/index';
-import { createBundle, submitBundle } from '@utils/api';
-import { processIntentBundle } from '@utils/signatures/intent-signatures';
-import { randomUUID } from 'crypto';
+import { privateKeyToAccount } from "viem/accounts";
+import { getEnvConfig, clipHexPrefix } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { randomUUID } from "crypto";
 
-import util from "util"
+import util from "util";
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "./types";
-import { getChainIdToWalletClientMap } from '@utils/wallet';
-import { CHAIN_IDS } from '@utils/chains';
-import { USDC } from '@utils/constants';
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { EVM_NATIVE_TOKEN, USDC, USDT } from "@utils/constants";
 
 async function main() {
   // Wallet setup
@@ -32,21 +30,59 @@ async function main() {
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: account.address,
     dstChainAuthorityAddress: account.address,
-    prependOperatingExpenses: true
-  }
+    prependOperatingExpenses: true,
+  };
+
+  const usdcMaticToUsdcEth: Trade = {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "1000000000000000000", // 1 MATIC
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: account.address,
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true,
+  };
+
+  const arbitrumEthToBaseEth: Trade = {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "1000000000000000", // 0.001 ETH
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: account.address,
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true,
+  };
+
+  const arbitrumUsdtToBaseUsdc: Trade = {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: USDT.Arbitrum,
+    srcChainTokenInAmount: "2300000", // 2.3 USDT
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: account.address,
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true,
+  };
 
   // Trades body
   const requestBody: BundleProposeBody = {
     requestId,
     referralCode: 110000002,
-    expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
+    expirationTimestamp: Math.floor((new Date().getTime() * 2) / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [usdcPolyToUsdcBase],
+    trades: [usdcPolyToUsdcBase, usdcMaticToUsdcEth, arbitrumEthToBaseEth, arbitrumUsdtToBaseUsdc],
     postHooks: [],
-  }
-
+  };
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
@@ -70,7 +106,7 @@ async function main() {
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,
-    signedData: signedDataArray
+    signedData: signedDataArray,
   };
 
   console.log("Payload prepared with signatures. Ready for submission.");
