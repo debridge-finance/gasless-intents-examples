@@ -447,7 +447,7 @@ export type ExtendedHook = {
   isAtomic: boolean;
   data: string;              // hex calldata with {amount1}, {amount2}, etc.
   to?: string;               // EVM-only
-  value?: string;            // EVM-only; wei string; can be "{amountN}" for native transfers
+  value?: string;            // EVM-only; wei string; can be "{amount.N}" for native transfers
   chainId: number;
   from: string;
   placeHolders: PlaceHolder[]; // Array required, can be empty

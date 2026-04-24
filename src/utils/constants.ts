@@ -1,5 +1,7 @@
 export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
 
+// export const BASE_URL = "https://api-dev.debridge.io";
+
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
 
@@ -87,10 +89,10 @@ export const DE_BRIDGE_CONTRACTS = {
   },
 };
 
-// Pools
-
 export const CASH = {
   Solana: "CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH",
 };
+
+// Pools
 
 export const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";

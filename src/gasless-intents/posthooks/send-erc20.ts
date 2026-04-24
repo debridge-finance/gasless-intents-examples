@@ -5,7 +5,7 @@ import { base } from "viem/chains";
 
 import { USDC } from '@utils/constants';
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getSendErc20SimpleHook } from '@utils/posthooks';
+import { getSendErc20Hook } from '@utils/posthooks';
 import { createBundle, submitBundle } from '@utils/api';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
@@ -22,7 +22,7 @@ async function main() {
   const senderAddress = account.address;
   const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
 
-  const sendErc20Posthook = await getSendErc20SimpleHook(toHexPrefixString(USDC.Base), base.id, senderAddress, beneficiaryAddress);
+  const sendErc20Posthook = await getSendErc20Hook(toHexPrefixString(USDC.Base), base.id, senderAddress, beneficiaryAddress);
 
   console.log("Send ERC20 PostHook Calldata:", sendErc20Posthook);
 

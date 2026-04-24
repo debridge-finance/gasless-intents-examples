@@ -1,13 +1,37 @@
 import "dotenv/config";
-import { createPublicClient, http, formatUnits, type Address } from "viem";
+import { createPublicClient, http, formatUnits, type Address, type Chain } from "viem";
 import { polygon, bsc, base, arbitrum, optimism, mainnet } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import {
-  USDC, USDT, LINK, WBNB, WETH, WBTC, DAI, LINGO, UNI,
+  USDC, USDT, LINK, WBNB, WETH, WBTC, DAI, LINGO,
   SOL_JUP, DBR_SOL, SOLANA_RPC_URL,
 } from "@utils/constants";
+
+// --- Rate Limiting Helpers ---
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const DELAY_BETWEEN_CHAINS_MS = 200;
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  { retries = 3, baseDelayMs = 1000 }: { retries?: number; baseDelayMs?: number } = {}
+): Promise<T> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const is429 = err?.status === 429 || err?.code === 429 || String(err?.message).includes("429");
+      if (attempt === retries || !is429) throw err;
+      const delay = baseDelayMs * 2 ** attempt;
+      console.warn(`  ⚠ 429 rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${retries})...`);
+      await sleep(delay);
+    }
+  }
+  throw new Error("unreachable");
+}
 
 // --- Config ---
 
@@ -23,15 +47,32 @@ const erc20Abi = [
 
 type ChainName = "Ethereum" | "Polygon" | "BNB" | "Base" | "Arbitrum" | "Optimism";
 
+const rpcEnvVars: Record<ChainName, { envKey: string; chain: Chain }> = {
+  Ethereum: { envKey: "MAINNET_RPC_URL", chain: mainnet },
+  Polygon:  { envKey: "POLYGON_RPC_URL", chain: polygon },
+  BNB:      { envKey: "BNB_RPC_URL", chain: bsc },
+  Base:     { envKey: "BASE_RPC_URL", chain: base },
+  Arbitrum: { envKey: "ARB_RPC_URL", chain: arbitrum },
+  Optimism: { envKey: "OPTIMISM_RPC_URL", chain: optimism },
+};
+
+function createClient(chain: Chain, rpcUrl: string) {
+  return createPublicClient({ chain, transport: http(rpcUrl) });
+}
+
 function createClients() {
-  return {
-    Ethereum: createPublicClient({ chain: mainnet, transport: http() }),
-    Polygon:  createPublicClient({ chain: polygon, transport: http(process.env.POLYGON_RPC_URL) }),
-    BNB:      createPublicClient({ chain: bsc, transport: http(process.env.BNB_RPC_URL) }),
-    Base:     createPublicClient({ chain: base, transport: http(process.env.BASE_RPC_URL) }),
-    Arbitrum: createPublicClient({ chain: arbitrum, transport: http(process.env.ARB_RPC_URL) }),
-    Optimism: createPublicClient({ chain: optimism, transport: http(process.env.OPTIMISM_RPC_URL) }),
-  };
+  const clients: Partial<Record<ChainName, ReturnType<typeof createClient>>> = {};
+
+  for (const [name, { envKey, chain }] of Object.entries(rpcEnvVars) as [ChainName, typeof rpcEnvVars[ChainName]][]) {
+    const rpcUrl = process.env[envKey];
+    if (!rpcUrl) {
+      console.warn(`⚠ ${envKey} not set — skipping ${name}`);
+      continue;
+    }
+    clients[name] = createClient(chain, rpcUrl);
+  }
+
+  return clients;
 }
 
 const nativeSymbols: Record<ChainName, string> = {
@@ -83,9 +124,6 @@ const tokenRegistry: Record<string, Partial<Record<ChainName | "Solana", { addre
   LINGO: {
     Base: { address: LINGO.Base, decimals: 18 },
   },
-  UNI: {
-    Ethereum: { address: UNI.Ethereum, decimals: 18 },
-  },
   WSOL: {
     Solana: { address: "So11111111111111111111111111111111111111112", decimals: 9 },
   },
@@ -121,50 +159,64 @@ async function main() {
 
   const evmChainNames = Object.keys(clients) as ChainName[];
 
-  // Fetch all EVM balances in parallel (per chain: 1 native + N readContract via multicall)
-  const evmResults = await Promise.all(
-    evmChainNames.map(async (chainName) => {
-      const client = clients[chainName];
+  // Fetch EVM balances sequentially to stay within RPC rate limits (~10-15 req/s)
+  type EvmChainResult = {
+    chainName: ChainName;
+    nativeSymbol: string;
+    nativeBalance: string;
+    tokenBalances: { tokenName: string; balance: string }[];
+  };
 
-      const tokensOnChain = Object.entries(tokenRegistry)
-        .filter(([, chains]) => chains[chainName])
-        .map(([tokenName, chains]) => ({
-          tokenName,
-          address: chains[chainName]!.address as Address,
-          decimals: chains[chainName]!.decimals,
-        }));
+  const evmResults: EvmChainResult[] = [];
 
-      const multicallContracts = tokensOnChain.map((t) => ({
-        address: t.address,
-        abi: erc20Abi,
-        functionName: "balanceOf" as const,
-        args: [evmAddress] as const,
+  for (const chainName of evmChainNames) {
+    const client = clients[chainName]!;
+
+    const tokensOnChain = Object.entries(tokenRegistry)
+      .filter(([, chains]) => chains[chainName])
+      .map(([tokenName, chains]) => ({
+        tokenName,
+        address: chains[chainName]!.address as Address,
+        decimals: chains[chainName]!.decimals,
       }));
 
-      type MulticallResult = { status: "success"; result: bigint } | { status: "failure"; error: Error };
+    const multicallContracts = tokensOnChain.map((t) => ({
+      address: t.address,
+      abi: erc20Abi,
+      functionName: "balanceOf" as const,
+      args: [evmAddress] as const,
+    }));
 
-      const [nativeBalance, multicallResults] = await Promise.all([
+    type MulticallResult = { status: "success"; result: bigint } | { status: "failure"; error: Error };
+
+    const [nativeBalance, multicallResults] = await withRetry(() =>
+      Promise.all([
         client.getBalance({ address: evmAddress }),
         client.multicall({ contracts: multicallContracts } as never) as Promise<MulticallResult[]>,
-      ]);
+      ])
+    );
 
-      const tokenBalances = tokensOnChain.map((t, i) => {
-        const result = multicallResults[i];
-        const rawBalance = result.status === "success" ? result.result : BigInt(0);
-        return {
-          tokenName: t.tokenName,
-          balance: formatUnits(rawBalance, t.decimals),
-        };
-      });
-
+    const tokenBalances = tokensOnChain.map((t, i) => {
+      const result = multicallResults[i];
+      const rawBalance = result.status === "success" ? result.result : BigInt(0);
       return {
-        chainName,
-        nativeSymbol: nativeSymbols[chainName],
-        nativeBalance: formatUnits(nativeBalance, 18),
-        tokenBalances,
+        tokenName: t.tokenName,
+        balance: formatUnits(rawBalance, t.decimals),
       };
-    })
-  );
+    });
+
+    evmResults.push({
+      chainName,
+      nativeSymbol: nativeSymbols[chainName],
+      nativeBalance: formatUnits(nativeBalance, 18),
+      tokenBalances,
+    });
+
+    // Rate limit: wait between chains
+    if (evmChainNames.indexOf(chainName) < evmChainNames.length - 1) {
+      await sleep(DELAY_BETWEEN_CHAINS_MS);
+    }
+  }
 
   // Solana: native + all SPL tokens in one call
   const solanaResult = await (async () => {
