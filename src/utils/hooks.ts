@@ -11,7 +11,7 @@ export async function getAaveSupplyHook(
   beneficiaryAddress: `0x${string}`,
 ): Promise<ExtendedHook> {
   if (!aaveContractAddress || aaveContractAddress.length === 0 || aaveContractAddress === EVM_NATIVE_TOKEN) {
-    throw new Error(`Invalid AAVE contract address - ${tokenAddress} on chain ${chainId}`);
+    throw new Error(`Invalid AAVE contract address - ${aaveContractAddress} on chain ${chainId} for token ${tokenAddress}`);
   }
 
   const hookTransaction = createAaveSupplyCall(
