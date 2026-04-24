@@ -1,6 +1,3 @@
-// Propose (create) a 4-trade bundle — does NOT submit, does NOT spend funds.
-// Captures the raw response of POST /v1.1/gasless/bundles so the shape can be
-// validated against the declared `Bundle` and the wire-accurate `BundleTracking`.
 import { privateKeyToAccount } from "viem/accounts";
 import { getEnvConfig, clipHexPrefix } from "@utils/index";
 import { createBundle } from "@utils/api";
