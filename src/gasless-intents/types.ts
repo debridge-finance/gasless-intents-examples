@@ -392,7 +392,7 @@ export type TokenInput = {
 }
 
 export type Bundle = {
-  requestId: string;
+  requestId?: string;
   referralCode?: number;
   preHooks: Array<HookPayload>;
   postHooks: Array<HookPayload>;
