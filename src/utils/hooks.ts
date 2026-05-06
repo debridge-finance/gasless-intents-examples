@@ -1,7 +1,8 @@
 import { ExtendedHook, PlaceHolder } from "@gasless-intents/types";
 import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
 import { createAaveSupplyCall } from "./contract-calls";
-import { clipHexPrefix, toHexPrefixString } from ".";
+import { toHexPrefixString } from ".";
+import { replaceNamedPlaceholders } from "./hooks-common";
 
 export async function getAaveSupplyHook(
   aaveContractAddress: `0x${string}`,
@@ -21,12 +22,14 @@ export async function getAaveSupplyHook(
     beneficiaryAddress,
   );
 
-  const modifiedCalldata = hookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), "{amount}");
+  const placeholderName = "amount";
+
+  const modifiedCalldata = replaceNamedPlaceholders(hookTransaction.data, [placeholderName]);
 
   hookTransaction.data = toHexPrefixString(modifiedCalldata);
 
   const placeholder: PlaceHolder = {
-    nameVariable: "amount",
+    nameVariable: `${placeholderName}`,
     tokenAddress: tokenAddress,
     address: senderAddress,
   };

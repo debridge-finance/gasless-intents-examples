@@ -2,15 +2,15 @@ import { parseAbi } from "viem";
 
 /** ERC-20 */
 export const Erc20Abi = {
-  Balance: parseAbi(["function balanceOf(address account)"]),
+  Balance: parseAbi(["function balanceOf(address account) view returns (uint256)"]),
   Approve: parseAbi(["function approve(address spender, uint256 amount)"]),
   Transfer: parseAbi(["function transfer(address to, uint256 amount)"]),
 } as const;
 
 /** ERC-4626 vaults */
 export const Erc4626Abi = {
-  Decimals: parseAbi(["function decimals()"]),
-  ConvertToAssets: parseAbi(["function convertToAssets(uint256 shares)"]),
+  Decimals: parseAbi(["function decimals() view returns (uint8)"]),
+  ConvertToAssets: parseAbi(["function convertToAssets(uint256 shares) view returns (uint256)"]),
   Deposit: parseAbi(["function deposit(uint256 assets, address receiver)"]),
   Withdraw: parseAbi(["function withdraw(uint256 assets, address receiver, address owner)"]),
 } as const;
