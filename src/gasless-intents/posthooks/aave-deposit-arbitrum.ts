@@ -72,7 +72,7 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [getPolygonUsdcToArbitrumUsdc(account.address), getPolyMaticToArbitrumUsdc(account.address)],
+    trades: [getPolygonUsdcToArbitrumUsdc(account.address)],
     postHooks: [approvePrehook, arbitrumUsdcAaveDeposit],
   };
 

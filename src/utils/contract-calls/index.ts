@@ -1,7 +1,8 @@
-import { encodeFunctionData, CallParameters, Address } from "viem";
+import { encodeFunctionData, Address } from "viem";
 import { Erc20Abi, Erc4626Abi, AaveV3Abi } from "@utils/abis";
+import { EvmTx } from "@gasless-intents/types";
 
-export function createApproveCall(tokenAddress: Address, spenderAddress: Address, amount: bigint): CallParameters {
+export function createApproveCall(tokenAddress: Address, spenderAddress: Address, amount: bigint): EvmTx {
   const data = encodeFunctionData({
     abi: Erc20Abi.Approve,
     functionName: "approve",
@@ -15,7 +16,7 @@ export function createApproveCall(tokenAddress: Address, spenderAddress: Address
   };
 }
 
-export function createTransferCall(to: Address, amount: bigint): { to: Address; data: string; value: bigint } {
+export function createTransferCall(to: Address, amount: bigint): EvmTx {
   const data = encodeFunctionData({
     abi: Erc20Abi.Transfer,
     functionName: "transfer",
@@ -29,7 +30,7 @@ export function createTransferCall(to: Address, amount: bigint): { to: Address; 
   };
 }
 
-export function createDepositCall(vaultAddress: Address, amount: bigint, receiverAddress: Address): CallParameters {
+export function createDepositCall(vaultAddress: Address, amount: bigint, receiverAddress: Address): EvmTx {
   const data = encodeFunctionData({
     abi: Erc4626Abi.Deposit,
     functionName: "deposit",
@@ -51,7 +52,7 @@ export function createAaveSupplyCall(
   supplyAmount: bigint,
   onBehalfOf: `0x${string}`,
   aaveReferralCode: number = 0,
-) {
+): EvmTx {
   const data = encodeFunctionData({
     abi: AaveV3Abi.Supply,
     functionName: "supply",
