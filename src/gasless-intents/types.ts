@@ -392,7 +392,7 @@ export type TokenInput = {
 }
 
 export type Bundle = {
-  requestId: string;
+  requestId?: string;
   referralCode?: number;
   preHooks: Array<HookPayload>;
   postHooks: Array<HookPayload>;
@@ -447,7 +447,7 @@ export type ExtendedHook = {
   isAtomic: boolean;
   data: string;              // hex calldata with {amount1}, {amount2}, etc.
   to?: string;               // EVM-only
-  value?: string;            // EVM-only; wei string; can be "{amountN}" for native transfers
+  value?: string;            // EVM-only; wei string; can be "{amount.N}" for native transfers
   chainId: number;
   from: string;
   placeHolders: PlaceHolder[]; // Array required, can be empty
@@ -460,6 +460,12 @@ export type ExtendedHook = {
 export type Tx = {
   to?: string;
   value?: string;
+  data: string;
+}
+
+export type EvmTx = {
+  to: string;
+  value: bigint;
   data: string;
 }
 
