@@ -35,7 +35,7 @@ async function main() {
     prependOperatingExpenses: true
   }
 
-  const usdcMaticToUsdcEth: Trade = {
+  const usdcMaticToBaseEth: Trade = {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: EVM_NATIVE_TOKEN,
     srcChainTokenInAmount: "1000000000000000000", // 1 MATIC
@@ -56,7 +56,7 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [usdcPolyToUsdcBase, usdcMaticToUsdcEth],
+    trades: [usdcPolyToUsdcBase, usdcMaticToBaseEth],
     postHooks: [],
   }
 
