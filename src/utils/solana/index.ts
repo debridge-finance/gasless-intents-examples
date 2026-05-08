@@ -169,12 +169,12 @@ export async function refreshSolanaPreHookBlockhashes(bundle: Bundle): Promise<v
       const solanaData = action.data as SolanaSign;
       if (typeof solanaData.data !== "string") continue;
 
-      solanaData.data = refreshVersionedTxBlockhash(solanaData.data, blockhash);
+      solanaData.data = setNewVersionedTxBlockhash(solanaData.data, blockhash);
     }
   }
 }
 
-function refreshVersionedTxBlockhash(txHex: string, newBlockhash: string): string {
+function setNewVersionedTxBlockhash(txHex: string, newBlockhash: string): string {
   const cleanHex = txHex.startsWith("0x") ? txHex.slice(2) : txHex;
   const buf = Buffer.from(cleanHex, "hex");
   const vtx = VersionedTransaction.deserialize(buf);
