@@ -89,24 +89,6 @@ function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
   return result;
 }
 
-export function extractSignAction(payload) {
-  if (!payload?.intents) return null;
-
-  for (const intent of payload.intents) {
-    if (!intent.requiredActions) continue;
-
-    for (const action of intent.requiredActions) {
-      if (action.type === "Sign" && action.actions?.includes("Intent")) {
-        return {
-          data: action?.data?.data || null,
-          actionId: action?.actionId || null
-        };
-      }
-    }
-  }
-  return null;
-}
-
 /**
  * Refreshes Solana blockhashes in preHook actions BEFORE signing.
  *
