@@ -25,26 +25,6 @@ export function extractTransactionHexData(obj: any): string[] {
   return result;
 }
 
-
-export function extractTransactionHexData2(obj: any): Array<{ actionId: string, data: string }> {
-  const result: Array<{ actionId: string, data: string }> = [];
-
-  if (!obj?.intents) return result;
-
-  for (const intent of obj.intents) {
-    const requiredActions = intent?.requiredActions;
-    if (!Array.isArray(requiredActions)) continue;
-
-    for (const action of requiredActions) {
-      if (action?.type === "Transaction" && typeof action?.data?.data === "string") {
-        result.push({ data: action.data.data, actionId: action.actionId });
-      }
-    }
-  }
-
-  return result;
-}
-
 export async function prepareSolanaTransaction(solRpcUrl: string, txData: string, solWallet: Keypair) {
   const connection = new Connection(solRpcUrl, { commitment: "confirmed" });
   const tx = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(txData), "hex"));
