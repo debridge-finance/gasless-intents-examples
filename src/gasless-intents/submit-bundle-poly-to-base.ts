@@ -25,7 +25,9 @@ async function main() {
   const usdcPolyToUsdcBase: Trade = {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: "600000", // 0.6 USDC
+    srcChainTokenInAmount: "4000000", // 4 USDC
+    srcChainTokenInMinAmount: "4000000",
+    srcChainTokenInMaxAmount: "4000000",
     srcChainAuthorityAddress: account.address,
     dstChainId: CHAIN_IDS.Base,
     dstChainTokenOut: USDC.Base,
