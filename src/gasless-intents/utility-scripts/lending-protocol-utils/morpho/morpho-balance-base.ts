@@ -1,22 +1,14 @@
 import "dotenv/config";
-import { createPublicClient, http, formatUnits, parseAbi } from "viem";
+import { createPublicClient, http, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { USDC } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { Erc20Abi, Erc4626Abi } from "@utils/abis";
 
 const USDC_DECIMALS = 6;
-
-const ERC20_BALANCE_ABI = parseAbi([
-  "function balanceOf(address account) view returns (uint256)",
-]);
-
-const ERC4626_ABI = parseAbi([
-  "function decimals() view returns (uint8)",
-  "function convertToAssets(uint256 shares) view returns (uint256)",
-]);
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -44,13 +36,13 @@ async function main() {
   // --- Vault Share Balance ---
   const vaultDecimals = await publicClient.readContract({
     address: toHexPrefixString(vaultAddress),
-    abi: ERC4626_ABI,
+    abi: Erc4626Abi.Decimals,
     functionName: "decimals",
   } as any) as number;
 
   const shares = await publicClient.readContract({
     address: toHexPrefixString(vaultAddress),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -61,7 +53,7 @@ async function main() {
   if (shares > 0n) {
     const assets = await publicClient.readContract({
       address: toHexPrefixString(vaultAddress),
-      abi: ERC4626_ABI,
+      abi: Erc4626Abi.ConvertToAssets,
       functionName: "convertToAssets",
       args: [shares],
     } as any) as bigint;
@@ -74,7 +66,7 @@ async function main() {
   // --- Wallet USDC Balance for reference ---
   const usdcBalance = await publicClient.readContract({
     address: toHexPrefixString(USDC.Base),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;

@@ -1,24 +1,15 @@
 import "dotenv/config";
-import { createWalletClient, createPublicClient, http, formatUnits, parseAbi } from "viem";
+import { createWalletClient, createPublicClient, http, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { USDC } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { Erc20Abi, Erc4626Abi } from "@utils/abis";
 
 const USDC_DECIMALS = 6;
 const WITHDRAW_AMOUNT = BigInt("1000000"); // 1 USDC
-
-const ERC20_BALANCE_ABI = parseAbi([
-  "function balanceOf(address account) view returns (uint256)",
-]);
-
-const ERC4626_ABI = parseAbi([
-  "function decimals() view returns (uint8)",
-  "function convertToAssets(uint256 shares) view returns (uint256)",
-  "function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares)",
-]);
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -56,13 +47,13 @@ async function main() {
   // --- Check current deposited balance ---
   const vaultDecimals = await publicClient.readContract({
     address: vaultHex,
-    abi: ERC4626_ABI,
+    abi: Erc4626Abi.Decimals,
     functionName: "decimals",
   } as any) as number;
 
   const sharesBefore = await publicClient.readContract({
     address: vaultHex,
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -75,7 +66,7 @@ async function main() {
 
   const assetsBefore = await publicClient.readContract({
     address: vaultHex,
-    abi: ERC4626_ABI,
+    abi: Erc4626Abi.ConvertToAssets,
     functionName: "convertToAssets",
     args: [sharesBefore],
   } as any) as bigint;
@@ -93,7 +84,7 @@ async function main() {
 
   const usdcBefore = await publicClient.readContract({
     address: toHexPrefixString(USDC.Base),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -109,7 +100,7 @@ async function main() {
       account,
       chain: base,
       address: vaultHex,
-      abi: ERC4626_ABI,
+      abi: Erc4626Abi.Withdraw,
       functionName: "withdraw",
       args: [WITHDRAW_AMOUNT, account.address, account.address],
     });
@@ -151,7 +142,7 @@ async function main() {
 
   const sharesAfter = await publicClient.readContract({
     address: vaultHex,
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -159,7 +150,7 @@ async function main() {
   const assetsAfter = sharesAfter > 0n
     ? await publicClient.readContract({
         address: vaultHex,
-        abi: ERC4626_ABI,
+        abi: Erc4626Abi.ConvertToAssets,
         functionName: "convertToAssets",
         args: [sharesAfter],
       } as any) as bigint
@@ -167,7 +158,7 @@ async function main() {
 
   const usdcAfter = await publicClient.readContract({
     address: toHexPrefixString(USDC.Base),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;

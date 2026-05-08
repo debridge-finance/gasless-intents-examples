@@ -1,8 +1,9 @@
-import { createWalletClient, http, parseAbi } from "viem";
+import { createWalletClient, http } from "viem";
 import { getEnvConfig, toHexPrefixString } from "../utils";
 import { base } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { USDT } from "../utils/constants";
+import { Erc20Abi } from "../utils/abis";
 
 const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
@@ -23,7 +24,7 @@ async function main() {
 
   const hash = await ownerWalletClient.writeContract({
     address: TOKEN as `0x${string}`,
-    abi: parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]),
+    abi: Erc20Abi.Approve,
     functionName: "approve",
     args: [PERMIT2_ADDRESS, AMOUNT],
     chain: base,

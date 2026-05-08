@@ -17,7 +17,7 @@ export type GetBundlesFilterParams = {
 }
 
 export type GetBundleListResponse = PaginatedResponseMetadata & {
-  bundles: Array<Bundle>
+  bundles: Array<BundleProposeResponse>
 }
 
 export enum CancelBundleReasonCodes {
@@ -440,31 +440,7 @@ export type BundleProposeResponse = {
   cancel?: CancelBundleData;
 }
 
-export type Bundle = {
-  requestId?: string;
-  referralCode?: number;
-  preHooks: Array<HookPayload>;
-  postHooks: Array<HookPayload>;
-  trades: Array<TradeResult>;
-  intents: Array<IntentPayload>;
-  bundleCosts: Array<BundleCost>;
-  accumulativeTokenOutput: Array<TokenResult>;
-  accumulativeTokenInput: Array<TokenInput>;
-  status?: BundleStatus;
-  partnerCancelAuthority?: Array<string>;
-
-  // Included when submitting via /submit endpoint
-  enableAccountAbstraction?: boolean;
-  isAtomic?: boolean;
-
-  // Signatures
-  // `providedData` carries hex-encoded values for deferred placeholders and is required
-  // for ProvidePlaceholders and Sign712MetaMaskWithPlaceholders actions.
-  signedData?: Array<{ actionId: string; signedData: string; providedData?: Record<string, string> }>;
-
-  // Only when cancelled
-  cancel?: CancelBundleData;
-}
+export type Bundle = BundleProposeResponse;
 
 export type CancelBundleData = {
   preImage: string;
@@ -534,6 +510,12 @@ export type ExtendedHook = {
 export type Tx = {
   to?: string;
   value?: string;
+  data: string;
+}
+
+export type EvmTx = {
+  to: string;
+  value: bigint;
   data: string;
 }
 

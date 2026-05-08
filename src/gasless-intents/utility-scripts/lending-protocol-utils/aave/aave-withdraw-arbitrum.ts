@@ -1,20 +1,17 @@
 import "dotenv/config";
-import { createWalletClient, createPublicClient, http, formatUnits, parseAbi } from "viem";
+import { createWalletClient, createPublicClient, http, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arbitrum } from "viem/chains";
 import { createAaveWithdrawCall } from "@utils/contract-calls";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
 import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { Erc20Abi } from "@utils/abis";
 
 const USDC_DECIMALS = 6;
 const WITHDRAW_AMOUNT = BigInt("1000000"); // 1 USDC
 
 // aUSDC (Aave Arbitrum USDC) — the aToken minted when depositing USDC into AAVE V3 on Arbitrum
 const AUSDC_ARBITRUM = "0x724dc807b04555b71ed48a6896b6F41593b8C637";
-
-const ERC20_BALANCE_ABI = parseAbi([
-  "function balanceOf(address account) view returns (uint256)",
-]);
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -42,7 +39,7 @@ async function main() {
   // --- Check aUSDC balance (deposited amount) ---
   const aUsdcBalance = await publicClient.readContract({
     address: toHexPrefixString(AUSDC_ARBITRUM),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -59,7 +56,7 @@ async function main() {
 
   const usdcBefore = await publicClient.readContract({
     address: toHexPrefixString(USDC.Arbitrum),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
@@ -122,14 +119,14 @@ async function main() {
 
   const aUsdcAfter = await publicClient.readContract({
     address: toHexPrefixString(AUSDC_ARBITRUM),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;
 
   const usdcAfter = await publicClient.readContract({
     address: toHexPrefixString(USDC.Arbitrum),
-    abi: ERC20_BALANCE_ABI,
+    abi: Erc20Abi.Balance,
     functionName: "balanceOf",
     args: [account.address],
   } as any) as bigint;

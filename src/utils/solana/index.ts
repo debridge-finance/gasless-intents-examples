@@ -2,7 +2,7 @@ import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import nacl from "tweetnacl";
 import bs58 from 'bs58';
 import { clipHexPrefix } from "..";
-import { ActionType, Bundle, SignatureTypes, SolanaSign } from "@gasless-intents/types";
+import { ActionType, BundleProposeResponse, SignatureTypes, SolanaSign } from "@gasless-intents/types";
 import { SOLANA_RPC_URL } from "../constants";
 import { CHAIN_IDS } from "../chains";
 
@@ -18,26 +18,6 @@ export function extractTransactionHexData(obj: any): string[] {
     for (const action of requiredActions) {
       if (action?.type === "Transaction" && typeof action?.data?.data === "string") {
         result.push(action.data.data);
-      }
-    }
-  }
-
-  return result;
-}
-
-
-export function extractTransactionHexData2(obj: any): Array<{ actionId: string, data: string }> {
-  const result: Array<{ actionId: string, data: string }> = [];
-
-  if (!obj?.intents) return result;
-
-  for (const intent of obj.intents) {
-    const requiredActions = intent?.requiredActions;
-    if (!Array.isArray(requiredActions)) continue;
-
-    for (const action of requiredActions) {
-      if (action?.type === "Transaction" && typeof action?.data?.data === "string") {
-        result.push({ data: action.data.data, actionId: action.actionId });
       }
     }
   }
@@ -109,43 +89,10 @@ function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
   return result;
 }
 
-export function extractSignData(payload) {
-  if (!payload?.intents) return null;
-
-  for (const intent of payload.intents) {
-    if (!intent.requiredActions) continue;
-
-    for (const action of intent.requiredActions) {
-      if (action.type === "Sign" && action.actions?.includes("Intent")) {
-        return action?.data?.data || null;
-      }
-    }
-  }
-  return null;
-}
-
-export function extractSignAction(payload) {
-  if (!payload?.intents) return null;
-
-  for (const intent of payload.intents) {
-    if (!intent.requiredActions) continue;
-
-    for (const action of intent.requiredActions) {
-      if (action.type === "Sign" && action.actions?.includes("Intent")) {
-        return {
-          data: action?.data?.data || null,
-          actionId: action?.actionId || null
-        };
-      }
-    }
-  }
-  return null;
-}
-
 /**
  * Refreshes Solana blockhashes in preHook actions BEFORE signing.
  *
- * Prehook builders use a placeholder blockhash ("11111111111111111111111111111111").
+ * PreHook builders use a placeholder blockhash ("11111111111111111111111111111111").
  * The API returns this placeholder unchanged. We must replace it with a fresh
  * blockhash from the Solana RPC before signing, otherwise validators will reject
  * the transaction.
@@ -153,7 +100,7 @@ export function extractSignAction(payload) {
  * Only refreshes SignTransaction actions of type "Hook" (not "Compensation").
  * GasCompensation transactions are handled by the API.
  */
-export async function refreshSolanaPreHookBlockhashes(bundle: Bundle): Promise<void> {
+export async function refreshSolanaPreHookBlockhashes(bundle: BundleProposeResponse): Promise<void> {
   const preHooks = bundle.preHooks;
   if (!preHooks?.length) return;
 

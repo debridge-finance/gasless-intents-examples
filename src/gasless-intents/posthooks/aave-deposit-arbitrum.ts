@@ -17,7 +17,6 @@ import { replaceNamedPlaceholders } from "@utils/hooks-common";
 /**
  * Fund requirements:
  * - Polygon: 3 USDC
- * – Polygon: 0.1 POLY
  */
 
 async function main() {
@@ -72,7 +71,7 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [getPolygonUsdcToArbitrumUsdc(account.address), getPolyMaticToArbitrumUsdc(account.address)],
+    trades: [getPolygonUsdcToArbitrumUsdc(account.address)],
     postHooks: [approvePrehook, arbitrumUsdcAaveDeposit],
   };
 
