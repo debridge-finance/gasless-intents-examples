@@ -2,7 +2,7 @@ import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import nacl from "tweetnacl";
 import bs58 from 'bs58';
 import { clipHexPrefix } from "..";
-import { ActionType, BundleProposeResponse, SignatureTypes, SolanaSign } from "@gasless-intents/types";
+import { ActionType, Bundle, SignatureTypes, SolanaSign } from "@gasless-intents/types";
 import { SOLANA_RPC_URL } from "../constants";
 import { CHAIN_IDS } from "../chains";
 
@@ -100,7 +100,7 @@ function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
  * Only refreshes SignTransaction actions of type "Hook" (not "Compensation").
  * GasCompensation transactions are handled by the API.
  */
-export async function refreshSolanaPreHookBlockhashes(bundle: BundleProposeResponse): Promise<void> {
+export async function refreshSolanaPreHookBlockhashes(bundle: Bundle): Promise<void> {
   const preHooks = bundle.preHooks;
   if (!preHooks?.length) return;
 
