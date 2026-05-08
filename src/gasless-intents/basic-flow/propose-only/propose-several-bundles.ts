@@ -38,7 +38,7 @@ async function main() {
     dstChainAuthorityAddress: account.address,
     prependOperatingExpenses: true,
   };
-  const usdcMaticToUsdcEth: Trade = {
+  const usdcMaticToBaseEth: Trade = {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: EVM_NATIVE_TOKEN,
     srcChainTokenInAmount: "1000000000000000000",
@@ -82,7 +82,7 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [usdcPolyToUsdcBase, usdcMaticToUsdcEth, arbitrumEthToBaseEth, arbitrumUsdtToBaseUsdc],
+    trades: [usdcPolyToUsdcBase, usdcMaticToBaseEth, arbitrumEthToBaseEth, arbitrumUsdtToBaseUsdc],
     postHooks: [],
   };
 

@@ -7,13 +7,10 @@ import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 
 import util from "util"
-import {
-  getPolyUsdcToBscUsdcTrade,
-  getPolyMaticToBscBnb,
-  getPolyMaticToWethTradeV1_1
-} from "./trades";
-import { Bundle, BundleProposeBody, TradingAlgorithm } from "./types";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../../types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { CHAIN_IDS } from '@utils/chains';
+import { EVM_NATIVE_TOKEN, USDC } from '@utils/constants';
 
 async function main() {
   // Wallet setup
@@ -25,6 +22,32 @@ async function main() {
 
   const requestId = randomUUID();
 
+  const usdcPolyToUsdcBase: Trade = {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "600000", // 0.6 USDC
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: account.address,
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true
+  }
+
+  const usdcMaticToUsdcEth: Trade = {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "1000000000000000000", // 1 MATIC
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: account.address,
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true
+  }
+
   // Trades body
   const requestBody: BundleProposeBody = {
     requestId,
@@ -33,57 +56,8 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [
-      getPolyUsdcToBscUsdcTrade(account.address),
-      getPolyMaticToWethTradeV1_1(account.address, account.address),
-      getPolyMaticToBscBnb(account.address),
-
-      // getPolygonDaiToUSDC(account.address)
-
-      //getBscNativeToPolNativeTrade(account.address)
-      //getBscNativeToBaseEth(account.address),
-      //getPolyMaticToBaseEth(account.address),
-      //getBscNativeToBaseEth(account.address),
-      //getBaseEthToBaseEth(account.address),
-      //getArbitrumEthToBaseEth(account.address),
-      // getOptimismEthToBaseEth(account.address),
-
-
-      //getOptimismEthToSynthUSD(account.address),
-      //getArbitrumEthToWbtc(account.address),
-
-
-      //getOptimismEthToBaseEth(account.address)
-
-
-      //getPolyUsdcToBscUsdcTrade(account.address),
-      //getPolyUsdcToPolyWETH(account.address),
-      //getPolyUsdcToBscUsdcTrade(account.address),
-
-      // getPolyMaticToBscWbnb(account.address),
-
-      //getPolyMaticToBscBnb(account.address),
-      //getPolyMaticToBscBnb(account.address),
-      //getPolyMaticToBscWbnb(account.address),
-
-      //getPolyUsdcToBscUsdcTrade(account.address),
-      //getPolyUsdcToBscWbnbTrade(account.address),
-      //getPolyMaticToBscWbnb(account.address),
-      // getPolyMaticToWethTrade(account.address)
-      //getBscNativeToPolNativeTrade(account.address)
-    ],
-    postHooks: [
-      // {
-      //   "isAtomic": true,
-      //   //data: '0x6e553f650000000000000000000000000000000000000000000000000000000000002710000000000000000000000000541a7e03dcc8f425f6a0797333d5926d89aeb51f',
-      //   "data": "0x6e553f65{amount}000000000000000000000000541a7e03dcc8f425f6a0797333d5926d89aeb51f",
-      //   "to": "0xAcB0DCe4b0FF400AD8F6917f3ca13E434C9ed6bC",
-      //   "value": "0",
-      //   "chainId": 137,
-      //   "tokenAddress": USDC.Polygon,
-      //   "from": "0x541A7e03dCC8F425F6a0797333d5926D89AeB51f"
-      // }
-    ],
+    trades: [usdcPolyToUsdcBase, usdcMaticToUsdcEth],
+    postHooks: [],
   }
 
 

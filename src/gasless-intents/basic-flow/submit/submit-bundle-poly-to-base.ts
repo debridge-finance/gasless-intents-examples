@@ -7,10 +7,10 @@ import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 
 import util from "util"
-import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "./types";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../../types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { CHAIN_IDS } from '@utils/chains';
-import { EVM_NATIVE_TOKEN, USDC } from '@utils/constants';
+import { USDC } from '@utils/constants';
 
 async function main() {
   // Wallet setup
@@ -35,19 +35,6 @@ async function main() {
     prependOperatingExpenses: true
   }
 
-  const usdcMaticToUsdcEth: Trade = {
-    srcChainId: CHAIN_IDS.Polygon,
-    srcChainTokenIn: EVM_NATIVE_TOKEN,
-    srcChainTokenInAmount: "1000000000000000000", // 1 MATIC
-    srcChainAuthorityAddress: account.address,
-    dstChainId: CHAIN_IDS.Base,
-    dstChainTokenOut: EVM_NATIVE_TOKEN,
-    dstChainTokenOutAmount: "auto",
-    dstChainTokenOutRecipient: account.address,
-    dstChainAuthorityAddress: account.address,
-    prependOperatingExpenses: true
-  }
-
   // Trades body
   const requestBody: BundleProposeBody = {
     requestId,
@@ -56,7 +43,7 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [usdcPolyToUsdcBase, usdcMaticToUsdcEth],
+    trades: [usdcPolyToUsdcBase],
     postHooks: [],
   }
 
