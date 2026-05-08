@@ -5,32 +5,20 @@ import {
   BundleCancelRequest,
   BundleCancelResponse,
   BundleProposeBody,
-  BundleProposeResponse,
   GetBundlesFilterParams,
   PaginatedResponseMetadata,
   SubmitBundleResponse,
 } from "@gasless-intents/types";
-import {
-  ExplorerBundleDetail,
-  ExplorerBundleListResponse,
-  ExplorerListFilterParams,
-} from "@gasless-intents/explorer.types";
-import { ENDPOINTS, EXPLORER_BUNDLE_BY_ID_URL } from "./constants";
+import { ENDPOINTS } from "./constants";
 import { privateKeyToAccount } from "viem/accounts";
 import { getWalletClients } from "./wallet";
 
-const {
-  BUNDLE_CANCEL_URL,
-  BUNDLES_URL,
-  BUNDLE_PROPOSE_URL,
-  BUNDLE_SUBMIT_URL,
-  EXPLORER_BUNDLES_URL,
-} = ENDPOINTS;
+const { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL } = ENDPOINTS;
 
-export async function createBundle(requestBody: BundleProposeBody): Promise<BundleProposeResponse> {
+export async function createBundle(requestBody: BundleProposeBody): Promise<Bundle> {
   const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
 
-  return response as BundleProposeResponse;
+  return response as Bundle;
 }
 
 /**
@@ -68,26 +56,6 @@ export async function getBundles(
 
 export async function getBundleById(bundleId: string): Promise<Bundle> {
   return getUrl(`${BUNDLES_URL}/${bundleId}`) as Promise<Bundle>;
-}
-
-export async function listExplorerBundles(
-  filters: ExplorerListFilterParams,
-): Promise<ExplorerBundleListResponse> {
-  const params: Record<string, string> = {};
-  for (const [k, v] of Object.entries(filters)) {
-    if (v === undefined || v === null) continue;
-    params[k] = String(v);
-  }
-
-  const url = `${EXPLORER_BUNDLES_URL}?${new URLSearchParams(params).toString()}`;
-  console.log("Fetching explorer bundles...", url);
-  return getUrl(url) as Promise<ExplorerBundleListResponse>;
-}
-
-export async function getExplorerBundleById(bundleId: string): Promise<ExplorerBundleDetail> {
-  const url = EXPLORER_BUNDLE_BY_ID_URL(bundleId);
-  console.log("Fetching explorer bundle detail...", url);
-  return getUrl(url) as Promise<ExplorerBundleDetail>;
 }
 
 export async function cancelBundles(
