@@ -17,7 +17,7 @@ export type GetBundlesFilterParams = {
 }
 
 export type GetBundleListResponse = PaginatedResponseMetadata & {
-  bundles: Array<BundleProposeResponse>
+  bundles: Array<Bundle>
 }
 
 export enum CancelBundleReasonCodes {
@@ -27,7 +27,7 @@ export enum CancelBundleReasonCodes {
 }
 
 /**
- * `creationTimestamp` and `expirationTimestamp` parameters are used for idempotency purposes - not as time-window filters.
+ * `creationTimestamp` and `expirationTimestamp` parameters are used for idempotency purposes - not as time-window filters. 
  */
 export type BundleCancelRequest = {
   bundleId?: string,
@@ -112,7 +112,7 @@ export type BundleBase = {
   enableAccountAbstraction: boolean;
   isAtomic: boolean;
 
-  // Permit flags
+  // Permit flags 
   approvalMode?: ApprovalMode; // Defaults to "approve" if not provided
   approveAmountFlag?: ApproveAmount; // Defaults to "none" if not provided
 }
@@ -123,7 +123,7 @@ export type BundleProposeBody = BundleBase & {
 }
 
 export type SubmitBundleResponse = {
-  bundleId: string;
+  bundleId: string; 
   message?: string; // Optional message field for additional info (e.g. if a duplicate bundle is detected based on requestId)
 }
 
@@ -416,7 +416,7 @@ export type TokenInput = {
   approximateUsdValue: number;
 }
 
-export type BundleProposeResponse = {
+export type Bundle = {
   requestId?: string;
   referralCode?: number;
   preHooks: Array<HookPayload>;
@@ -440,7 +440,7 @@ export type BundleProposeResponse = {
   cancel?: CancelBundleData;
 }
 
-export type Bundle = BundleProposeResponse;
+export type BundleProposeResponse = Bundle;
 
 export type CancelBundleData = {
   preImage: string;
