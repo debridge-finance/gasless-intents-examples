@@ -89,21 +89,6 @@ function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
   return result;
 }
 
-export function extractSignData(payload) {
-  if (!payload?.intents) return null;
-
-  for (const intent of payload.intents) {
-    if (!intent.requiredActions) continue;
-
-    for (const action of intent.requiredActions) {
-      if (action.type === "Sign" && action.actions?.includes("Intent")) {
-        return action?.data?.data || null;
-      }
-    }
-  }
-  return null;
-}
-
 export function extractSignAction(payload) {
   if (!payload?.intents) return null;
 
