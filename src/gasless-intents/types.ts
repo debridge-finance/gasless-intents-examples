@@ -557,3 +557,13 @@ export type EvmTxCall = {
   data: string;
   value: bigint;
 }
+
+// providedData map, keyed by actionId → (nameVariable → hex value).
+// Keying by actionId avoids collisions when multiple hooks share a placeholder name.
+export type ProvidedDataMap = Record<string, Record<string, string>>;
+
+export type SignedDataItem = {
+  actionId: string;
+  signedData: string;
+  providedData?: Record<string, string>;
+};

@@ -3,11 +3,15 @@ import {
   Action,
   BundleProposeResponse,
   EIP712Data,
+  ProvidePlaceholdersData,
   Sign7702AuthorizationData,
+  Sign712MetaMaskWithPlaceholdersData,
   SignatureTypes,
   SolanaSign,
   Tx,
   WalletClientMap,
+  ProvidedDataMap,
+  SignedDataItem,
 } from "@gasless-intents/types";
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import { SOLANA_RPC_URL } from "../constants";
@@ -44,6 +48,43 @@ export async function signAction(action: Action, walletClient: WalletClient | Ke
       throw new Error(`Unknown signing method: ${action.type}`);
     }
   }
+}
+
+/**
+ * Handles the two solver-hook action types: ProvidePlaceholders and
+ * Sign712MetaMaskWithPlaceholders. Throws for any other type — callers should
+ * route non-solver-hook actions to `signAction`.
+ */
+export async function signSolverHookAction(
+  action: Action,
+  walletClient: WalletClient,
+  providedDataMap: ProvidedDataMap,
+): Promise<SignedDataItem> {
+  if (action.type === SignatureTypes.ProvidePlaceholders) {
+    const data = action.data as ProvidePlaceholdersData;
+    return {
+      actionId: action.actionId,
+      signedData: "0x", // No signature required; the submit endpoint accepts "0x" for ProvidePlaceholders.
+      providedData: buildProvidedData(action.actionId, data.placeholders, providedDataMap),
+    };
+  }
+
+  if (action.type === SignatureTypes.Sign712MetaMaskWithPlaceholders) {
+    const data = action.data as Sign712MetaMaskWithPlaceholdersData;
+    const { domain, types, primaryType, message } = data;
+    // The API validates the signature against the marker'd message at submit time
+    // (substituting before signing was rejected with "Failed to recover valid address").
+    // The on-chain substitution uses providedData supplied separately.
+    // @ts-ignore - viem's signTypedData has a strict overload we don't match here; the backend-supplied domain/types are trusted.
+    const signedData = await walletClient.signTypedData({ domain, types, primaryType, message });
+    return {
+      actionId: action.actionId,
+      signedData,
+      providedData: buildProvidedData(action.actionId, data.placeholders, providedDataMap),
+    };
+  }
+
+  throw new Error(`signSolverHookAction received unsupported action type: ${action.type}`);
 }
 
 async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<string> {
@@ -94,7 +135,7 @@ async function evmActionSign(action: Action, walletClient: WalletClient): Promis
   if (!walletClient.chain) {
     throw new Error("Wallet client has no chain information");
   }
-  
+
   // EIP-7702 Authorization
   if (action.type === SignatureTypes.Sign7702Authorization) {
     // Cast to Sign7702AuthorizationData to access specific properties
@@ -131,14 +172,18 @@ async function evmActionSign(action: Action, walletClient: WalletClient): Promis
 }
 
 /**
- * Collects signatures for all actions in an intent
- * Returns array of { actionId, signedData } objects
+ * Collects signatures for all actions in an intent.
+ * Returns array of SignedDataItem objects (with optional `providedData` for
+ * solver-hook actions). Solver-hook action types (ProvidePlaceholders,
+ * Sign712MetaMaskWithPlaceholders) are dispatched through signSolverHookAction;
+ * all other types route through signAction.
  */
 export async function getRequiredActionSignatures(
   requiredActions: Array<Action>,
   walletClient: WalletClient | Keypair,
-): Promise<Array<{ actionId: string; signedData: string }>> {
-  const signatures: Array<{ actionId: string; signedData: string }> = [];
+  providedDataMap: ProvidedDataMap = {},
+): Promise<SignedDataItem[]> {
+  const signatures: SignedDataItem[] = [];
 
   if (!requiredActions || requiredActions.length === 0) {
     console.log("No actions to sign in this intent");
@@ -148,12 +193,15 @@ export async function getRequiredActionSignatures(
   // Process each action in the intent
   for (const action of requiredActions) {
     try {
-      const signature = await signAction(action, walletClient);
-      signatures.push({
-        actionId: action.actionId,
-        signedData: signature,
-      });
-      console.log(`Successfully signed action ${action.actionId}`);
+      if (isSolverHookAction(action.type)) {
+        const result = await signSolverHookAction(action, walletClient as WalletClient, providedDataMap);
+        signatures.push(result);
+        console.log(`Handled solver-hook action ${action.actionId} of type ${action.type}`);
+      } else {
+        const signedData = await signAction(action, walletClient);
+        signatures.push({ actionId: action.actionId, signedData });
+        console.log(`Successfully signed action ${action.actionId}`);
+      }
     } catch (error) {
       console.error(`Error signing action ${action.actionId}:`, error);
       throw error; // Propagate error to caller
@@ -167,10 +215,11 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
   items: T[] | undefined,
   getChainId: (item: T) => number | undefined,
   walletClientMap: WalletClientMap,
-): Promise<Array<{ actionId: string; signedData: string }>> {
+  providedDataMap: ProvidedDataMap = {},
+): Promise<SignedDataItem[]> {
   if (!items || !Array.isArray(items)) return [];
 
-  const signatures: Array<{ actionId: string; signedData: string }> = [];
+  const signatures: SignedDataItem[] = [];
 
   for (const item of items) {
     if (!Array.isArray(item.requiredActions)) continue;
@@ -184,7 +233,11 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
       throw new Error(`No wallet client found for chainId: ${chainId}`);
     }
 
-    const sigs = await getRequiredActionSignatures(item.requiredActions, walletClientMap[chainId]);
+    const sigs = await getRequiredActionSignatures(
+      item.requiredActions,
+      walletClientMap[chainId],
+      providedDataMap,
+    );
     signatures.push(...sigs);
   }
 
@@ -192,17 +245,35 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
 }
 
 /**
- * Main function to process a bundle of intents and collect all signatures
- * Returns all signatures for both intents and post-hooks
+ * Main function to process a bundle of intents and collect all signatures.
+ * Returns SignedDataItem objects for intents, preHooks, and postHooks. Pass
+ * `providedDataMap` to supply hex values for deferred placeholders surfaced
+ * via ProvidePlaceholders or Sign712MetaMaskWithPlaceholders actions.
  */
 export async function processIntentBundle(
   bundle: BundleProposeResponse,
   walletClientMap: WalletClientMap,
-): Promise<Array<{ actionId: string; signedData: string }>> {
+  providedDataMap: ProvidedDataMap = {},
+): Promise<SignedDataItem[]> {
   // tmp debugging, TODO: FIX
-  const a = await collectSignaturesFromItems(bundle.intents, (i) => i.intent.intentChainId, walletClientMap);
-  const b = await collectSignaturesFromItems(bundle.preHooks, (h) => h.hook.chainId, walletClientMap);
-  const c = await collectSignaturesFromItems(bundle.postHooks, (h) => h.hook.chainId, walletClientMap);
+  const a = await collectSignaturesFromItems(
+    bundle.intents,
+    (i) => i.intent.intentChainId,
+    walletClientMap,
+    providedDataMap,
+  );
+  const b = await collectSignaturesFromItems(
+    bundle.preHooks,
+    (h) => h.hook.chainId,
+    walletClientMap,
+    providedDataMap,
+  );
+  const c = await collectSignaturesFromItems(
+    bundle.postHooks,
+    (h) => h.hook.chainId,
+    walletClientMap,
+    providedDataMap,
+  );
   return [...a, ...b, ...c];
 }
 
@@ -236,3 +307,33 @@ async function sign712(walletClient: WalletClient, data: unknown): Promise<SignT
   const signature = await walletClient.signTypedData(data);
   return signature;
 }
+
+function isSolverHookAction(type: SignatureTypes): boolean {
+  return (
+    type === SignatureTypes.ProvidePlaceholders ||
+    type === SignatureTypes.Sign712MetaMaskWithPlaceholders
+  );
+}
+
+function buildProvidedData(
+  actionId: string,
+  placeholders: Array<{ nameVariable: string }>,
+  providedDataMap: ProvidedDataMap,
+): Record<string, string> {
+  const valuesForAction = providedDataMap[actionId] ?? {};
+  const out: Record<string, string> = {};
+  for (const { nameVariable } of placeholders) {
+    const value = valuesForAction[nameVariable];
+    if (value === undefined) {
+      throw new Error(
+        `Missing providedData for action ${actionId} placeholder ${nameVariable}. ` +
+          `Supply it via providedDataMap[${actionId}][${nameVariable}].`,
+      );
+    }
+    out[nameVariable] = value;
+  }
+  return out;
+}
+
+// Re-export for convenience so callers don't need to import EIP712Data separately.
+export type { EIP712Data };

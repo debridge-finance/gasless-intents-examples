@@ -1,35 +1,36 @@
 import util from "util";
 import { randomUUID } from "crypto";
+import { encodeFunctionData, parseAbi } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { toHexPrefixString, getEnvConfig } from "@utils/index";
 import { createBundle, submitBundle } from "@utils/api";
-import { createTransferCall } from "@utils/contract-calls";
-import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
+import { USDC } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
-import { replaceNamedPlaceholders } from "@utils/hooks-common";
 
 import {
   BundleProposeBody,
   ExtendedHook,
   HookExecutionType,
-  PlaceholderResolutionType,
   Trade,
   TradingAlgorithm,
-} from "../../../types";
-import { processIntentBundleWithSolverHooks } from "@utils/signatures/solver-hook-signatures";
+} from "../../types";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { logActionTypes } from "@utils/logging";
+
+const ECHO_CONTRACT = "0xa77563ce5dfb7fe631d4b9fba8968efbb1f722c8";
+const ECHO_ABI = parseAbi(["function echo(string message) external"]);
 
 /**
- * Direct hook, eager placeholder → Transaction action.
+ * Direct hook calling Echo.echo("Test") with no placeholders.
  *
- * Cross-chain trade Arbitrum USDC → Polygon USDC, plus a preHook on Arbitrum
- * that ERC-20-transfers the trade's source amount to the signer (self-transfer).
- * The `{amount1}` placeholder is `eager` (default), so the API substitutes the
- * cumulative trade amount at propose time. Because the hook is `direct`, the
- * solver executes the calldata itself — the propose response carries a
- * `Transaction` action and no MetaMask gas costs (`SOLVER_EXECUTION_COST` is
- * absent from the action's actionCosts).
+ * Trade: Base USDC → Polygon USDC, 1.5 USDC source. PreHook on Arbitrum
+ * invokes the Echo contract's `echo("Test")` function which emits an
+ * `Echoed(sender, "Test")` event. Because the call has no amount argument,
+ * `placeHolders` is empty. With `hook.type = direct`, the solver executes the
+ * raw transaction itself — the propose response carries a `Transaction` action
+ * and no MetaMask gas costs (`SOLVER_EXECUTION_COST` is absent).
  */
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -38,8 +39,8 @@ async function main() {
   const sender = account.address;
 
   const trade: Trade = {
-    srcChainId: CHAIN_IDS.Arbitrum,
-    srcChainTokenIn: USDC.Arbitrum,
+    srcChainId: CHAIN_IDS.Base,
+    srcChainTokenIn: USDC.Base,
     srcChainTokenInAmount: "1500000", // 1.5 USDC
     dstChainId: CHAIN_IDS.Polygon,
     dstChainTokenOut: USDC.Polygon,
@@ -50,29 +51,24 @@ async function main() {
     prependOperatingExpenses: true,
   };
 
-  const call = createTransferCall(sender, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
-  const callData = replaceNamedPlaceholders(call.data as string, ["amount1"]);
+  const callData = encodeFunctionData({
+    abi: ECHO_ABI,
+    functionName: "echo",
+    args: ["Test"],
+  });
 
-  // Hook will NOT be executed! Direct hooks can't move user funds!
   const preHook: ExtendedHook = {
     isAtomic: true,
     type: HookExecutionType.Direct,
     data: callData,
-    to: USDC.Arbitrum,
+    to: ECHO_CONTRACT,
     value: "0",
-    chainId: CHAIN_IDS.Arbitrum,
+    chainId: CHAIN_IDS.Base,
     from: sender,
-    placeHolders: [
-      {
-        nameVariable: "amount1",
-        type: PlaceholderResolutionType.Eager,
-        tokenAddress: USDC.Arbitrum,
-        address: sender,
-      },
-    ],
+    placeHolders: [],
   };
 
-  console.log("Direct PreHook (eager placeholder):", preHook);
+  console.log("Direct PreHook (echo, no placeholder):", preHook);
 
   const requestId = randomUUID();
   const requestBody: BundleProposeBody = {
@@ -93,7 +89,7 @@ async function main() {
   logActionTypes(bundle);
 
   console.log("Collecting signatures for all intents (direct hook needs none)…");
-  const signedDataArray = await processIntentBundleWithSolverHooks(bundle, walletClientMap);
+  const signedDataArray = await processIntentBundle(bundle, walletClientMap);
   console.log(`Generated ${signedDataArray.length} signedData items`);
 
   const submitPayload = {
@@ -109,15 +105,6 @@ async function main() {
   console.log("Submit response:", util.inspect(submitResponse, { depth: null, colors: true }));
 
   return submitPayload;
-}
-
-function logActionTypes(bundle: Awaited<ReturnType<typeof createBundle>>) {
-  const types = [
-    ...(bundle.intents ?? []).flatMap((i) => i.requiredActions.map((a) => `intent:${a.type}`)),
-    ...(bundle.preHooks ?? []).flatMap((h) => h.requiredActions.map((a) => `preHook:${a.type}`)),
-    ...(bundle.postHooks ?? []).flatMap((h) => h.requiredActions.map((a) => `postHook:${a.type}`)),
-  ];
-  console.log("Required action types:", types);
 }
 
 main().catch((error) => {

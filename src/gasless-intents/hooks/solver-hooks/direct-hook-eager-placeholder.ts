@@ -17,18 +17,20 @@ import {
   PlaceholderResolutionType,
   Trade,
   TradingAlgorithm,
-} from "../../../types";
-import { processIntentBundleWithSolverHooks } from "@utils/signatures/solver-hook-signatures";
+} from "../../types";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { logActionTypes } from "@utils/logging";
 
 /**
- * Delegated hook, eager placeholder → Sign712MetaMask action.
+ * Direct hook, eager placeholder → Transaction action.
  *
  * Cross-chain trade Arbitrum USDC → Polygon USDC, plus a preHook on Arbitrum
- * that ERC-20-transfers the trade's source amount back to the signer (self-
- * transfer). The `{amount1}` placeholder is `eager` (default), so the API
- * substitutes the cumulative trade amount at propose time. Because the hook
- * type defaults to `delegated`, the propose response carries a
- * `Sign712MetaMask` action — the legacy MetaMask-caveat path.
+ * that ERC-20-transfers the trade's source amount to the signer (self-transfer).
+ * The `{amount1}` placeholder is `eager` (default), so the API substitutes the
+ * cumulative trade amount at propose time. Because the hook is `direct`, the
+ * solver executes the calldata itself — the propose response carries a
+ * `Transaction` action and no MetaMask gas costs (`SOLVER_EXECUTION_COST` is
+ * absent from the action's actionCosts).
  */
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -52,9 +54,10 @@ async function main() {
   const call = createTransferCall(sender, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
   const callData = replaceNamedPlaceholders(call.data as string, ["amount1"]);
 
+  // Hook will NOT be executed! Direct hooks can't move user funds!
   const preHook: ExtendedHook = {
     isAtomic: true,
-    type: HookExecutionType.Delegated,
+    type: HookExecutionType.Direct,
     data: callData,
     to: USDC.Arbitrum,
     value: "0",
@@ -70,7 +73,7 @@ async function main() {
     ],
   };
 
-  console.log("Delegated PreHook (eager placeholder):", preHook);
+  console.log("Direct PreHook (eager placeholder):", preHook);
 
   const requestId = randomUUID();
   const requestBody: BundleProposeBody = {
@@ -90,8 +93,8 @@ async function main() {
 
   logActionTypes(bundle);
 
-  console.log("Collecting signatures for all intents and the delegated hook…");
-  const signedDataArray = await processIntentBundleWithSolverHooks(bundle, walletClientMap);
+  console.log("Collecting signatures for all intents (direct hook needs none)…");
+  const signedDataArray = await processIntentBundle(bundle, walletClientMap);
   console.log(`Generated ${signedDataArray.length} signedData items`);
 
   const submitPayload = {
@@ -107,15 +110,6 @@ async function main() {
   console.log("Submit response:", util.inspect(submitResponse, { depth: null, colors: true }));
 
   return submitPayload;
-}
-
-function logActionTypes(bundle: Awaited<ReturnType<typeof createBundle>>) {
-  const types = [
-    ...(bundle.intents ?? []).flatMap((i) => i.requiredActions.map((a) => `intent:${a.type}`)),
-    ...(bundle.preHooks ?? []).flatMap((h) => h.requiredActions.map((a) => `preHook:${a.type}`)),
-    ...(bundle.postHooks ?? []).flatMap((h) => h.requiredActions.map((a) => `postHook:${a.type}`)),
-  ];
-  console.log("Required action types:", types);
 }
 
 main().catch((error) => {
