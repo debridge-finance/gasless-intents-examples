@@ -1,15 +1,14 @@
 import { createWalletClient, http } from "viem";
-import { getEnvConfig, toHexPrefixString } from "../utils";
-import { base } from "viem/chains";
+import { getEnvConfig, toHexPrefixString } from "../../utils";
+import { arbitrum } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { USDT } from "../utils/constants";
-import { Erc20Abi } from "../utils/abis";
+import { DAI } from "../../utils/constants";
+import { Erc20Abi } from "../../utils/abis";
 
-const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
+const ALLOWANCE_HOLDER_CONTRACT = "0xddddddddd4B6472c5002F95610b194D1161223d0";
 
-const TOKEN = USDT.Base;
-const AMOUNT = BigInt("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // Max uint256 for unlimited approval
-// const AMOUNT = BigInt("0"); // 0 for removing approval
+const TOKEN = DAI.Arbitrum;
+const AMOUNT = BigInt("0"); // 0 to remove approval
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -18,7 +17,7 @@ async function main() {
 
   const ownerWalletClient = createWalletClient({
     account: owner,
-    chain: base,
+    chain: arbitrum,
     transport: http(),
   });
 
@@ -26,12 +25,12 @@ async function main() {
     address: TOKEN as `0x${string}`,
     abi: Erc20Abi.Approve,
     functionName: "approve",
-    args: [PERMIT2_ADDRESS, AMOUNT],
-    chain: base,
+    args: [ALLOWANCE_HOLDER_CONTRACT, AMOUNT],
+    chain: arbitrum,
     account: owner,
   });
 
-  console.log("Permit2 approval tx hash:", hash);
+  console.log("Allowance removal tx hash:", hash);
 }
 
 main().catch((error) => {

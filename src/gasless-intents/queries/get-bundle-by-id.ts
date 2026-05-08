@@ -1,6 +1,6 @@
 import { getBundleById } from '@utils/api';
 
-const bundleId = "68d307f3-86d3-4247-afd7-b61c18938da8"; // Replace - use your own, get after submitting a bundle
+const bundleId = "0xa2245c8e4e25c328ce6315c9ed416dc0e6098136aa761c093cac800c3600949f"; // Replace - use your own, get after submitting a bundle
 
 async function main() {
   console.log("Fetching bundle by ID...", bundleId);

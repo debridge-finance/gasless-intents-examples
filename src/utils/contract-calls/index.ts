@@ -1,20 +1,10 @@
-import { encodeFunctionData, parseAbi, CallParameters, Address } from "viem";
+import { encodeFunctionData, Address } from "viem";
+import { Erc20Abi, Erc4626Abi, AaveV3Abi } from "@utils/abis";
+import { EvmTx } from "@gasless-intents/types";
 
-const ERC20_APPROVE_ABI = parseAbi(["function approve(address spender, uint256 amount) external returns (bool)"]);
-
-const ERC20_TRANSFER_ABI = parseAbi(["function transfer(address to, uint256 amount) external returns (bool)"]);
-
-const ERC4626_VAULT_DEPOSIT_ABI = parseAbi([
-  "function deposit(uint256 assets, address receiver) external returns (uint256 shares)",
-]);
-
-const AAVE_V3_WITHDRAW_ABI = parseAbi(["function withdraw(address asset, uint256 amount, address to) public returns (uint256)"]);
-
-const AAVE_V3_SUPPLY_ABI = parseAbi(["function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode)"]);
-
-export function createApproveCall(tokenAddress: Address, spenderAddress: Address, amount: bigint): CallParameters {
+export function createApproveCall(tokenAddress: Address, spenderAddress: Address, amount: bigint): EvmTx {
   const data = encodeFunctionData({
-    abi: ERC20_APPROVE_ABI,
+    abi: Erc20Abi.Approve,
     functionName: "approve",
     args: [spenderAddress, amount],
   });
@@ -26,9 +16,9 @@ export function createApproveCall(tokenAddress: Address, spenderAddress: Address
   };
 }
 
-export function createTransferCall(to: Address, amount: bigint): CallParameters {
+export function createTransferCall(to: Address, amount: bigint): EvmTx {
   const data = encodeFunctionData({
-    abi: ERC20_TRANSFER_ABI,
+    abi: Erc20Abi.Transfer,
     functionName: "transfer",
     args: [to, amount],
   });
@@ -40,9 +30,9 @@ export function createTransferCall(to: Address, amount: bigint): CallParameters 
   };
 }
 
-export function createDepositCall(vaultAddress: Address, amount: bigint, receiverAddress: Address): CallParameters {
+export function createDepositCall(vaultAddress: Address, amount: bigint, receiverAddress: Address): EvmTx {
   const data = encodeFunctionData({
-    abi: ERC4626_VAULT_DEPOSIT_ABI,
+    abi: Erc4626Abi.Deposit,
     functionName: "deposit",
     args: [amount, receiverAddress],
   });
@@ -54,15 +44,17 @@ export function createDepositCall(vaultAddress: Address, amount: bigint, receive
   };
 }
 
+/** AAVE V3 */
+
 export function createAaveSupplyCall(
   contractAddress: `0x${string}`,
   assetAddress: `0x${string}`,
   supplyAmount: bigint,
   onBehalfOf: `0x${string}`,
   aaveReferralCode: number = 0,
-) {
+): EvmTx {
   const data = encodeFunctionData({
-    abi: AAVE_V3_SUPPLY_ABI,
+    abi: AaveV3Abi.Supply,
     functionName: "supply",
     args: [assetAddress, supplyAmount, onBehalfOf, aaveReferralCode],
   });
@@ -81,7 +73,7 @@ export function createAaveWithdrawCall(
   to: `0x${string}`,
 ) {
   const data = encodeFunctionData({
-    abi: AAVE_V3_WITHDRAW_ABI,
+    abi: AaveV3Abi.Withdraw,
     functionName: "withdraw",
     args: [assetAddress, withdrawAmount, to],
   });

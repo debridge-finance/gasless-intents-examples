@@ -494,8 +494,6 @@ export function getPolyUsdcToPolyWETH(signer: string): Trade {
     dstChainTokenOutRecipient: signer,
     dstChainAuthorityAddress: signer,
     prependOperatingExpenses: true,
-    affiliateFeePercent: null,
-    affiliateFeeRecipient: null,
   };
 }
 
@@ -513,8 +511,6 @@ export function getPolyUsdcToMatic(signer: string): Trade {
     dstChainTokenOutRecipient: signer,
     dstChainAuthorityAddress: signer,
     prependOperatingExpenses: true,
-    affiliateFeePercent: null,
-    affiliateFeeRecipient: null,
   };
 }
 
@@ -532,8 +528,6 @@ export function getPolyUsdcToPolyUsdt(signer: string): Trade {
     dstChainTokenOutRecipient: signer,
     dstChainAuthorityAddress: signer,
     prependOperatingExpenses: true,
-    affiliateFeePercent: null,
-    affiliateFeeRecipient: null,
   };
 }
 
@@ -712,9 +706,9 @@ export function getPolygonUsdcToBaseUsdc(signer: string): Trade {
   return {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: "7000000",
-    srcChainTokenInMinAmount: "7000000",
-    srcChainTokenInMaxAmount: "7000000",
+    srcChainTokenInAmount: "2300000",
+    srcChainTokenInMinAmount: "2300000",
+    srcChainTokenInMaxAmount: "2300000",
     dstChainId: CHAIN_IDS.Base,
     dstChainTokenOut: USDC.Base,
     dstChainTokenOutAmount: "auto",
@@ -729,11 +723,28 @@ export function getPolygonUsdcToBaseEth(signer: string): Trade {
   return {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: "7000000",
-    srcChainTokenInMinAmount: "7000000",
-    srcChainTokenInMaxAmount: "7000000",
+    srcChainTokenInAmount: "2300000",
+    srcChainTokenInMinAmount: "2300000",
+    srcChainTokenInMaxAmount: "2300000",
     dstChainId: CHAIN_IDS.Base,
     dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getBaseUsdcToPolygonUsdc(signer: string, amount: string = "10000000"): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Base,
+    srcChainTokenIn: USDC.Base,
+    srcChainTokenInAmount: amount,
+    srcChainTokenInMinAmount: amount,
+    srcChainTokenInMaxAmount: amount,
+    dstChainId: CHAIN_IDS.Polygon,
+    dstChainTokenOut: USDC.Polygon,
     dstChainTokenOutAmount: "auto",
     srcChainAuthorityAddress: signer,
     dstChainTokenOutRecipient: signer,
@@ -759,26 +770,104 @@ export function getPolygonDaiToUSDC(signer: string): Trade {
   };
 }
 
-export type PlaceHolder = {
-  nameVariable: string;      // e.g. "amount1" — matches {amount1} in data
-  tokenAddress: string;      // token used for cumulative amount lookup
-  address: string;           // user address for grouping key
-  additionalAmount?: string; // optional offset added to cumulative amount
-};
+export function getPolyMaticToArbitrumUsdc(signer: string): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "100000000000000000",
+    srcChainTokenInMinAmount: "100000000000000000",
+    srcChainTokenInMaxAmount: "100000000000000000",
+    srcChainAuthorityAddress: signer,
+    dstChainId: CHAIN_IDS.Arbitrum,
+    dstChainTokenOut: USDC.Arbitrum,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true
+  }
+}
 
-export type GasCompensationInfo = {
-  tokenAddress: string;
-  chainId: number;
-  sender: string;
-};
+export function getPolygonUsdcToArbitrumUsdc(signer: string): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "3000000", // 3 USDC
+    srcChainTokenInMinAmount: "3000000",
+    srcChainTokenInMaxAmount: "3000000",
+    dstChainId: CHAIN_IDS.Arbitrum,
+    dstChainTokenOut: USDC.Arbitrum,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
 
-export type ExtendedHook = {
-  isAtomic: boolean;
-  data: string;              // hex calldata with {amount1}, {amount2}, etc.
-  to: string;
-  value: string;             // wei string; can be "{amountN}" for native transfers
-  chainId: number;
-  from: string;
-  placeHolders: PlaceHolder[]; // Array required, can be empty
-  gasCompensationInfo?: GasCompensationInfo;
-};
+export function getPolygonUsdcToArbitrumWeth(signer: string): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Polygon,
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: "3000000", // 3 USDC
+    srcChainTokenInMinAmount: "3000000",
+    srcChainTokenInMaxAmount: "3000000",
+    dstChainId: CHAIN_IDS.Arbitrum,
+    dstChainTokenOut: WETH.Arbitrum,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getArbitrumEthToArbitrumUsdc(signer: string): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: "100000000000000", // 0.0001 ETH
+    srcChainTokenInMinAmount: "100000000000000",
+    srcChainTokenInMaxAmount: "100000000000000",
+    dstChainId: CHAIN_IDS.Arbitrum,
+    dstChainTokenOut: USDC.Arbitrum,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getArbitrumUsdcToArbitrumEth(signer: string, amount?: string): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: USDC.Arbitrum,
+    srcChainTokenInAmount: amount || "3000000", // 1 USDC
+    srcChainTokenInMinAmount: amount || "3000000",
+    srcChainTokenInMaxAmount: amount || "3000000",
+    dstChainId: CHAIN_IDS.Arbitrum,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}
+
+export function getArbitrumUsdcToBaseUsdc(signer: string, amount?: string): Trade {
+  return {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: USDC.Arbitrum,
+    srcChainTokenInAmount: amount || "3000000", // 1 USDC
+    srcChainTokenInMinAmount: amount || "3000000",
+    srcChainTokenInMaxAmount: amount || "3000000",
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: "auto",
+    srcChainAuthorityAddress: signer,
+    dstChainTokenOutRecipient: signer,
+    dstChainAuthorityAddress: signer,
+    prependOperatingExpenses: true,
+  }
+}

@@ -3,7 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { polygon, bsc, base, arbitrum, optimism, mainnet } from "viem/chains";
 import { CHAIN_IDS } from "./chains";
 import { Keypair } from "@solana/web3.js";
-
+import { WalletClientMap } from "@gasless-intents/types";
 
 export function getWalletClients(account: ReturnType<typeof privateKeyToAccount>) {
   const walletClientPolygon = createWalletClient({
@@ -52,7 +52,7 @@ export function getWalletClients(account: ReturnType<typeof privateKeyToAccount>
   };
 }
 
-export function getChainIdToWalletClientMap(account: ReturnType<typeof privateKeyToAccount>, solanaAccount?: Keypair) {
+export function getChainIdToWalletClientMap(account: ReturnType<typeof privateKeyToAccount>, solanaAccount?: Keypair): WalletClientMap {
   const {
     walletClientPolygon,
     walletClientBsc,
