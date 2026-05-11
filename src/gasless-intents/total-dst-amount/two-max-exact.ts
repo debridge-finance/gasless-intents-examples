@@ -1,13 +1,12 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
-import { clipHexPrefix, getEnvConfig, toHexPrefixString } from "@utils/index";
+import { clipHexPrefix, getEnvConfig } from "@utils/index";
 import { createBundle, submitBundle } from "@utils/api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
-import { USDC, AAVE_V3_POOL_ARBITRUM } from "@utils/constants";
-import { getAaveWithdrawExtendedHook } from "@utils/hooks/prepared";
+import { USDC } from "@utils/constants";
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "../types";
 
 async function main() {
@@ -53,16 +52,6 @@ async function main() {
 
     prependOperatingExpenses: false,
   };
-
-  const aaveWithdrawHook = await getAaveWithdrawExtendedHook(
-    toHexPrefixString(AAVE_V3_POOL_ARBITRUM),
-    toHexPrefixString(USDC.Arbitrum),
-    CHAIN_IDS.Arbitrum,
-    account.address,
-    "aaveWithdrawAmount",
-  );
-
-  console.log("AAVE withdraw pre-hook:", JSON.stringify(aaveWithdrawHook, null, 2));
 
   // ── Bundle ─────────────────────────────────────────────────────────
 

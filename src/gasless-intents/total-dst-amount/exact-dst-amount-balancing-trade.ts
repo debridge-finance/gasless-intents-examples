@@ -7,8 +7,8 @@ import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
 import { USDC, AAVE_V3_POOL_ARBITRUM } from "@utils/constants";
-import { getAaveWithdrawExtendedHook } from "@utils/hooks/prepared";
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "../types";
+import { getAaveWithdrawExtendedHook } from "@utils/posthooks";
 
 async function main() {
   const { privateKey } = getEnvConfig();
