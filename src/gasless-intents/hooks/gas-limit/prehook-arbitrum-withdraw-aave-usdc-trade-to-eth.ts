@@ -1,15 +1,18 @@
-import util from "util"
-import { randomUUID } from 'crypto';
 import { privateKeyToAccount } from "viem/accounts";
-import { polygon } from "viem/chains";
+import util from "util";
+import { randomUUID } from "crypto";
 
-import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getSendNativeAssetPosthook } from '@utils/posthooks';
-import { createBundle, submitBundle } from '@utils/api';
-import { BundleProposeBody, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "../trades";
-import { processIntentBundle } from '@utils/signatures/intent-signatures';
-import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { getAaveWithdrawExtendedHook } from "@utils/posthooks";
+import { createBundle, submitBundle } from "@utils/api";
+import { BundleProposeBody, TradingAlgorithm } from "../../types";
+import {
+  getArbitrumUsdcToArbitrumEth,
+} from "../../trades";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -18,32 +21,33 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const senderAddress = account.address;
-  const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
+  const amountToRebalance = "1504714"; // 1.504714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
 
-  const polygonSendNativeHook = await getSendNativeAssetPosthook(polygon.id, senderAddress, beneficiaryAddress);
+  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawExtendedHook(
+    AAVE_V3_POOL_ARBITRUM,
+    toHexPrefixString(USDC.Arbitrum),
+    CHAIN_IDS.Arbitrum,
+    account.address,
+    "aaveDepositAmount",
+    BigInt(amountToRebalance),
+  );
 
-  polygonSendNativeHook.gasLimit = "300000"; // Set gas limit for the hook execution
+  arbitrumUsdcAaveWithdraw.gasLimit = "4000000"; // Set gas limit for the pre-hook execution
 
-  console.log("Send Native PostHook Calldata:", polygonSendNativeHook);
+  console.log("Withdraw Call PreHook Calldata:", arbitrumUsdcAaveWithdraw);
 
   const requestId = randomUUID();
 
   const requestBody: BundleProposeBody = {
     requestId,
-    expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
+    referralCode: 110000002,
+    expirationTimestamp: Math.floor((new Date().getTime() * 2) / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    preHooks: [
-      polygonSendNativeHook
-    ],
-    trades: [
-      getPolygonUsdcToBaseEth(account.address),
-      getPolyMaticToBaseEth(account.address),
-    ],
-    postHooks: [],
-  }
+    trades: [getArbitrumUsdcToArbitrumEth(account.address, amountToRebalance)],
+    preHooks: [arbitrumUsdcAaveWithdraw],
+  };
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
@@ -62,13 +66,14 @@ async function main() {
 
   console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
-  // Prepare the bundle with intent signatures for submission
+  // Prepare the bundle with signatures - but don't submit yet
   const submitPayload = {
     ...bundle,
+    referralCode: 110000002,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,
-    signedData: signedDataArray
+    signedData: signedDataArray,
   };
 
   console.log("Payload prepared with signatures. Ready for submission.");
