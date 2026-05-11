@@ -1,37 +1,5 @@
-/**
- * Example 4 — AAVE Withdraw as the Balancing Trade (auto → auto)
- *
- * Consolidate USDC from Base + Polygon, then use an AAVE V3 withdraw on
- * Arbitrum as the auto → auto balancing trade → 8 USDC on BNB Chain.
- *
- * The auto → auto trade:
- *   Both srcChainTokenInAmount and dstChainTokenOutAmount are "auto".
- *   This is used when the wallet on the source chain is EMPTY at proposal
- *   time — funds will arrive via the pre-hook (AAVE withdraw). The system
- *   calculates the exact amount to withdraw and substitutes it into the
- *   pre-hook's placeholder.
- *
- * The auto → auto trade must be last in the array. After the system
- * processes the earlier trades and knows the remaining shortfall, it
- * calculates how much to withdraw from AAVE to cover the difference.
- *
- * Pre-hook construction:
- *   Uses ExtendedHook with a PlaceHolder. The calldata encodes
- *   `withdraw(USDC, PLACEHOLDER, signer)`. The PLACEHOLDER bytes are
- *   replaced with a named variable `{aaveWithdrawAmount}` that the
- *   system fills in at execution time.
- *
- * Prerequisites:
- *   - Fund wallet with USDC on Base and Polygon
- *   - Have an active AAVE V3 USDC deposit on Arbitrum
- *   - Set SIGNER_PK and DE_BRIDGE_PARTNER_API_KEY in .env
- *
- * Usage: npx tsx src/gasless-intents/total-dst-amount/aave-withdraw-arb-to-bnb.ts
- */
-
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
-import util from "util";
 
 import { clipHexPrefix, getEnvConfig, toHexPrefixString } from "@utils/index";
 import { createBundle, submitBundle } from "@utils/api";
@@ -105,13 +73,6 @@ async function main() {
     prependOperatingExpenses: false,
   };
 
-  // ── Pre-hook: AAVE V3 Withdraw ────────────────────────────────────
-  // Withdraws USDC from AAVE V3 on Arbitrum into the signer's wallet.
-  // The withdraw amount is a placeholder — the system fills in the exact
-  // value it calculated for the balancing trade.
-  // Uses getAaveWithdrawExtendedHook from utils/hooks/prepared.ts which
-  // encodes withdraw(USDC, PLACEHOLDER, signer) and replaces PLACEHOLDER
-  // bytes with the named variable for runtime substitution.
   const aaveWithdrawHook = await getAaveWithdrawExtendedHook(
     toHexPrefixString(AAVE_V3_POOL_ARBITRUM),  // AAVE V3 Pool on Arbitrum
     toHexPrefixString(USDC.Arbitrum),            // asset to withdraw
@@ -133,31 +94,20 @@ async function main() {
     trades: [
       baseUsdcToBnbUsdc,       // processed first
       polyUsdcToBnbUsdc,       // processed second
-      arbAaveUsdcToBnbUsdc,    // auto/auto — balancing trade, must be last
+      arbAaveUsdcToBnbUsdc     // processed third (balancing trade)
     ],
-    totalDstAmount,
     preHooks: [aaveWithdrawHook],
+    totalDstAmount,
   };
 
   // ── Propose ────────────────────────────────────────────────────────
   console.log("\nCreating bundle (AAVE withdraw balancing → 8 USDC on BNB)...");
   console.log(`  totalDstAmount: ${totalDstAmount}`);
-  console.log(`  Trades: 2 × max/auto + 1 × auto/auto (balancing)`);
+  console.log(`  Trades: 2 × max/auto`);
 
   const bundle = await createBundle(requestBody);
   console.log("\nBundle created!");
   console.log(JSON.stringify(bundle, null, 2));
-
-  if (bundle.tokenResult?.length) {
-    console.log("\n--- Token Results ---");
-    for (const tr of bundle.tokenResult) {
-      console.log(`  Chain ${tr.chainId}: ${tr.amount} (~$${tr.approximateUsdValue.toFixed(2)})`);
-    }
-  }
-
-  if (bundle.intents?.length) {
-    console.log("\nFirst intent:", util.inspect(bundle.intents[0], { depth: null, colors: true }));
-  }
 
   // ── Sign ───────────────────────────────────────────────────────────
   console.log("\nCollecting signatures...");

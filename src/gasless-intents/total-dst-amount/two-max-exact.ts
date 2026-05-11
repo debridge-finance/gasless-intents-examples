@@ -1,12 +1,13 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
-import { clipHexPrefix, getEnvConfig } from "@utils/index";
+import { clipHexPrefix, getEnvConfig, toHexPrefixString } from "@utils/index";
 import { createBundle, submitBundle } from "@utils/api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
-import { USDC } from "@utils/constants";
+import { USDC, AAVE_V3_POOL_ARBITRUM } from "@utils/constants";
+import { getAaveWithdrawExtendedHook } from "@utils/hooks/prepared";
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "../types";
 
 async function main() {
@@ -14,27 +15,12 @@ async function main() {
   const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  // 6 USDC on BNB (18 decimals)
-  const totalDstAmount = (6n * 10n ** 18n).toString();
+  // 8 USDC on BNB (18 decimals)
+  const totalDstAmount = (8n * 10n ** 18n).toString();
 
   // ── Trades ─────────────────────────────────────────────────────────
 
-  const arbUsdc1ToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Arbitrum,
-    srcChainTokenIn: USDC.Arbitrum,
-    srcChainTokenInAmount: "2000000",
-
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
-    dstChainTokenOutAmount: TokenAmount.AUTO,
-    dstChainTokenOutRecipient: account.address,
-
-    srcChainAuthorityAddress: account.address,
-    dstChainAuthorityAddress: account.address,
-
-    prependOperatingExpenses: false,
-  };
-
+  // Trade 1: USDC on Base → USDC on BNB (max / auto)
   const baseUsdcToBnbUsdc: Trade = {
     srcChainId: CHAIN_IDS.Base,
     srcChainTokenIn: USDC.Base,
@@ -51,6 +37,7 @@ async function main() {
     prependOperatingExpenses: false,
   };
 
+  // Trade 2: USDC on Polygon → USDC on BNB (max / auto)
   const polyUsdcToBnbUsdc: Trade = {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
@@ -67,6 +54,16 @@ async function main() {
     prependOperatingExpenses: false,
   };
 
+  const aaveWithdrawHook = await getAaveWithdrawExtendedHook(
+    toHexPrefixString(AAVE_V3_POOL_ARBITRUM),
+    toHexPrefixString(USDC.Arbitrum),
+    CHAIN_IDS.Arbitrum,
+    account.address,
+    "aaveWithdrawAmount",
+  );
+
+  console.log("AAVE withdraw pre-hook:", JSON.stringify(aaveWithdrawHook, null, 2));
+
   // ── Bundle ─────────────────────────────────────────────────────────
 
   const requestBody: BundleProposeBody = {
@@ -76,7 +73,6 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      arbUsdc1ToBnbUsdc,
       baseUsdcToBnbUsdc,
       polyUsdcToBnbUsdc,
     ],

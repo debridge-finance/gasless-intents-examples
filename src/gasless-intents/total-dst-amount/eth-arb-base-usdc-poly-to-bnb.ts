@@ -1,19 +1,5 @@
-/**
- * Example 3 — ETH Majority Sources with totalDstAmount
- *
- * Consolidate ETH on Arbitrum + ETH on Base + USDC on Polygon into
- * exactly 4 USDC on BNB Chain.
- *
- * Two ETH source trades run before one USDC trade. The system exhausts
- * earlier trades first; whichever trade pushes the cumulative total past
- * the target becomes the balancing trade and gets trimmed.
- *
- * Usage: npx tsx src/gasless-intents/total-dst-amount/eth-arb-base-usdc-poly-to-bnb.ts
- */
-
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
-import util from "util";
 
 import { clipHexPrefix, getEnvConfig } from "@utils/index";
 import { createBundle, submitBundle } from "@utils/api";
@@ -104,17 +90,6 @@ async function main() {
   const bundle = await createBundle(requestBody);
   console.log("\nBundle created!");
   console.log(JSON.stringify(bundle, null, 2));
-
-  if (bundle.tokenResult?.length) {
-    console.log("\n--- Token Results ---");
-    for (const tr of bundle.tokenResult) {
-      console.log(`  Chain ${tr.chainId}: ${tr.amount} (~$${tr.approximateUsdValue.toFixed(2)})`);
-    }
-  }
-
-  if (bundle.intents?.length) {
-    console.log("\nFirst intent:", util.inspect(bundle.intents[0], { depth: null, colors: true }));
-  }
 
   // ── Sign ───────────────────────────────────────────────────────────
   console.log("\nCollecting signatures...");
