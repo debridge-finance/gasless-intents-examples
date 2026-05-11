@@ -7,18 +7,18 @@ import { createBundle, submitBundle } from "../../../utils/api";
 import { BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../../types";
 import { processIntentBundle } from "../../../utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "../../../utils/wallet";
-import { createTransferCall } from "../../../utils/contract-calls";
-import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "../../../utils/constants";
+import { USDC } from "../../../utils/constants";
 import { CHAIN_IDS } from "../../../utils/chains";
-import { replaceNamedPlaceholders } from "../../../utils/hooks-common";
 
 /**
- * Demonstrates a PreHook with Gas Compensation on Polygon without trades.
+ * Demonstrates a PreHook with Gas Compensation on Polygon without trades — native asset variant
+ * with the wei amount baked directly into `value` (no placeholder templating).
  *
  * - 0 trades
- * - 1 simple prehook: ERC-20 transfer of USDC on Polygon with {amount} placeholder
+ * - 1 simple prehook: native MATIC transfer with hard-coded `value`, empty placeHolders
+ * - Gas compensation paid in USDC on Polygon
  *
- * Expected: transfers 0.2 USDC on Polygon to Beneficiary.
+ * Expected: transfers 1 MATIC on Polygon to DevRel's 2nd address, gas paid in USDC.
  */
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -26,29 +26,20 @@ async function main() {
   const walletClientMap = getChainIdToWalletClientMap(account);
 
   const senderAddress = account.address;
-  const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38";
+  const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
 
-  // Encode ERC-20 transfer with sentinel, then replace with {amount}
-  const call = createTransferCall(beneficiaryAddress, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
-  call.data = replaceNamedPlaceholders(call.data, ["amount1"]);
+  const SEND_AMOUNT = "1000000000000000000"; // 1 MATIC (18 decimals)
 
   const preHook: ExtendedHook = {
     isAtomic: true,
-    data: call.data,
-    to: USDC.Polygon, // USDC on Polygon
-    value: "0",
+    data: "0x",
+    to: beneficiaryAddress,
+    value: SEND_AMOUNT,
     chainId: CHAIN_IDS.Polygon,
     from: senderAddress,
-    placeHolders: [
-      {
-        nameVariable: "amount1",
-        tokenAddress: USDC.Polygon,
-        address: senderAddress,
-        additionalAmount: "200000", // 0.2 USDC (6 decimals)
-      },
-    ],
+    placeHolders: [],
     gasCompensationInfo: {
-      tokenAddress: USDC.Polygon, // pay gas in USDC
+      tokenAddress: USDC.Polygon,
       chainId: CHAIN_IDS.Polygon,
       sender: senderAddress,
     },
