@@ -21,16 +21,6 @@ import {
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
 
-/**
- * Delegated hook, eager placeholder → Sign712MetaMask action.
- *
- * Cross-chain trade Arbitrum USDC → Polygon USDC, plus a preHook on Arbitrum
- * that ERC-20-transfers the trade's source amount back to the signer (self-
- * transfer). The `{amount1}` placeholder is `eager` (default), so the API
- * substitutes the cumulative trade amount at propose time. Because the hook
- * type defaults to `delegated`, the propose response carries a
- * `Sign712MetaMask` action — the legacy MetaMask-caveat path.
- */
 async function main() {
   const { privateKey } = getEnvConfig();
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
