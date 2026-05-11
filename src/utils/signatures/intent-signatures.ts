@@ -55,7 +55,7 @@ export async function signAction(action: Action, walletClient: WalletClient | Ke
  * Sign712MetaMaskWithPlaceholders. Throws for any other type — callers should
  * route non-solver-hook actions to `signAction`.
  */
-export async function signSolverHookAction(
+export async function provideDeferredPlaceholderData(
   action: Action,
   walletClient: WalletClient,
   providedDataMap: ProvidedDataMap,
@@ -84,7 +84,7 @@ export async function signSolverHookAction(
     };
   }
 
-  throw new Error(`signSolverHookAction received unsupported action type: ${action.type}`);
+  throw new Error(`provideDeferredPlaceholderData received unsupported action type: ${action.type}`);
 }
 
 async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<string> {
@@ -175,7 +175,7 @@ async function evmActionSign(action: Action, walletClient: WalletClient): Promis
  * Collects signatures for all actions in an intent.
  * Returns array of SignedDataItem objects (with optional `providedData` for
  * solver-hook actions). Solver-hook action types (ProvidePlaceholders,
- * Sign712MetaMaskWithPlaceholders) are dispatched through signSolverHookAction;
+ * Sign712MetaMaskWithPlaceholders) are dispatched through provideDeferredPlaceholderData;
  * all other types route through signAction.
  */
 export async function getRequiredActionSignatures(
@@ -193,8 +193,8 @@ export async function getRequiredActionSignatures(
   // Process each action in the intent
   for (const action of requiredActions) {
     try {
-      if (isSolverHookAction(action.type)) {
-        const result = await signSolverHookAction(action, walletClient as WalletClient, providedDataMap);
+      if (isDeferredPlaceholderAction(action.type)) {
+        const result = await provideDeferredPlaceholderData(action, walletClient as WalletClient, providedDataMap);
         signatures.push(result);
         console.log(`Handled solver-hook action ${action.actionId} of type ${action.type}`);
       } else {
@@ -308,7 +308,7 @@ async function sign712(walletClient: WalletClient, data: unknown): Promise<SignT
   return signature;
 }
 
-function isSolverHookAction(type: SignatureTypes): boolean {
+function isDeferredPlaceholderAction(type: SignatureTypes): boolean {
   return (
     type === SignatureTypes.ProvidePlaceholders ||
     type === SignatureTypes.Sign712MetaMaskWithPlaceholders
