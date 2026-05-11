@@ -25,26 +25,6 @@ export function extractTransactionHexData(obj: any): string[] {
   return result;
 }
 
-
-export function extractTransactionHexData2(obj: any): Array<{ actionId: string, data: string }> {
-  const result: Array<{ actionId: string, data: string }> = [];
-
-  if (!obj?.intents) return result;
-
-  for (const intent of obj.intents) {
-    const requiredActions = intent?.requiredActions;
-    if (!Array.isArray(requiredActions)) continue;
-
-    for (const action of requiredActions) {
-      if (action?.type === "Transaction" && typeof action?.data?.data === "string") {
-        result.push({ data: action.data.data, actionId: action.actionId });
-      }
-    }
-  }
-
-  return result;
-}
-
 export async function prepareSolanaTransaction(solRpcUrl: string, txData: string, solWallet: Keypair) {
   const connection = new Connection(solRpcUrl, { commitment: "confirmed" });
   const tx = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(txData), "hex"));
@@ -109,39 +89,6 @@ function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
   return result;
 }
 
-export function extractSignData(payload) {
-  if (!payload?.intents) return null;
-
-  for (const intent of payload.intents) {
-    if (!intent.requiredActions) continue;
-
-    for (const action of intent.requiredActions) {
-      if (action.type === "Sign" && action.actions?.includes("Intent")) {
-        return action?.data?.data || null;
-      }
-    }
-  }
-  return null;
-}
-
-export function extractSignAction(payload) {
-  if (!payload?.intents) return null;
-
-  for (const intent of payload.intents) {
-    if (!intent.requiredActions) continue;
-
-    for (const action of intent.requiredActions) {
-      if (action.type === "Sign" && action.actions?.includes("Intent")) {
-        return {
-          data: action?.data?.data || null,
-          actionId: action?.actionId || null
-        };
-      }
-    }
-  }
-  return null;
-}
-
 /**
  * Refreshes Solana blockhashes in preHook actions BEFORE signing.
  *
@@ -169,12 +116,12 @@ export async function refreshSolanaPreHookBlockhashes(bundle: Bundle): Promise<v
       const solanaData = action.data as SolanaSign;
       if (typeof solanaData.data !== "string") continue;
 
-      solanaData.data = refreshVersionedTxBlockhash(solanaData.data, blockhash);
+      solanaData.data = setNewVersionedTxBlockhash(solanaData.data, blockhash);
     }
   }
 }
 
-function refreshVersionedTxBlockhash(txHex: string, newBlockhash: string): string {
+function setNewVersionedTxBlockhash(txHex: string, newBlockhash: string): string {
   const cleanHex = txHex.startsWith("0x") ? txHex.slice(2) : txHex;
   const buf = Buffer.from(cleanHex, "hex");
   const vtx = VersionedTransaction.deserialize(buf);
