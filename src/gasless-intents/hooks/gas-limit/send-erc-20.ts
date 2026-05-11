@@ -52,7 +52,7 @@ async function main() {
       chainId: CHAIN_IDS.Polygon,
       sender: senderAddress,
     },
-    // gasLimit: "200000"
+    gasLimit: "300000"
   };
 
   console.log("PreHook:", preHook);
