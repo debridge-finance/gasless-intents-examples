@@ -37,6 +37,10 @@ async function main() {
   const expirationTimestamp = new Date(lastBundle.intents[0].intent.expirationTimestamp * 1000).toISOString();;
   const intentOwner = filters.intentOwner;
 
+  if (!intentOwner) {
+    throw new Error("Intent owner is required to cancel bundles by intent owner.");
+  }
+
   const reasonCode = CancelBundleReasonCodes.USER_REQUEST;
 
   // No bundle id specified, cancelling all bundles for the intent owner

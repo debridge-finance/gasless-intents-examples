@@ -17,7 +17,6 @@ import { replaceNamedPlaceholders } from "@utils/hooks-common";
 /**
  * Fund requirements:
  * - Polygon: 3 USDC
- * – Polygon: 0.1 POLY
  */
 
 async function main() {
