@@ -1,6 +1,7 @@
 import { serializeSignature, SerializeSignatureParameters, SignTypedDataReturnType, WalletClient } from "viem";
 import {
   Action,
+  ActionType,
   BundleProposeResponse,
   EIP712Data,
   ProvidePlaceholdersData,
@@ -193,10 +194,22 @@ export async function getRequiredActionSignatures(
   // Process each action in the intent
   for (const action of requiredActions) {
     try {
+      // Hook-executed Transactions are run by the solver — the user wallet must not submit them.
+      // Propose description for these is literally "Ready-to-execute transaction. No signature
+      // or placeholder values required." (e.g. direct hook + eager placeholder.) Emit a no-op
+      // signedData entry so the submit payload still covers every actionId.
+      if (isSolverExecutedHookAction(action)) {
+        console.log(
+          `Skipping solver-executed action ${action.actionId} (type=${action.type}, actions=${action.actions.join(",")})`,
+        );
+        signatures.push({ actionId: action.actionId, signedData: "0x" });
+        continue;
+      }
+
       if (isDeferredPlaceholderAction(action.type)) {
         const result = await provideDeferredPlaceholderData(action, walletClient as WalletClient, providedDataMap);
         signatures.push(result);
-        console.log(`Handled solver-hook action ${action.actionId} of type ${action.type}`);
+        console.log(`Handled deferred placeholder action ${action.actionId} of type ${action.type}`);
       } else {
         const signedData = await signAction(action, walletClient);
         signatures.push({ actionId: action.actionId, signedData });
@@ -313,6 +326,10 @@ function isDeferredPlaceholderAction(type: SignatureTypes): boolean {
     type === SignatureTypes.ProvidePlaceholders ||
     type === SignatureTypes.Sign712MetaMaskWithPlaceholders
   );
+}
+
+function isSolverExecutedHookAction(action: Action): boolean {
+  return action.type === SignatureTypes.Transaction && (action.actions?.includes(ActionType.Hook) ?? false);
 }
 
 function buildProvidedData(
