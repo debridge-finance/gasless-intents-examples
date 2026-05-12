@@ -18,6 +18,7 @@ import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import { SOLANA_RPC_URL } from "../constants";
 import { prepareSolanaTransaction, signHexMessageBySolanaKey } from "../solana";
 import { clipHexPrefix, toHexPrefixString } from "..";
+import { substitutePlaceholdersInMessage } from "./placeholder-substitution";
 
 export async function signAction(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
@@ -72,10 +73,11 @@ export async function provideDeferredPlaceholderData(
 
   if (action.type === SignatureTypes.Sign712MetaMaskWithPlaceholders) {
     const data = action.data as Sign712MetaMaskWithPlaceholdersData;
+    const valuesForAction = providedDataMap[action.actionId] ?? {};
+
+    data.message = substitutePlaceholdersInMessage(data.message, valuesForAction);
+
     const { domain, types, primaryType, message } = data;
-    // The API validates the signature against the marker'd message at submit time
-    // (substituting before signing was rejected with "Failed to recover valid address").
-    // The on-chain substitution uses providedData supplied separately.
     // @ts-ignore - viem's signTypedData has a strict overload we don't match here; the backend-supplied domain/types are trusted.
     const signedData = await walletClient.signTypedData({ domain, types, primaryType, message });
     return {
@@ -339,18 +341,18 @@ function buildProvidedData(
 ): Record<string, string> {
   const valuesForAction = providedDataMap[actionId] ?? {};
   const out: Record<string, string> = {};
+
   for (const { nameVariable } of placeholders) {
     const value = valuesForAction[nameVariable];
+
     if (value === undefined) {
       throw new Error(
         `Missing providedData for action ${actionId} placeholder ${nameVariable}. ` +
           `Supply it via providedDataMap[${actionId}][${nameVariable}].`,
       );
     }
+
     out[nameVariable] = value;
   }
   return out;
 }
-
-// Re-export for convenience so callers don't need to import EIP712Data separately.
-export type { EIP712Data };

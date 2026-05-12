@@ -187,13 +187,6 @@ async function main() {
     chainIdToWalletClientMap,
     providedDataMap,
   );
-  console.log(`[${SCENARIO}] Generated ${signedDataArray.length} signedData items`);
-  for (const item of signedDataArray) {
-    const sigLen = item.signedData === "0x" ? 0 : (item.signedData.length - 2) / 2;
-    console.log(
-      `  - actionId=${item.actionId} signedData=${sigLen} bytes providedData=${JSON.stringify(item.providedData ?? null)}`,
-    );
-  }
 
   const submitPayload = {
     ...bundle,

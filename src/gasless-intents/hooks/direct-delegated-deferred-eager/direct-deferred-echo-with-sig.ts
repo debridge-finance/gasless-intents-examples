@@ -152,7 +152,6 @@ async function main() {
   };
   (requestBody as unknown as { approveAmountFlag: string }).approveAmountFlag = "exactApproveAmount";
 
-
   console.log(`[${SCENARIO}] Creating bundle…`);
   const bundle = await createBundle(requestBody);
   logActionTypes(bundle);

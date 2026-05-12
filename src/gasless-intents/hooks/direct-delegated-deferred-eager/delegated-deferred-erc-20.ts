@@ -154,7 +154,6 @@ async function main() {
       `  - actionId=${item.actionId} signedData=${sigLen} bytes providedData=${JSON.stringify(item.providedData ?? null)}`,
     );
   }
-
   const submitPayload = {
     ...bundle,
     requestId,
