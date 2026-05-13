@@ -452,6 +452,7 @@ export type ExtendedHook = {
   from: string;
   placeHolders: PlaceHolder[]; // Array required, can be empty
   gasCompensationInfo?: GasCompensationInfo;
+  gasLimit?: string; // Optional gas limit for the hook execution, in units of gas
 };
 
 /**
