@@ -21,17 +21,6 @@ import {
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
 
-/**
- * Direct hook, eager placeholder → Transaction action.
- *
- * Cross-chain trade Arbitrum USDC → Polygon USDC, plus a preHook on Arbitrum
- * that ERC-20-transfers the trade's source amount to the signer (self-transfer).
- * The `{amount1}` placeholder is `eager` (default), so the API substitutes the
- * cumulative trade amount at propose time. Because the hook is `direct`, the
- * solver executes the calldata itself — the propose response carries a
- * `Transaction` action and no MetaMask gas costs (`SOLVER_EXECUTION_COST` is
- * absent from the action's actionCosts).
- */
 async function main() {
   const { privateKey } = getEnvConfig();
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
@@ -54,10 +43,9 @@ async function main() {
   const call = createTransferCall(sender, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
   const callData = replaceNamedPlaceholders(call.data as string, ["amount1"]);
 
-  // Hook will NOT be executed! Direct hooks can't move user funds!
   const preHook: ExtendedHook = {
     isAtomic: true,
-    type: HookExecutionType.Direct,
+    type: HookExecutionType.Delegated,
     data: callData,
     to: USDC.Arbitrum,
     value: "0",
@@ -73,7 +61,7 @@ async function main() {
     ],
   };
 
-  console.log("Direct PreHook (eager placeholder):", preHook);
+  console.log("Delegated PreHook (eager placeholder):", preHook);
 
   const requestId = randomUUID();
   const requestBody: BundleProposeBody = {
@@ -93,7 +81,7 @@ async function main() {
 
   logActionTypes(bundle);
 
-  console.log("Collecting signatures for all intents (direct hook needs none)…");
+  console.log("Collecting signatures for all intents and the delegated hook…");
   const signedDataArray = await processIntentBundle(bundle, walletClientMap);
   console.log(`Generated ${signedDataArray.length} signedData items`);
 
