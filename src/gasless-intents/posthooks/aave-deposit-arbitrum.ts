@@ -7,7 +7,7 @@ import { toHexPrefixString, getEnvConfig } from "../../utils";
 import { getAaveSupplyHook } from "@utils/hooks";
 import { createBundle, submitBundle } from "../../utils/api";
 import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToArbitrumUsdc, getPolyMaticToArbitrumUsdc } from "../trades";
+import { getPolygonUsdcToArbitrumUsdc } from "../trades";
 import { processIntentBundle } from "../../utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "../../utils/wallet";
 import { CHAIN_IDS } from "../../utils/chains";

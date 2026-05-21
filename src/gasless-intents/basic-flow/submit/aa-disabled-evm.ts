@@ -1,15 +1,15 @@
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { getEnvConfig, clipHexPrefix } from "./../utils";
-import { createBundle, submitBundle } from "./../utils/api";
+import { getEnvConfig, clipHexPrefix } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 
 import util from "util"
 import {
-  getPolyMaticToBscBnb} from "./trades";
-import { Bundle, BundleProposeBody, TradingAlgorithm } from "./types";
+  getPolyMaticToBscBnb} from "@gasless-intents/trades";
+import { Bundle, BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 
 async function main() {
