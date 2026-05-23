@@ -1,6 +1,5 @@
 import type { Address } from "viem";
 
-
 export const HOOK_ADDRESSES = {
   LoggingInteractionHook: "0x20df8adc7b093594720334c69aa16a9d8d69580a" as Address,
   FillCounter: "0x0f3fed84e654fb3b1e2ae3af80e2dc786c9b7277" as Address,
