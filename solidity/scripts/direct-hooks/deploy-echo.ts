@@ -12,6 +12,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
+import { recordDeployment } from "../lib/ledger";
 
 const MIN_ETH_FOR_DEPLOY = parseEther("0.0005");
 const ARTIFACT_PATH = path.resolve(__dirname, "../../build-artefacts/Echo.json");
@@ -62,6 +63,18 @@ async function main() {
   console.log(
     `  Contract: ${contractAddress} (https://basescan.org/address/${contractAddress})`
   );
+
+  recordDeployment("Echo", {
+    address: contractAddress,
+    deployTxHash: deployHash,
+    blockNumber: Number(deployReceipt.blockNumber),
+  });
+
+  // Alchemy rate-limits "in-flight" transactions for delegated (EIP-7702)
+  // accounts — even after `waitForTransactionReceipt` confirms a tx on-chain,
+  // the next `eth_sendRawTransaction` from the same sender can be rejected
+  // for a few seconds. Mirrors the buffer in lib/deploy-lib.ts.
+  await new Promise((r) => setTimeout(r, 4000));
 
   console.log("Sending sanity-check echo()...");
   const echoHash = await walletClient.writeContract({

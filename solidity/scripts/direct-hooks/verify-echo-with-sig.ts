@@ -94,7 +94,7 @@ async function main() {
 
   const address = process.argv[2];
   if (!address || !/^0x[0-9a-fA-F]{40}$/.test(address)) {
-    throw new Error("Usage: npx tsx solidity/scripts/verify-echo-with-sig.ts <0xContractAddress>");
+    throw new Error("Usage: npx tsx solidity/scripts/direct-hooks/verify-echo-with-sig.ts <0xContractAddress>");
   }
 
   const metadata = JSON.parse(fs.readFileSync(METADATA_PATH, "utf8"));

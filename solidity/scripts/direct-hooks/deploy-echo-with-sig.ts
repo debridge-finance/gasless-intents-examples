@@ -15,6 +15,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
+import { recordDeployment } from "../lib/ledger";
 
 const MIN_ETH_FOR_DEPLOY = parseEther("0.0005");
 const ARTIFACT_PATH = path.resolve(__dirname, "../../build-artefacts/EchoWithSig.json");
@@ -63,6 +64,18 @@ async function main(): Promise<void> {
   console.log(
     `  Contract: ${contractAddress} (https://basescan.org/address/${contractAddress})`,
   );
+
+  recordDeployment("EchoWithSig", {
+    address: contractAddress,
+    deployTxHash: deployHash,
+    blockNumber: Number(deployReceipt.blockNumber),
+  });
+
+  // Alchemy rate-limits "in-flight" transactions for delegated (EIP-7702)
+  // accounts — even after `waitForTransactionReceipt` confirms a tx on-chain,
+  // the next `eth_sendRawTransaction` from the same sender can be rejected
+  // for a few seconds. Mirrors the buffer in lib/deploy-lib.ts.
+  await new Promise((r) => setTimeout(r, 4000));
 
   console.log("Sending sanity-check echoWithSig() — deployer signs and sends...");
   const chainId = base.id;
@@ -119,7 +132,7 @@ async function main(): Promise<void> {
     data: echoReceipt.logs[0].data,
     topics: echoReceipt.logs[0].topics,
   });
-  const args = decoded.args as { user: Address; nonce: Hex; message: string; signature: Hex };
+  const args = decoded.args as unknown as { user: Address; nonce: Hex; message: string; signature: Hex };
   if (args.user.toLowerCase() !== account.address.toLowerCase()) {
     throw new Error(`Event user ${args.user} != deployer ${account.address}`);
   }

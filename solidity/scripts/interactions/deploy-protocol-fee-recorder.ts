@@ -10,9 +10,7 @@ async function main(): Promise<void> {
   // Sanity: onPreCall is a no-op for this contract; we still call it to verify
   // the contract is callable and the selector is wired up. The same-chain
   // post-call sanity is more involved (requires building a context struct
-  // with preSwapResults); we skip that here — the example scripts in
-  // `src/gasless-intents/interactions/same-chain-with-preswap.ts` propose
-  // a bundle that targets this contract instead.
+  // with preSwapResults);
   console.log("Sending sanity-check onPreCall() (no-op)...");
   const payload = encodeAbiParameters(SUBJECT_ONLY_ABI, [ctx.account.address]);
 

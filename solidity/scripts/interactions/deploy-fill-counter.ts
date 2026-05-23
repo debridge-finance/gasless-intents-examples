@@ -33,7 +33,7 @@ async function main(): Promise<void> {
     data: receipt.logs[0].data,
     topics: receipt.logs[0].topics,
   });
-  const args = decoded.args as {
+  const args = decoded.args as unknown as {
     subject: Hex;
     intentFillNumber: bigint;
     lifetimeFills: bigint;

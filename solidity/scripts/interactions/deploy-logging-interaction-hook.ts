@@ -41,7 +41,7 @@ async function main(): Promise<void> {
     data: receipt.logs[0].data,
     topics: receipt.logs[0].topics,
   });
-  const args = decoded.args as { subject: Hex; fillNumber: bigint };
+  const args = decoded.args as unknown as { subject: Hex; fillNumber: bigint };
   if (args.subject.toLowerCase() !== ctx.account.address.toLowerCase()) {
     throw new Error(`Event subject ${args.subject} != deployer ${ctx.account.address}`);
   }

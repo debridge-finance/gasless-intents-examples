@@ -247,7 +247,7 @@ async function main(): Promise<void> {
       data: receipt.logs[0].data,
       topics: receipt.logs[0].topics,
     });
-    const args = decoded.args as {
+    const args = decoded.args as unknown as {
       user: Address;
       nonce: Hex;
       message: string;
@@ -387,7 +387,7 @@ async function main(): Promise<void> {
         data: receipt.logs[0].data,
         topics: receipt.logs[0].topics,
       });
-      const args = decoded.args as { signature: Hex };
+      const args = decoded.args as unknown as { signature: Hex };
       if (args.signature.toLowerCase() !== subSig.toLowerCase()) {
         throw new Error("event signature != real sig");
       }
