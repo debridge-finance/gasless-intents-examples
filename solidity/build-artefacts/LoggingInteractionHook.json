@@ -1,0 +1,730 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "cumulativeGiveAmount",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "decodePayload",
+      "inputs": [
+        {
+          "name": "hookPayload",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct LoggingInteractionHook.Decoded",
+          "components": [
+            {
+              "name": "label",
+              "type": "string",
+              "internalType": "string"
+            },
+            {
+              "name": "subject",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "referenceId",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "fillCount",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "onPostCallForCrossChainIntent",
+      "inputs": [
+        {
+          "name": "ctx",
+          "type": "tuple",
+          "internalType": "struct IPostInteractionHook.CrossChainContext",
+          "components": [
+            {
+              "name": "intentId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "tradeId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "payload",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            {
+              "name": "giveToken",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "giveAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "takeToken",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            {
+              "name": "takeAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "takeChainId",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "takeChainReceiver",
+              "type": "bytes",
+              "internalType": "bytes"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "onPostCallForCrossChainIntentWithPreSwap",
+      "inputs": [
+        {
+          "name": "ctx",
+          "type": "tuple",
+          "internalType": "struct IPostInteractionHook.CrossChainWithPreSwapContext",
+          "components": [
+            {
+              "name": "intentId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "tradeId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "payload",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            {
+              "name": "preSwapResults",
+              "type": "tuple[]",
+              "internalType": "struct IPreSwapResult.PreSwapResult[]",
+              "components": [
+                {
+                  "name": "inputToken",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "inputAmount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "outputAmount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "giveToken",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "giveAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "takeToken",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            {
+              "name": "takeAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "takeChainId",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "takeChainReceiver",
+              "type": "bytes",
+              "internalType": "bytes"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "onPostCallForSameChainIntentWithPreSwap",
+      "inputs": [
+        {
+          "name": "ctx",
+          "type": "tuple",
+          "internalType": "struct IPostInteractionHook.SameChainWithPreSwapChainContext",
+          "components": [
+            {
+              "name": "intentId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "tradeId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "payload",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            {
+              "name": "preSwapResults",
+              "type": "tuple[]",
+              "internalType": "struct IPreSwapResult.PreSwapResult[]",
+              "components": [
+                {
+                  "name": "inputToken",
+                  "type": "address",
+                  "internalType": "address"
+                },
+                {
+                  "name": "inputAmount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "outputAmount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "takeToken",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "takeAmountAfterFeeCharge",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "receiver",
+              "type": "address",
+              "internalType": "address"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "onPreCall",
+      "inputs": [
+        {
+          "name": "intentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "tradeId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "hookPayload",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "PostCallCrossChainLogged",
+      "inputs": [
+        {
+          "name": "intentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "tradeId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "subject",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "referenceId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "giveToken",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "giveAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "takeToken",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        },
+        {
+          "name": "takeAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "takeChainId",
+          "type": "uint32",
+          "indexed": false,
+          "internalType": "uint32"
+        },
+        {
+          "name": "takeChainReceiver",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "PostCallCrossChainPreSwapLogged",
+      "inputs": [
+        {
+          "name": "intentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "tradeId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "subject",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "referenceId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "giveToken",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "giveAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "takeToken",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        },
+        {
+          "name": "takeAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "takeChainId",
+          "type": "uint32",
+          "indexed": false,
+          "internalType": "uint32"
+        },
+        {
+          "name": "takeChainReceiver",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "PostCallSameChainLogged",
+      "inputs": [
+        {
+          "name": "intentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "tradeId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "subject",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "referenceId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "takeToken",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "takeAmountAfterFeeCharge",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "receiver",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "PreCallLogged",
+      "inputs": [
+        {
+          "name": "intentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "tradeId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "subject",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "referenceId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "fillNumber",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "rateLimitExceeded",
+          "type": "bool",
+          "indexed": false,
+          "internalType": "bool"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "PreSwapAggregateLogged",
+      "inputs": [
+        {
+          "name": "intentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "tradeId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "legCount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "totalOutputAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "PreSwapLegLogged",
+      "inputs": [
+        {
+          "name": "intentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "tradeId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "legIndex",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "inputToken",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "inputAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "outputAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ProtocolFeeLogged",
+      "inputs": [
+        {
+          "name": "intentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "tradeId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "totalPreSwapOutput",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "takeAmountAfterFeeCharge",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "feeAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "feeBps",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    }
+  ],
+  "data": {
+    "bytecode": {
+      "object": "0x608060405234801561000f575f80fd5b50610cac8061001d5f395ff3fe608060405234801561000f575f80fd5b506004361061007a575f3560e01c8063b64bbca611610058578063b64bbca6146100e9578063bf25439414610108578063ecbd319b1461011b578063f3bfef241461012e575f80fd5b8063197c6e771461007e5780634f31e618146100a75780635135fa60146100d4575b5f80fd5b61009161008c3660046106f8565b610141565b60405161009e919061077a565b60405180910390f35b6100c66100b53660046107c0565b5f6020819052908152604090205481565b60405190815260200161009e565b6100e76100e23660046107d7565b6101a8565b005b6100c66100f73660046107c0565b60016020525f908152604090205481565b6100e7610116366004610815565b610300565b6100e761012936600461084d565b6103ec565b6100e761013c366004610885565b6104c8565b61016c6040518060600160405280606081526020015f6001600160a01b031681526020015f81525090565b5f808061017b8587018761090f565b604080516060810182529384526001600160a01b0390921660208401529082015293505050505b92915050565b5f6101b961008c60408401846109d3565b90505f6101d8833560208501356101d36060870187610a16565b610574565b90508260a001358110610277575f6101f460a085013583610a6f565b90505f8215610219578261020a83612710610a82565b6102149190610a99565b61021b565b5f5b6040805185815260a088013560208281019190915291810185905260608101839052919250860135908635907fcc45534fbbf21571943f7e0a855d30aa1f852e2c3806d6c21d12985070c436b49060800160405180910390a350505b602080830151835160408501516001600160a01b0390921692860135918635917f5efb5cbc44daf84d1dd826f03464c60c0188d846dc2e12e93ec1f08862d5c637916102c960a08a0160808b01610ab8565b60a08a01356102de60e08c0160c08d01610ab8565b33426040516102f39796959493929190610ad3565b60405180910390a4505050565b5f61031161008c60408401846109d3565b82355f9081526001602052604081208054929350608085013592909190610339908490610b1f565b9091555050602080820151825160408401516001600160a01b0390921692850135918535917f653661e7b37cce118c357c380298acdf3d2375608f7a9da374124950a1e36cd8916103906080890160608a01610ab8565b60808901356103a260a08b018b6109d3565b60c08c01356103b86101008e0160e08f01610b32565b6103c66101008f018f6109d3565b33426040516103e09c9b9a99989796959493929190610b7d565b60405180910390a45050565b5f6103fd61008c60408401846109d3565b9050610416823560208401356101d36060860186610a16565b5081355f908152600160205260408120805460a0850135929061043a908490610b1f565b9091555050602080820151825160408401516001600160a01b0390921692850135918535917fce536be8868969d06109a451dd41480a16fff71b8e6a5e627141242bf2d249099161049160a0890160808a01610ab8565b60a08901356104a360c08b018b6109d3565b60e08c01356104ba6101208e016101008f01610b32565b6103c66101208f018f6109d3565b5f6104d38383610141565b90505f805f8781526020019081526020015f205f81546104f290610c06565b91905081905590505f8083604001511180156105115750826040015182115b905082602001516001600160a01b031686887f5de2007053f4cab8777d6130fdebc8ecfd7cb80e8d74389bd819c70163963e65865f015187604001518787334260405161056396959493929190610c1e565b60405180910390a450505050505050565b5f81815b8181101561066c5785877f2a6a1531f6542e780a02d2e543d9b9da0d521e45cc312b2d041dd10ed25d3f5e838888868181106105b6576105b6610c62565b6105cc9260206060909202019081019150610ab8565b8989878181106105de576105de610c62565b905060600201602001358a8a888181106105fa576105fa610c62565b9050606002016040013560405161063394939291909384526001600160a01b039290921660208401526040830152606082015260800190565b60405180910390a384848281811061064d5761064d610c62565b90506060020160400135836106629190610b1f565b9250600101610578565b506040805182815260208101849052869188917ffcf288807bc1ec64ab0c4323cd2c5de8fb7d11fd0111fec5eaacdc532aabfe3b910160405180910390a350949350505050565b5f8083601f8401126106c3575f80fd5b50813567ffffffffffffffff8111156106da575f80fd5b6020830191508360208285010111156106f1575f80fd5b9250929050565b5f8060208385031215610709575f80fd5b823567ffffffffffffffff81111561071f575f80fd5b61072b858286016106b3565b90969095509350505050565b5f81518084525f5b8181101561075b5760208185018101518683018201520161073f565b505f602082860101526020601f19601f83011685010191505092915050565b602081525f8251606060208401526107956080840182610737565b60208501516001600160a01b0316604085810191909152909401516060909301929092525090919050565b5f602082840312156107d0575f80fd5b5035919050565b5f602082840312156107e7575f80fd5b813567ffffffffffffffff8111156107fd575f80fd5b820160e0818503121561080e575f80fd5b9392505050565b5f60208284031215610825575f80fd5b813567ffffffffffffffff81111561083b575f80fd5b8201610120818503121561080e575f80fd5b5f6020828403121561085d575f80fd5b813567ffffffffffffffff811115610873575f80fd5b8201610140818503121561080e575f80fd5b5f805f8060608587031215610898575f80fd5b8435935060208501359250604085013567ffffffffffffffff8111156108bc575f80fd5b6108c8878288016106b3565b95989497509550505050565b634e487b7160e01b5f52604160045260245ffd5b6001600160a01b03811681146108fc575f80fd5b50565b803561090a816108e8565b919050565b5f805f60608486031215610921575f80fd5b833567ffffffffffffffff80821115610938575f80fd5b818601915086601f83011261094b575f80fd5b81358181111561095d5761095d6108d4565b604051601f8201601f19908116603f01168101908382118183101715610985576109856108d4565b8160405282815289602084870101111561099d575f80fd5b826020860160208301375f6020848301015280975050505050506109c3602085016108ff565b9150604084013590509250925092565b5f808335601e198436030181126109e8575f80fd5b83018035915067ffffffffffffffff821115610a02575f80fd5b6020019150368190038213156106f1575f80fd5b5f808335601e19843603018112610a2b575f80fd5b83018035915067ffffffffffffffff821115610a45575f80fd5b60200191506060810236038213156106f1575f80fd5b634e487b7160e01b5f52601160045260245ffd5b818103818111156101a2576101a2610a5b565b80820281158282048414176101a2576101a2610a5b565b5f82610ab357634e487b7160e01b5f52601260045260245ffd5b500490565b5f60208284031215610ac8575f80fd5b813561080e816108e8565b60e081525f610ae560e083018a610737565b6020830198909852506001600160a01b0395861660408201526060810194909452918416608084015290921660a082015260c00152919050565b808201808211156101a2576101a2610a5b565b5f60208284031215610b42575f80fd5b813563ffffffff8116811461080e575f80fd5b81835281816020850137505f828201602090810191909152601f909101601f19169091010190565b61014081525f610b9161014083018f610737565b602083018e90526001600160a01b038d81166040850152606084018d90528382036080850152610bc2828c8e610b55565b91508960a085015263ffffffff891660c085015283820360e0850152610be982888a610b55565b9516610100840152505061012001529a9950505050505050505050565b5f60018201610c1757610c17610a5b565b5060010190565b60c081525f610c3060c0830189610737565b602083019790975250604081019490945291151560608401526001600160a01b0316608083015260a090910152919050565b634e487b7160e01b5f52603260045260245ffdfea2646970667358221220f0b56c384d62cfe69688ebb697feb679dc8ab6c8967dc25b806cd47945892aad64736f6c63430008180033"
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "compiler": {
+    "version": "0.8.24+commit.e11b9ed9"
+  },
+  "language": "Solidity",
+  "output": {
+    "abi": [
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address",
+            "indexed": true
+          },
+          {
+            "internalType": "string",
+            "name": "message",
+            "type": "string",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "Echoed",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "message",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "echo"
+      }
+    ],
+    "devdoc": {
+      "kind": "dev",
+      "methods": {},
+      "version": 1
+    },
+    "userdoc": {
+      "kind": "user",
+      "methods": {},
+      "version": 1
+    }
+  },
+  "settings": {
+    "remappings": [
+      "forge-std/=lib/forge-std/src/"
+    ],
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "metadata": {
+      "bytecodeHash": "ipfs"
+    },
+    "compilationTarget": {
+      "contracts/direct-hooks/Echo.sol": "Echo"
+    },
+    "evmVersion": "cancun",
+    "libraries": {}
+  },
+  "sources": {
+    "contracts/direct-hooks/Echo.sol": {
+      "keccak256": "0x3c6a0826a949da045711d9ea018a669965dcba52fbd9008a7aba0ece9c241bae",
+      "urls": [
+        "bzz-raw://2be204e31034a77eb9754640d285ebab8e6397000e6b569c5bc2482cdd935725",
+        "dweb:/ipfs/QmTaWEJTMehxwnDUKNyMRQXLedRS8c7DqMs9bEpe6nBWoL"
+      ],
+      "license": "MIT"
+    }
+  },
+  "version": 1
+}

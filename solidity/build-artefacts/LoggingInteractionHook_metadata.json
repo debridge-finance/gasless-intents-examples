@@ -1,0 +1,789 @@
+{
+  "compiler": {
+    "version": "0.8.24+commit.e11b9ed9"
+  },
+  "language": "Solidity",
+  "output": {
+    "abi": [
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address",
+            "indexed": true
+          },
+          {
+            "internalType": "string",
+            "name": "label",
+            "type": "string",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "referenceId",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "giveToken",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "giveAmount",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "bytes",
+            "name": "takeToken",
+            "type": "bytes",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "takeAmount",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint32",
+            "name": "takeChainId",
+            "type": "uint32",
+            "indexed": false
+          },
+          {
+            "internalType": "bytes",
+            "name": "takeChainReceiver",
+            "type": "bytes",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "PostCallCrossChainLogged",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address",
+            "indexed": true
+          },
+          {
+            "internalType": "string",
+            "name": "label",
+            "type": "string",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "referenceId",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "giveToken",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "giveAmount",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "bytes",
+            "name": "takeToken",
+            "type": "bytes",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "takeAmount",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint32",
+            "name": "takeChainId",
+            "type": "uint32",
+            "indexed": false
+          },
+          {
+            "internalType": "bytes",
+            "name": "takeChainReceiver",
+            "type": "bytes",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "PostCallCrossChainPreSwapLogged",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address",
+            "indexed": true
+          },
+          {
+            "internalType": "string",
+            "name": "label",
+            "type": "string",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "referenceId",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "takeToken",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "takeAmountAfterFeeCharge",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "receiver",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "PostCallSameChainLogged",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address",
+            "indexed": true
+          },
+          {
+            "internalType": "string",
+            "name": "label",
+            "type": "string",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "referenceId",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "fillNumber",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "bool",
+            "name": "rateLimitExceeded",
+            "type": "bool",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "PreCallLogged",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "uint256",
+            "name": "legCount",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalOutputAmount",
+            "type": "uint256",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "PreSwapAggregateLogged",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "uint256",
+            "name": "legIndex",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "inputToken",
+            "type": "address",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "inputAmount",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "outputAmount",
+            "type": "uint256",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "PreSwapLegLogged",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalPreSwapOutput",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "takeAmountAfterFeeCharge",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "feeAmount",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "feeBps",
+            "type": "uint256",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "ProtocolFeeLogged",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function",
+        "name": "cumulativeGiveAmount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ]
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes",
+            "name": "hookPayload",
+            "type": "bytes"
+          }
+        ],
+        "stateMutability": "pure",
+        "type": "function",
+        "name": "decodePayload",
+        "outputs": [
+          {
+            "internalType": "struct LoggingInteractionHook.Decoded",
+            "name": "",
+            "type": "tuple",
+            "components": [
+              {
+                "internalType": "string",
+                "name": "label",
+                "type": "string"
+              },
+              {
+                "internalType": "address",
+                "name": "subject",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "referenceId",
+                "type": "uint256"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function",
+        "name": "fillCount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ]
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "struct IPostInteractionHook.CrossChainContext",
+            "name": "ctx",
+            "type": "tuple",
+            "components": [
+              {
+                "internalType": "bytes32",
+                "name": "intentId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "tradeId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "payload",
+                "type": "bytes"
+              },
+              {
+                "internalType": "address",
+                "name": "giveToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "giveAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bytes",
+                "name": "takeToken",
+                "type": "bytes"
+              },
+              {
+                "internalType": "uint256",
+                "name": "takeAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint32",
+                "name": "takeChainId",
+                "type": "uint32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "takeChainReceiver",
+                "type": "bytes"
+              }
+            ]
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "onPostCallForCrossChainIntent"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "struct IPostInteractionHook.CrossChainWithPreSwapContext",
+            "name": "ctx",
+            "type": "tuple",
+            "components": [
+              {
+                "internalType": "bytes32",
+                "name": "intentId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "tradeId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "payload",
+                "type": "bytes"
+              },
+              {
+                "internalType": "struct IPreSwapResult.PreSwapResult[]",
+                "name": "preSwapResults",
+                "type": "tuple[]",
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "inputToken",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "inputAmount",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "outputAmount",
+                    "type": "uint256"
+                  }
+                ]
+              },
+              {
+                "internalType": "address",
+                "name": "giveToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "giveAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bytes",
+                "name": "takeToken",
+                "type": "bytes"
+              },
+              {
+                "internalType": "uint256",
+                "name": "takeAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint32",
+                "name": "takeChainId",
+                "type": "uint32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "takeChainReceiver",
+                "type": "bytes"
+              }
+            ]
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "onPostCallForCrossChainIntentWithPreSwap"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "struct IPostInteractionHook.SameChainWithPreSwapChainContext",
+            "name": "ctx",
+            "type": "tuple",
+            "components": [
+              {
+                "internalType": "bytes32",
+                "name": "intentId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "tradeId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "payload",
+                "type": "bytes"
+              },
+              {
+                "internalType": "struct IPreSwapResult.PreSwapResult[]",
+                "name": "preSwapResults",
+                "type": "tuple[]",
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "inputToken",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "inputAmount",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "outputAmount",
+                    "type": "uint256"
+                  }
+                ]
+              },
+              {
+                "internalType": "address",
+                "name": "takeToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "takeAmountAfterFeeCharge",
+                "type": "uint256"
+              },
+              {
+                "internalType": "address",
+                "name": "receiver",
+                "type": "address"
+              }
+            ]
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "onPostCallForSameChainIntentWithPreSwap"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "hookPayload",
+            "type": "bytes"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "onPreCall"
+      }
+    ],
+    "devdoc": {
+      "kind": "dev",
+      "methods": {},
+      "version": 1
+    },
+    "userdoc": {
+      "kind": "user",
+      "methods": {},
+      "version": 1
+    }
+  },
+  "settings": {
+    "remappings": [
+      "forge-std/=lib/forge-std/src/"
+    ],
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "metadata": {
+      "bytecodeHash": "ipfs"
+    },
+    "compilationTarget": {
+      "contracts/interactions/LoggingInteractionHook.sol": "LoggingInteractionHook"
+    },
+    "evmVersion": "cancun",
+    "libraries": {}
+  },
+  "sources": {
+    "contracts/interactions/LoggingInteractionHook.sol": {
+      "keccak256": "0xb8c5af8c377e610e1d864f850aeb60f355c7de681ae67d3b58278693ff73488a",
+      "urls": [
+        "bzz-raw://5bf4fb49105de8543331b4580af8e2f3a75371f7a5e56f26b10aa7ff2c876551",
+        "dweb:/ipfs/QmYrAvLfHcocc9zSd2YVGYPof4CVCMgXGJCdFxnzLcVuqN"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/interfaces/IPostInteractionHook.sol": {
+      "keccak256": "0x14e903a0c1603c6e4c25587307673693d8265514b7d0be81f88dc1d6d585e104",
+      "urls": [
+        "bzz-raw://f25c55fda8a003171e7f68a09450881ee5e13ac9f4d03216627855858548263f",
+        "dweb:/ipfs/QmV2yHCsMfkf2TJuZNB69otYDHq2b3wTQvvipWmtDekK6Y"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/interfaces/IPreInteractionHook.sol": {
+      "keccak256": "0x512db03a8e629aaf8812ff4775b9093ad2d90a8f72d7c133e85e4629a9609e80",
+      "urls": [
+        "bzz-raw://17cdc5dbd00cf4655b997c6aea370783ad4b80079b01e6f3dab1a2eac6f480cf",
+        "dweb:/ipfs/QmbbbrBZib46iGUHyDzyU3DvMV7ACPyasdcg7gZHpoDRLj"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/interfaces/IPreSwapResult.sol": {
+      "keccak256": "0xe7e64a641b1334c5ec95e1dd98bd2398da85a437e4ad52784e7384da73008060",
+      "urls": [
+        "bzz-raw://39e4655e814f772ecb09912384c60c2b4e6a2e1a526029bf9cc7fe695165ba97",
+        "dweb:/ipfs/QmZT35YNPf449R1t79mi9CFgrK1MTwJwVUfR5JJh9TgCDY"
+      ],
+      "license": "MIT"
+    }
+  },
+  "version": 1
+}

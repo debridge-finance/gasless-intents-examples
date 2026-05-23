@@ -1,0 +1,46 @@
+{
+  "chainId": 8453,
+  "lastUpdated": "2026-05-23T09:15:13.988Z",
+  "contracts": {
+    "Echo": {
+      "address": "0xa77563ce5dfb7fe631d4b9fba8968efbb1f722c8",
+      "deployTxHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "blockNumber": 0
+    },
+    "EchoWithSig": {
+      "address": "0x30f1acea1948fa286f6ebd948d79fadeb2ae1ca9",
+      "deployTxHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "blockNumber": 0
+    },
+    "LoggingInteractionHook": {
+      "address": "0x20df8adc7b093594720334c69aa16a9d8d69580a",
+      "deployTxHash": "0x097c455d4972afe79a94c6a28d2097b57e9c4b0d9855ecf948cc8bc686791539",
+      "blockNumber": 46369044
+    },
+    "FillCounter": {
+      "address": "0x0f3fed84e654fb3b1e2ae3af80e2dc786c9b7277",
+      "deployTxHash": "0xd1b6833b80a1724a0a5407033716b61a9215a469d293b7bc44a7f38530a88a2c",
+      "blockNumber": 46369109
+    },
+    "ProtocolFeeRecorder": {
+      "address": "0xe04944aefa4d15aa0d322531b19cc8f06000c9c8",
+      "deployTxHash": "0x7603a690bdb8d6cd35b18d0807898afb1c8995c9ac299844f286bd308b7fd5c8",
+      "blockNumber": 46369167
+    },
+    "AllowlistGuard": {
+      "address": "0x8909accb3b437a00dcb268d34a07473a60269e1b",
+      "deployTxHash": "0x21947a5bf72ebf5dc08de02e50dd8ab6f783a42ba5d69fa0f79eeca5c3046cba",
+      "blockNumber": 46369172
+    },
+    "RewardMinter": {
+      "address": "0xf1360c7d00b6cffa862f6645dba05babc47a097b",
+      "deployTxHash": "0x058d87e46dcf5d445fa4637443883add71f29021731852da2d414a3ace8c81d4",
+      "blockNumber": 46369179
+    },
+    "FillCapEnforcer": {
+      "address": "0x3454ace276329902caeab59135439fb05cc644e5",
+      "deployTxHash": "0x722b3c224edac25ebdaffab83737cf4d54ce7878a1ad9e31f1775ce5dd89a74e",
+      "blockNumber": 46369184
+    }
+  }
+}
