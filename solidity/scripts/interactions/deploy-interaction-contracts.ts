@@ -82,9 +82,8 @@ function main(): void {
     }
   }
   console.log(table.join("\n"));
-  console.log("\nNext steps:");
+  console.log("\nNext step:");
   console.log("  npx tsx solidity/scripts/interactions/verify-interaction-contracts.ts");
-  console.log("  npx tsx solidity/scripts/utilities/sync-hook-addresses.ts");
 }
 
 try {

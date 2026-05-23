@@ -7,7 +7,7 @@ One-shot scripts for deploying / interacting with the contracts under `solidity/
 ```
 solidity/scripts/
   lib/         — shared libs (Etherscan verify, deploy helper, ledger I/O)
-  utilities/   — one-off tooling (forge build artefacts, sync TS hook-addresses)
+  utilities/   — one-off tooling (forge build artefacts)
   direct-hooks/    — Echo / EchoWithSig deploy / verify / Anvil test
   interactions/    — IPre/PostInteractionHook deploy + verify, plus orchestrators
 ```
@@ -244,11 +244,12 @@ Standard JSON Input mode against the Etherscan v2 API. Source files referenced b
 
 ### After deploy
 
-```bash
-npx tsx solidity/scripts/utilities/sync-hook-addresses.ts
-```
-
-Regenerates [`src/gasless-intents/interactions/helpers/hook-addresses.ts`](../../src/gasless-intents/interactions/helpers/hook-addresses.ts) from `deployed-base.json`. Review the diff before committing.
+No sync step. The TS example scripts read addresses from
+`solidity/build-artefacts/deployed-base.json` at runtime via
+[`src/gasless-intents/interactions/helpers/hook-addresses.ts`](../../src/gasless-intents/interactions/helpers/hook-addresses.ts).
+Each successful `deploy-*.ts` already wrote its entry to the ledger via
+`lib/ledger.ts:recordDeployment`, so the next `npx tsx` of an example
+picks up the new address automatically.
 
 ## Deployed Addresses
 
