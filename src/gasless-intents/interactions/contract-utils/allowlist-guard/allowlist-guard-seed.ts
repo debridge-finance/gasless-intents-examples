@@ -11,7 +11,6 @@
  * you want to operate on. Adjust the constant below and re-run for a
  * different subject — no quoting / argv parsing in the middle.
  */
-import { base } from "viem/chains";
 import { isAddress, type Address } from "viem";
 import { loadAbi } from "../shared/artefact-loader";
 import { requireDeployedAddress } from "../shared/deployed-addresses";
