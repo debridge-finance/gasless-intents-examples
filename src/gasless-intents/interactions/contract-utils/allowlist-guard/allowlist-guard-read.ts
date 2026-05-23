@@ -6,7 +6,7 @@
  *   npx tsx .../allowlist-guard-read.ts <subject>   # prints owner + allowed(subject)
  */
 import { isAddress, type Address } from "viem";
-import { loadAbi } from "../shared/artefact-loader";
+import { loadAbi } from "../shared/abis";
 import { requireDeployedAddress } from "../shared/deployed-addresses";
 import { getBaseClients, readView } from "../shared/base-clients";
 

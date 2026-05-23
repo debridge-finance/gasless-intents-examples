@@ -9,7 +9,7 @@
  */
 import * as fs from "node:fs";
 import { isAddress, type Address } from "viem";
-import { loadAbi } from "../shared/artefact-loader";
+import { loadAbi } from "../shared/abis";
 import { requireDeployedAddress } from "../shared/deployed-addresses";
 import { getBaseClients, writeTx } from "../shared/base-clients";
 

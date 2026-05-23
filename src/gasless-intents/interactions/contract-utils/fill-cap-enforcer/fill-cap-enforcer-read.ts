@@ -7,7 +7,7 @@
  *   npx tsx .../fill-cap-enforcer-read.ts <subject> <intentId>  # owner + caps + fills(intentId)
  */
 import { isAddress, isHex, type Address, type Hex } from "viem";
-import { loadAbi } from "../shared/artefact-loader";
+import { loadAbi } from "../shared/abis";
 import { requireDeployedAddress } from "../shared/deployed-addresses";
 import { getBaseClients, readView } from "../shared/base-clients";
 
