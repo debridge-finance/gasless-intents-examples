@@ -18,15 +18,14 @@ import { requireDeployedAddress } from "../shared/deployed-addresses";
 import { getBaseClients, readView, writeTx } from "../shared/base-clients";
 
 // ─── Edit me ───────────────────────────────────────────────────────────────
-const SUBJECTS_TO_ALLOW: Address[] = [
-  "0x55a8f5cce1d53d9ff84ec0962882b447e5914db8",
-];
-const SET_TO: boolean = true;
+const SUBJECTS_TO_ALLOW: Address[] = [];
+const SET_TO = true;
 // ────────────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  for (const addr of SUBJECTS_TO_ALLOW) {
-    if (!isAddress(addr)) throw new Error(`Bad address in SUBJECTS_TO_ALLOW: ${addr}`);
+  if (SUBJECTS_TO_ALLOW.length === 0) {
+    throw new Error("Set SUBJECTS_TO_ALLOW to one or more addresses before running.");
+  }
   }
 
   const address = requireDeployedAddress("AllowlistGuard");
