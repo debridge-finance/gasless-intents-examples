@@ -20,6 +20,7 @@ pre/post-hooks, and working with both EVM and Solana chains.
 | **Cancellation**             | Cancel by bundle ID, by intent owner, by partner authority, stuck bundles    | EVM          | [`cancellation/`](src/gasless-intents/cancellation/)                                                        |
 | **Pre-hooks**                | Arbitrary on-chain actions executed before settlement                        | EVM          | [`prehooks/`](src/gasless-intents/prehooks/)                                                                |
 | **Post-hooks**               | On-chain actions after settlement (Morpho deposit, ERC-20 send, native send) | EVM          | [`posthooks/`](src/gasless-intents/posthooks/)                                                              |
+| **Pre/Post-Interactions**    | Intent-level on-chain hooks (observability, metrics, gating). Base only      | EVM (Base)   | [`interactions/`](src/gasless-intents/interactions/)                                                        |
 | **Solana Source Chain**      | Bundles originating from Solana (AA enabled/disabled, pre-swap, same-chain)  | Solana → EVM | [`solana/src-cases/`](src/gasless-intents/solana/src-cases/)                                                |
 | **Solana Destination Chain** | Atomic fulfillment with Solana as destination                                | EVM → Solana | [`solana/dst-cases/`](src/gasless-intents/solana/dst-cases/)                                                |
 | **Solana Prepare Steps**     | SPL token approval and SOL wrapping before bundle submission                 | Solana       | [`solana/prepare-steps/`](src/gasless-intents/solana/prepare-steps/)                                        |
@@ -104,6 +105,16 @@ Attach arbitrary on-chain actions to bundles. Pre-hooks execute before the bundl
 assets to fund an operation). Post-hooks execute after settlement — examples include depositing received USDC into a Morpho vault,
 sending ERC-20 tokens to another address, and forwarding native assets to a beneficiary.
 
+### Pre/Post-Interactions
+
+`preInteractions` / `postInteractions` are **per-intent** on-chain hook calls executed on the source chain around the maker's
+fill. Four demo Solidity contracts and four example scripts show observability, on-chain metrics, protocol-fee derivation,
+compliance gating, and soft rate-limiting use cases. See
+[`src/gasless-intents/interactions/USE-CASES.md`](src/gasless-intents/interactions/USE-CASES.md) for the use-case map and
+[`solidity/contracts/`](solidity/contracts/) for the receiver contracts. The submit pipeline is not yet end-to-end for this
+feature — the example scripts demonstrate propose-side payload correctness and the contracts are exercised by their deploy
+scripts in isolation.
+
 ### Solana Examples
 
 Solana examples span four directories. **Source chain** scripts create bundles that originate from Solana with both AA-enabled and
@@ -163,6 +174,7 @@ src/
 │   ├── cancellation/           # Bundle cancellation flows
 │   ├── prehooks/               # Pre-hook examples
 │   ├── posthooks/              # Post-hook examples
+│   ├── interactions/           # Per-intent on-chain pre/postInteractions (Base)
 │   ├── solana/
 │   │   ├── src-cases/          # Solana as source chain
 │   │   ├── dst-cases/          # Solana as destination chain
