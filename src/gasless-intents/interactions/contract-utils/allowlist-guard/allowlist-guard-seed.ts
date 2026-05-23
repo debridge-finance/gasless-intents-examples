@@ -11,7 +11,7 @@
  * you want to operate on. Adjust the constant below and re-run for a
  * different subject — no quoting / argv parsing in the middle.
  */
-import { isAddress, type Address } from "viem";
+import { type Address } from "viem";
 import { loadAbi } from "../shared/artefact-loader";
 import { requireDeployedAddress } from "../shared/deployed-addresses";
 import { getBaseClients, readView, writeTx } from "../shared/base-clients";
@@ -24,7 +24,6 @@ const SET_TO = true;
 async function main(): Promise<void> {
   if (SUBJECTS_TO_ALLOW.length === 0) {
     throw new Error("Set SUBJECTS_TO_ALLOW to one or more addresses before running.");
-  }
   }
 
   const address = requireDeployedAddress("AllowlistGuard");
