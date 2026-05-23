@@ -4,13 +4,13 @@
   "contracts": {
     "Echo": {
       "address": "0xa77563ce5dfb7fe631d4b9fba8968efbb1f722c8",
-      "deployTxHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "blockNumber": 0
+      "deployTxHash": "0xbb1db2a11af5360bec71a0d733f28db1b2bfcd9ff9fc0748c4925843a93f2b94",
+      "blockNumber": 45719437
     },
     "EchoWithSig": {
       "address": "0x30f1acea1948fa286f6ebd948d79fadeb2ae1ca9",
-      "deployTxHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "blockNumber": 0
+      "deployTxHash": "0x44beaa9187247250d729ef852e72912945564d2ea2a2943a9f6870985f5dd413",
+      "blockNumber": 45748623
     },
     "LoggingInteractionHook": {
       "address": "0x20df8adc7b093594720334c69aa16a9d8d69580a",
