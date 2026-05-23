@@ -108,12 +108,11 @@ sending ERC-20 tokens to another address, and forwarding native assets to a bene
 ### Pre/Post-Interactions
 
 `preInteractions` / `postInteractions` are **per-intent** on-chain hook calls executed on the source chain around the maker's
-fill. Four demo Solidity contracts and four example scripts show observability, on-chain metrics, protocol-fee derivation,
-compliance gating, and soft rate-limiting use cases. See
-[`src/gasless-intents/interactions/USE-CASES.md`](src/gasless-intents/interactions/USE-CASES.md) for the use-case map and
-[`solidity/contracts/`](solidity/contracts/) for the receiver contracts. The submit pipeline is not yet end-to-end for this
-feature — the example scripts demonstrate propose-side payload correctness and the contracts are exercised by their deploy
-scripts in isolation.
+fill. The example scripts in [`src/gasless-intents/interactions/`](src/gasless-intents/interactions/) cover observability, on-chain metrics,
+protocol-fee derivation, compliance gating, and soft/hard rate limiting use cases.
+
+Note: the Solidity receiver contracts / deployment artefacts referenced by these examples are not vendored in this repository.
+The submit pipeline is not yet end-to-end for this feature — the example scripts focus on propose-side payload correctness.
 
 ### Solana Examples
 
