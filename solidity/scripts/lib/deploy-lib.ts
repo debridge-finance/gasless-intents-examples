@@ -41,7 +41,7 @@ export async function deployToBase(opts: {
   const artefactPath = path.join(ARTEFACTS_DIR, `${opts.contractName}.json`);
   if (!fs.existsSync(artefactPath)) {
     throw new Error(
-      `Artifact not found: ${artefactPath}. Run \`npx tsx solidity/scripts/build-artefacts.ts\` first.`,
+      `Artifact not found: ${artefactPath}. Run \`npx tsx solidity/scripts/utilities/build-artefacts.ts\` first.`,
     );
   }
   const artifact = JSON.parse(fs.readFileSync(artefactPath, "utf8"));
