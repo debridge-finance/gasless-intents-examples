@@ -44,30 +44,6 @@ export async function getMorphoDepositExtendedHook(
   return result;
 }
 
-export async function getSendNativeAssetPosthook(
-  chainId: number,
-  senderAddress: `0x${string}`,
-  beneficiaryAddress: `0x${string}`,
-): Promise<ExtendedHook> {
-  const placeholder: PlaceHolder = {
-    nameVariable: "amount1",
-    tokenAddress: EVM_NATIVE_TOKEN,
-    address: senderAddress,
-  };
-
-  const result: ExtendedHook = {
-    isAtomic: true,
-    data: "0x",
-    to: beneficiaryAddress,
-    value: "{amount1}",
-    chainId,
-    from: senderAddress,
-    placeHolders: [placeholder],
-  };
-
-  return result;
-}
-
 export async function getSendNativeAssetPrehook(
   chainId: number,
   senderAddress: `0x${string}`,

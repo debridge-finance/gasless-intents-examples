@@ -4,13 +4,17 @@ import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getSendNativeAssetPosthook } from '@utils/posthooks';
 import { createBundle, submitBundle } from '@utils/api';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "../trades";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { getSendNativeAssetHook } from "@utils/hooks/native-assets";
 
+/**
+ * Pre-requisites:
+ * - Polygon: 2.3 USDC, 2 MATIC
+ */
 async function main() {
   const { privateKey } = getEnvConfig();
 
@@ -21,7 +25,7 @@ async function main() {
   const senderAddress = account.address;
   const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
 
-  const baseSendNativePosthook = await getSendNativeAssetPosthook(base.id, senderAddress, beneficiaryAddress);
+  const baseSendNativePosthook = await getSendNativeAssetHook(senderAddress, beneficiaryAddress, base.id);
 
   console.log("Send Native PostHook Calldata:", baseSendNativePosthook);
 
@@ -34,8 +38,8 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getPolygonUsdcToBaseEth(account.address),
-      getPolyMaticToBaseEth(account.address),
+      getPolygonUsdcToBaseEth(account.address), // 2.3 USDC
+      getPolyMaticToBaseEth(account.address), // 2 MATIC
     ],
     postHooks: [
       baseSendNativePosthook
