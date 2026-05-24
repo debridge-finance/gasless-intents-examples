@@ -2,17 +2,16 @@ import { privateKeyToAccount } from "viem/accounts";
 import util from "util";
 import { randomUUID } from "crypto";
 
-import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "../../utils/constants";
-import { toHexPrefixString, getEnvConfig } from "../../utils";
+import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
 import { getAaveSupplyHook } from "@utils/hooks";
-import { createBundle, submitBundle } from "../../utils/api";
-import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToArbitrumUsdc, getPolyMaticToArbitrumUsdc } from "../trades";
-import { processIntentBundle } from "../../utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "../../utils/wallet";
-import { CHAIN_IDS } from "../../utils/chains";
-import { createApproveCall } from "@utils/contract-calls";
-import { replaceNamedPlaceholders } from "@utils/hooks-common";
+import { createBundle, submitBundle } from "@utils/api";
+import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { getPolygonUsdcToArbitrumUsdc } from "../trades";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { getApproveHook } from "@utils/hooks/erc20-hooks";
 
 /**
  * Fund requirements:
@@ -26,8 +25,6 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
-
   const arbitrumUsdcAaveDeposit = await getAaveSupplyHook(
     AAVE_V3_POOL_ARBITRUM,
     toHexPrefixString(USDC.Arbitrum),
@@ -36,29 +33,12 @@ async function main() {
     account.address,
   );
 
-  const approveCall = createApproveCall(
-    toHexPrefixString(USDC.Arbitrum),
-    toHexPrefixString(AAVE_V3_POOL_ARBITRUM),
-    BigInt(PLACEHOLDER_TOKEN_AMOUNT),
+  const approvePosthook = getApproveHook(
+    account.address,
+    USDC.Arbitrum,
+    CHAIN_IDS.Arbitrum,
+    AAVE_V3_POOL_ARBITRUM,
   );
-
-  const placeholder: PlaceHolder = {
-    nameVariable: "amount",
-    tokenAddress: USDC.Arbitrum,
-    address: account.address,
-  };
-
-  approveCall.data = replaceNamedPlaceholders(approveCall.data, [placeholder.nameVariable]);
-
-  const approvePrehook: ExtendedHook = {
-    isAtomic: true,
-    data: approveCall.data,
-    to: approveCall.to,
-    value: approveCall.value.toString(),
-    chainId: CHAIN_IDS.Arbitrum,
-    from: account.address,
-    placeHolders: [placeholder],
-  };
 
   console.log("Deposit Call PostHook Calldata:", arbitrumUsdcAaveDeposit);
 
@@ -72,7 +52,7 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [getPolygonUsdcToArbitrumUsdc(account.address)],
-    postHooks: [approvePrehook, arbitrumUsdcAaveDeposit],
+    postHooks: [approvePosthook, arbitrumUsdcAaveDeposit],
   };
 
   console.log("Creating bundle...");

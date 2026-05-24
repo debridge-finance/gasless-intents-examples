@@ -2,15 +2,14 @@ import util from "util";
 import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { toHexPrefixString, getEnvConfig } from "../../../utils";
-import { createBundle, submitBundle } from "../../../utils/api";
-import { BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../../types";
-import { processIntentBundle } from "../../../utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "../../../utils/wallet";
-import { createTransferCall } from "../../../utils/contract-calls";
-import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "../../../utils/constants";
-import { CHAIN_IDS } from "../../../utils/chains";
-import { replaceNamedPlaceholders } from "../../../utils/hooks-common";
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
+import { BundleProposeBody, GasCompensationInfo, TradingAlgorithm } from "@gasless-intents/types";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { getTransferHook } from "@utils/hooks/erc20-hooks";
+import { USDC } from "@utils/constants";
 
 /**
  * Demonstrates a PreHook with Gas Compensation on Polygon without trades.
@@ -28,33 +27,24 @@ async function main() {
   const senderAddress = account.address;
   const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38";
 
-  // Encode ERC-20 transfer with sentinel, then replace with {amount}
-  const call = createTransferCall(beneficiaryAddress, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
-  call.data = replaceNamedPlaceholders(call.data, ["amount1"]);
+  const transferAmount = "200000"; // 0.2 USDC (6 decimals)
 
-  const preHook: ExtendedHook = {
-    isAtomic: true,
-    data: call.data,
-    to: USDC.Polygon, // USDC on Polygon
-    value: "0",
+  const gasCompensationInfo: GasCompensationInfo = {
+    tokenAddress: USDC.Polygon, // pay gas in USDC
     chainId: CHAIN_IDS.Polygon,
-    from: senderAddress,
-    placeHolders: [
-      {
-        nameVariable: "amount1",
-        tokenAddress: USDC.Polygon,
-        address: senderAddress,
-        additionalAmount: "200000", // 0.2 USDC (6 decimals)
-      },
-    ],
-    gasCompensationInfo: {
-      tokenAddress: USDC.Polygon, // pay gas in USDC
-      chainId: CHAIN_IDS.Polygon,
-      sender: senderAddress,
-    },
+    sender: senderAddress,
   };
 
-  console.log("PreHook:", preHook);
+  const transferHook = getTransferHook(
+    account.address,
+    beneficiaryAddress,
+    USDC.Polygon,
+    CHAIN_IDS.Polygon,
+    transferAmount,
+    gasCompensationInfo,
+  );
+
+  console.log("PreHook:", transferHook);
 
   const requestId = randomUUID();
   const requestBody: BundleProposeBody = {
@@ -64,7 +54,7 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [],
-    preHooks: [preHook],
+    preHooks: [transferHook],
     referralCode: 110000002,
   };
 
