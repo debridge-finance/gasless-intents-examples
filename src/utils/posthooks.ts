@@ -1,8 +1,7 @@
 import { clipHexPrefix, toHexPrefixString } from ".";
 import { ExtendedHook, PlaceHolder } from "../gasless-intents/types";
 import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
-import { createAaveWithdrawCall, createDepositCall, createTransferCall } from "./contract-calls";
-import { replaceNamedPlaceholders } from "./hooks-common";
+import { createAaveWithdrawCall, createDepositCall } from "./contract-calls";
 import { getVaultAddressByToken } from "./morpho/get-vault-address";
 
 export async function getMorphoDepositExtendedHook(
@@ -77,37 +76,6 @@ export async function getSendNativeAssetPrehook(
     from: senderAddress,
     placeHolders: [placeholder],
   };
-}
-
-export async function getSendErc20Hook(
-  tokenAddress: `0x${string}`,
-  chainId: number,
-  senderAddress: `0x${string}`,
-  beneficiaryAddress: `0x${string}`,
-  additionalAmount?: bigint,
-): Promise<ExtendedHook> {
-  const postHookTransaction = createTransferCall(beneficiaryAddress, BigInt(PLACEHOLDER_TOKEN_AMOUNT));
-
-  
-  const placeholder: PlaceHolder = {
-    nameVariable: "amount1",
-    tokenAddress,
-    address: senderAddress,
-    additionalAmount: additionalAmount ? additionalAmount.toString() : undefined,
-  }
-  postHookTransaction.data = replaceNamedPlaceholders(postHookTransaction.data, [placeholder.nameVariable]);
-
-  const posthook: ExtendedHook = {
-    isAtomic: true,
-    data: postHookTransaction.data,
-    to: tokenAddress,
-    value: "0",
-    chainId,
-    placeHolders: [placeholder],
-    from: senderAddress,
-  };
-
-  return posthook;
 }
 
 export async function getAaveWithdrawExtendedHook(
