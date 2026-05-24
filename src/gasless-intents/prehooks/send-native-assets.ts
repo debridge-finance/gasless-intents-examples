@@ -4,13 +4,32 @@ import { privateKeyToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
 
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getSendNativeAssetPrehook } from '@utils/posthooks';
 import { createBundle, submitBundle } from '@utils/api';
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "../trades";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
+import { getSendNativeAssetHook } from "@utils/hooks/native-assets";
 
+/**
+ * Pre-requisites:
+ * - Polygon: 2.3 USDC, 5 MATIC
+ * Transfers 2.3 USDC and 2 MATIC from Polygon into USDC on Base
+ * 3 MATIC are transferred to the beneficiary address on Polygon.
+ *
+ * The reasoning is – sendAmount is used as the Placeholder.additionalAmount
+ * value in the transfer hook, which resolves to the cumulativeAmount + additionalAmount
+ * when executing the hook. 2 MATIC is equal to the cumulative amount of the bundle,
+ * and the additionalAmount is set to 1 MATIC, which makes the total transferred amount
+ * in the prehook equal to 3 MATIC. 
+ * 
+ * This is something that partners who want to make complex bundles should be aware of.
+ * 
+ * Cumulative amount explanation can be found here: https://gasless-docs.debridge.finance/hooks/hooks#resolution-rules
+ * 
+ * An example transaction can be found here: https://polygonscan.com/tx/0x1dca8c32b98515f4d7a1be7f36cc0e606da2fcffff70f4ed5b0043adc3fd9836
+ * Bundle: https://anchorage.debridge.com/bundle/0xcae6ffd2c71052a7f2c632f514af9c9408b7d400a4445dda082a8b5a458d433f
+ */
 async function main() {
   const { privateKey } = getEnvConfig();
 
@@ -18,13 +37,17 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const senderAddress = account.address;
   const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
+  const sendAmount = "1000000000000000000"; // 1 MATIC (18 decimals)
 
-  const sendAmount = BigInt("1000000000000000000"); // 1 MATIC (18 decimals)
-  const polygonSendNativeHook = await getSendNativeAssetPrehook(polygon.id, senderAddress, beneficiaryAddress, sendAmount);
+  const sentNativeAssetHook = getSendNativeAssetHook(
+    account.address,
+    beneficiaryAddress,
+    polygon.id,
+    sendAmount,
+  );
 
-  console.log("Send Native PreHook Calldata:", polygonSendNativeHook);
+  console.log("Send Native PreHook Calldata:", sentNativeAssetHook);
 
   const requestId = randomUUID();
 
@@ -34,7 +57,7 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    preHooks: [polygonSendNativeHook],
+    preHooks: [sentNativeAssetHook],
     trades: [
       getPolygonUsdcToBaseEth(account.address),
       getPolyMaticToBaseEth(account.address),

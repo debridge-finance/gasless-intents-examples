@@ -1,14 +1,14 @@
 import { ExtendedHook, GasCompensationInfo, PlaceHolder } from "@gasless-intents/types";
 import { EVM_NATIVE_TOKEN } from "@utils/constants";
 
-export async function getSendNativeAssetHook(
+export function getSendNativeAssetHook(
   senderAddress: `0x${string}`,
   beneficiaryAddress: `0x${string}`,
   chainId: number,
   additionalAmount: string = "0",
   gasCompensationInfo?: GasCompensationInfo,
   gasLimit?: string,
-): Promise<ExtendedHook> {
+): ExtendedHook {
   const placeholderName = "amount1";
 
   const placeholder: PlaceHolder = {
