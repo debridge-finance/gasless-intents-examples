@@ -494,8 +494,6 @@ export function getPolyUsdcToPolyWETH(signer: string): Trade {
     dstChainTokenOutRecipient: signer,
     dstChainAuthorityAddress: signer,
     prependOperatingExpenses: true,
-    affiliateFeePercent: null,
-    affiliateFeeRecipient: null,
   };
 }
 
@@ -513,8 +511,6 @@ export function getPolyUsdcToMatic(signer: string): Trade {
     dstChainTokenOutRecipient: signer,
     dstChainAuthorityAddress: signer,
     prependOperatingExpenses: true,
-    affiliateFeePercent: null,
-    affiliateFeeRecipient: null,
   };
 }
 
@@ -532,8 +528,6 @@ export function getPolyUsdcToPolyUsdt(signer: string): Trade {
     dstChainTokenOutRecipient: signer,
     dstChainAuthorityAddress: signer,
     prependOperatingExpenses: true,
-    affiliateFeePercent: null,
-    affiliateFeeRecipient: null,
   };
 }
 
