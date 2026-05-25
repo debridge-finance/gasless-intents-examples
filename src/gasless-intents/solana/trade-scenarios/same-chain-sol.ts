@@ -7,11 +7,11 @@ import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
 
-import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { Keypair } from '@solana/web3.js';
 import { CHAIN_IDS } from '@utils/chains';
-import { SOL_JUP, USDC, DBR_SOL } from '@utils/constants';
+import { SOL_NATIVE, USDC } from '@utils/constants';
 
 async function main() {
   // Wallet setup
@@ -24,45 +24,15 @@ async function main() {
 
   const requestId = randomUUID();
 
-  const solJupToSolUsdcTrade: Trade = {
+  const solSolToSolUsdcTrade: Trade = {
     srcChainId: CHAIN_IDS.Solana,
-    srcChainTokenIn: SOL_JUP,
+    srcChainTokenIn: SOL_NATIVE,
     srcChainTokenInAmount: '1000000',
     srcChainTokenInMinAmount: '1000000',
     srcChainTokenInMaxAmount: '1000000',
     srcChainAuthorityAddress: solanaKey.publicKey.toBase58(),
     dstChainId: CHAIN_IDS.Solana,
     dstChainTokenOut: USDC.Solana,
-    dstChainTokenOutAmount: "auto",
-    dstChainTokenOutRecipient: solanaKey.publicKey.toBase58(),
-    dstChainAuthorityAddress: solanaKey.publicKey.toBase58(),
-    prependOperatingExpenses: true
-  }
-
-  const solDbrToSolUsdcTrade: Trade = {
-    srcChainId: CHAIN_IDS.Solana,
-    srcChainTokenIn: DBR_SOL,
-    srcChainTokenInAmount: '1000000',
-    srcChainTokenInMinAmount: '1000000',
-    srcChainTokenInMaxAmount: '1000000',
-    srcChainAuthorityAddress: solanaKey.publicKey.toBase58(),
-    dstChainId: CHAIN_IDS.Solana,
-    dstChainTokenOut: USDC.Solana,
-    dstChainTokenOutAmount: "auto",
-    dstChainTokenOutRecipient: solanaKey.publicKey.toBase58(),
-    dstChainAuthorityAddress: solanaKey.publicKey.toBase58(),
-    prependOperatingExpenses: true
-  }
-
-  const solUsdcToSolDbrTrade: Trade = {
-    srcChainId: CHAIN_IDS.Solana,
-    srcChainTokenIn: USDC.Solana,
-    srcChainTokenInAmount: '1000000',
-    srcChainTokenInMinAmount: '1000000',
-    srcChainTokenInMaxAmount: '1000000',
-    srcChainAuthorityAddress: solanaKey.publicKey.toBase58(),
-    dstChainId: CHAIN_IDS.Solana,
-    dstChainTokenOut: DBR_SOL,
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: solanaKey.publicKey.toBase58(),
     dstChainAuthorityAddress: solanaKey.publicKey.toBase58(),
@@ -78,9 +48,7 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      solJupToSolUsdcTrade,
-      solDbrToSolUsdcTrade,
-      solUsdcToSolDbrTrade
+      solSolToSolUsdcTrade
     ],
     postHooks: [
     ],

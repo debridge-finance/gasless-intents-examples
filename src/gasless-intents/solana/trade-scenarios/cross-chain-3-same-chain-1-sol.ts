@@ -7,11 +7,11 @@ import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
 
-import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { Keypair } from '@solana/web3.js';
 import { CHAIN_IDS } from '@utils/chains';
-import { USDT, SOL_JUP, USDC } from '@utils/constants';
+import { SOL_JUP, DBR_SOL, USDC } from '@utils/constants';
 
 async function main() {
   // Wallet setup
@@ -24,12 +24,12 @@ async function main() {
 
   const requestId = randomUUID();
 
-  const polyUsdtToSolUsdcTrade: Trade = {
+  const polyUsdcToSolUsdcTrade: Trade = {
     srcChainId: CHAIN_IDS.Polygon,
-    srcChainTokenIn: USDT.Polygon,
-    srcChainTokenInAmount: '1000000',
-    srcChainTokenInMinAmount: '1000000',
-    srcChainTokenInMaxAmount: '1000000',
+    srcChainTokenIn: USDC.Polygon,
+    srcChainTokenInAmount: '100000',
+    srcChainTokenInMinAmount: '100000',
+    srcChainTokenInMaxAmount: '100000',
     srcChainAuthorityAddress: account.address,
     dstChainId: CHAIN_IDS.Solana,
     dstChainTokenOut: USDC.Solana,
@@ -39,12 +39,12 @@ async function main() {
     prependOperatingExpenses: true
   }
 
-  const polyUsdtToSolJupTrade: Trade = {
-    srcChainId: CHAIN_IDS.Polygon,
-    srcChainTokenIn: USDT.Polygon,
-    srcChainTokenInAmount: '1000000',
-    srcChainTokenInMinAmount: '1000000',
-    srcChainTokenInMaxAmount: '1000000',
+  const optimismUsdcToSolJupTrade: Trade = {
+    srcChainId: CHAIN_IDS.Optimism,
+    srcChainTokenIn: USDC.Optimism,
+    srcChainTokenInAmount: '100000',
+    srcChainTokenInMinAmount: '100000',
+    srcChainTokenInMaxAmount: '100000',
     srcChainAuthorityAddress: account.address,
     dstChainId: CHAIN_IDS.Solana,
     dstChainTokenOut: SOL_JUP,
@@ -54,15 +54,30 @@ async function main() {
     prependOperatingExpenses: true
   }
 
-  const solUsdcToSolUsdtTrade: Trade = {
+  const arbUsdcToSolDbrTrade: Trade = {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: USDC.Arbitrum,
+    srcChainTokenInAmount: '1000000',
+    srcChainTokenInMinAmount: '1000000',
+    srcChainTokenInMaxAmount: '1000000',
+    srcChainAuthorityAddress: account.address,
+    dstChainId: CHAIN_IDS.Solana,
+    dstChainTokenOut: DBR_SOL,
+    dstChainTokenOutAmount: "auto",
+    dstChainTokenOutRecipient: solanaKey.publicKey.toBase58(),
+    dstChainAuthorityAddress: solanaKey.publicKey.toBase58(),
+    prependOperatingExpenses: true
+  }
+
+  const solDbrToSolUsdcTrade: Trade = {
     srcChainId: CHAIN_IDS.Solana,
-    srcChainTokenIn: USDC.Solana,
+    srcChainTokenIn: DBR_SOL,
     srcChainTokenInAmount: '1000000',
     srcChainTokenInMinAmount: '1000000',
     srcChainTokenInMaxAmount: '1000000',
     srcChainAuthorityAddress: solanaKey.publicKey.toBase58(),
     dstChainId: CHAIN_IDS.Solana,
-    dstChainTokenOut: USDT.Solana,
+    dstChainTokenOut: USDC.Solana,
     dstChainTokenOutAmount: "auto",
     dstChainTokenOutRecipient: solanaKey.publicKey.toBase58(),
     dstChainAuthorityAddress: solanaKey.publicKey.toBase58(),
@@ -78,9 +93,10 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      polyUsdtToSolUsdcTrade,
-      polyUsdtToSolJupTrade,
-      solUsdcToSolUsdtTrade
+      polyUsdcToSolUsdcTrade,
+      optimismUsdcToSolJupTrade,
+      arbUsdcToSolDbrTrade,
+      solDbrToSolUsdcTrade
     ],
     postHooks: [
     ],
