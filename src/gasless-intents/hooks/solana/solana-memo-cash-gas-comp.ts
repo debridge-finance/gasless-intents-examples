@@ -5,7 +5,7 @@ import { Keypair } from "@solana/web3.js";
 
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
-import { CASH, WSOL } from '@utils/constants';
+import { CASH } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';
 import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
