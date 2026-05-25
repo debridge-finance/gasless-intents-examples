@@ -103,7 +103,3 @@ main().catch((error) => {
   console.error("\n🚨 FATAL ERROR in script execution:", error);
   process.exitCode = 1;
 });
-function getMorphoDepositExtendedHook(arg0: string, Base: number, address: string, arg3: string) {
-  throw new Error("Function not implemented.");
-}
-
