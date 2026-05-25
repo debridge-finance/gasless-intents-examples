@@ -7,12 +7,12 @@ import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
 import { EVM_NATIVE_TOKEN, WSOL } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';
-import { Bundle, BundleProposeBody, ExtendedHook, Trade, TradingAlgorithm } from "../../../types";
+import { Bundle, BundleProposeBody, ExtendedHook, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { refreshSolanaPreHookBlockhashes } from '@utils/solana';
 
-import { buildSolanaVersionedMemoTxHex } from "../../../../utils/hooks/solana/memo";
+import { buildSolanaVersionedMemoTxHex } from "@utils/hooks/solana/memo";
 
 /**
  * Solana prehook example: Memo instruction (no gas compensation) + cross-chain trade Solana -> Base.

@@ -7,12 +7,12 @@ import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
 import { SOL_NATIVE, WSOL } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';
-import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../../../types";
+import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { refreshSolanaPreHookBlockhashes } from '@utils/solana';
 
-import { buildSolanaSystemTransferTxHexWithAmountPlaceholder } from "../../../../utils/hooks/solana/system-transfer-placeholder";
+import { buildSolanaSystemTransferTxHexWithAmountPlaceholder } from "@utils/hooks/solana/system-transfer-placeholder";
 
 /**
  * Solana prehook example: System transfer with {amount.8} placeholder + native SOL gas compensation, no trades.
