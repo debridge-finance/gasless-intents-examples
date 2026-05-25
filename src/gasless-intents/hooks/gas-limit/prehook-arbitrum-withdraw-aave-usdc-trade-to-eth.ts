@@ -1,5 +1,4 @@
 import { privateKeyToAccount } from "viem/accounts";
-;
 import { randomUUID } from "crypto";
 
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
