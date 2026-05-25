@@ -5,17 +5,17 @@ import { Keypair } from "@solana/web3.js";
 
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
-import { WSOL } from '@utils/constants';
+import { USDC, WSOL } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';
 import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../../../types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { refreshSolanaPreHookBlockhashes } from '@utils/solana';
 
-import { buildSolanaSystemTransferTxHexWithAmountPlaceholder } from "../../../prehooks/solana/system-transfer-placeholder";
+import { buildSolanaVersionedMemoTxHex } from "../../../../utils/hooks/solana/memo";
 
 /**
- * Solana prehook example: System transfer with {amount.8} placeholder + WSOL gas compensation, no trades.
+ * Solana prehook example: Memo instruction + SPL USDC gas compensation, no trades.
  */
 async function main() {
   const { privateKey, solPrivateKey } = getEnvConfig();
@@ -28,28 +28,18 @@ async function main() {
   console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`);
   console.log(`EVM Address: ${account.address}`);
 
-  const placeholderName = "amount";
-
   const prehook: ExtendedHook = {
     isAtomic: true,
-    data: buildSolanaSystemTransferTxHexWithAmountPlaceholder({
+    data: buildSolanaVersionedMemoTxHex({
       payer: solanaKey.publicKey.toBase58(),
-      recipient: solanaKey.publicKey.toBase58(),
-      placeholderName
+      memo: 'test-prehook-spl',
     }),
     from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
-    placeHolders: [
-      {
-        nameVariable: placeholderName,
-        tokenAddress: WSOL,
-        address: solanaKey.publicKey.toBase58(),
-        additionalAmount: '2000000',
-      }
-    ],
+    placeHolders: [],
     gasCompensationInfo: {
       chainId: CHAIN_IDS.Solana,
-      tokenAddress: WSOL,
+      tokenAddress: USDC.Solana,
       sender: solanaKey.publicKey.toBase58(),
     },
   };

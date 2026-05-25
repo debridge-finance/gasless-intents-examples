@@ -5,17 +5,17 @@ import { Keypair } from "@solana/web3.js";
 
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
-import { WSOL } from '@utils/constants';
+import { CASH, WSOL } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';
 import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../../../types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { refreshSolanaPreHookBlockhashes } from '@utils/solana';
 
-import { buildSolanaVersionedMemoTxHex } from "../../../prehooks/solana/memo";
+import { buildSolanaVersionedMemoTxHex } from "../../../../utils/hooks/solana/memo";
 
 /**
- * Solana prehook example: Memo instruction + WSOL gas compensation, no trades.
+ * Solana prehook example: Memo instruction + SPL CASH token gas compensation, no trades.
  */
 async function main() {
   const { privateKey, solPrivateKey } = getEnvConfig();
@@ -32,14 +32,14 @@ async function main() {
     isAtomic: true,
     data: buildSolanaVersionedMemoTxHex({
       payer: solanaKey.publicKey.toBase58(),
-      memo: 'test-prehook',
+      memo: 'test-prehook-cash',
     }),
     from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
     placeHolders: [],
     gasCompensationInfo: {
       chainId: CHAIN_IDS.Solana,
-      tokenAddress: WSOL,
+      tokenAddress: CASH.Solana,
       sender: solanaKey.publicKey.toBase58(),
     },
   };
@@ -62,7 +62,6 @@ async function main() {
   console.log("Bundle created successfully!");
   console.log(`PreHooks count: ${bundle.preHooks?.length}`);
 
-  // Refresh Solana blockhashes before signing — builders use a placeholder blockhash
   await refreshSolanaPreHookBlockhashes(bundle);
 
   const signedData = await processIntentBundle(bundle, chainIdToWalletClientMap);

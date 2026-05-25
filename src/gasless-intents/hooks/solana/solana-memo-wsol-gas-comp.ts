@@ -5,20 +5,17 @@ import { Keypair } from "@solana/web3.js";
 
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
-import { SOL_NATIVE, WSOL } from '@utils/constants';
+import { WSOL } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';
 import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../../../types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { refreshSolanaPreHookBlockhashes } from '@utils/solana';
 
-import { buildSolanaSystemTransferTxHexWithAmountPlaceholder } from "../../../prehooks/solana/system-transfer-placeholder";
+import { buildSolanaVersionedMemoTxHex } from "../../../../utils/hooks/solana/memo";
 
 /**
- * Solana prehook example: System transfer with {amount.8} placeholder + native SOL gas compensation, no trades.
- *
- * Same as the WSOL gas comp variant, but uses native SOL (11111111111111111111111111111111)
- * as the gas compensation token instead of WSOL.
+ * Solana prehook example: Memo instruction + WSOL gas compensation, no trades.
  */
 async function main() {
   const { privateKey, solPrivateKey } = getEnvConfig();
@@ -31,28 +28,18 @@ async function main() {
   console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`);
   console.log(`EVM Address: ${account.address}`);
 
-  const placeholderName = "amount";
-
   const prehook: ExtendedHook = {
     isAtomic: true,
-    data: buildSolanaSystemTransferTxHexWithAmountPlaceholder({
+    data: buildSolanaVersionedMemoTxHex({
       payer: solanaKey.publicKey.toBase58(),
-      recipient: solanaKey.publicKey.toBase58(),
-      placeholderName,
+      memo: 'test-prehook',
     }),
     from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
-    placeHolders: [
-      {
-        nameVariable: placeholderName,
-        tokenAddress: WSOL,
-        address: solanaKey.publicKey.toBase58(),
-        additionalAmount: '2000000',
-      }
-    ],
+    placeHolders: [],
     gasCompensationInfo: {
       chainId: CHAIN_IDS.Solana,
-      tokenAddress: SOL_NATIVE, // native SOL instead of WSOL
+      tokenAddress: WSOL,
       sender: solanaKey.publicKey.toBase58(),
     },
   };
@@ -75,6 +62,7 @@ async function main() {
   console.log("Bundle created successfully!");
   console.log(`PreHooks count: ${bundle.preHooks?.length}`);
 
+  // Refresh Solana blockhashes before signing — builders use a placeholder blockhash
   await refreshSolanaPreHookBlockhashes(bundle);
 
   const signedData = await processIntentBundle(bundle, chainIdToWalletClientMap);

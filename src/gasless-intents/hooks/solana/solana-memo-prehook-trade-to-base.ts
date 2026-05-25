@@ -5,17 +5,19 @@ import { Keypair } from "@solana/web3.js";
 
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
-import { USDC, WSOL } from '@utils/constants';
+import { EVM_NATIVE_TOKEN, WSOL } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';
-import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../../../types";
+import { Bundle, BundleProposeBody, ExtendedHook, Trade, TradingAlgorithm } from "../../../types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { refreshSolanaPreHookBlockhashes } from '@utils/solana';
 
-import { buildSolanaVersionedMemoTxHex } from "../../../prehooks/solana/memo";
+import { buildSolanaVersionedMemoTxHex } from "../../../../utils/hooks/solana/memo";
 
 /**
- * Solana prehook example: Memo instruction + SPL USDC gas compensation, no trades.
+ * Solana prehook example: Memo instruction (no gas compensation) + cross-chain trade Solana -> Base.
+ *
+ * Note: gasCompensationInfo is NOT allowed when trades are present.
  */
 async function main() {
   const { privateKey, solPrivateKey } = getEnvConfig();
@@ -32,16 +34,27 @@ async function main() {
     isAtomic: true,
     data: buildSolanaVersionedMemoTxHex({
       payer: solanaKey.publicKey.toBase58(),
-      memo: 'test-prehook-spl',
+      memo: 'test-prehook',
     }),
     from: solanaKey.publicKey.toBase58(),
     chainId: CHAIN_IDS.Solana,
     placeHolders: [],
-    gasCompensationInfo: {
-      chainId: CHAIN_IDS.Solana,
-      tokenAddress: USDC.Solana,
-      sender: solanaKey.publicKey.toBase58(),
-    },
+    // No gasCompensationInfo - not allowed when trades are present
+  };
+
+  const trade: Trade = {
+    srcChainId: CHAIN_IDS.Solana,
+    srcChainTokenIn: WSOL,
+    srcChainTokenInAmount: '30000000', // 0.03 SOL
+    srcChainTokenInMinAmount: '30000000',
+    srcChainTokenInMaxAmount: '30000000',
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: EVM_NATIVE_TOKEN,
+    dstChainTokenOutAmount: 'auto',
+    dstChainTokenOutRecipient: account.address,
+    srcChainAuthorityAddress: solanaKey.publicKey.toBase58(),
+    dstChainAuthorityAddress: account.address,
+    prependOperatingExpenses: true,
   };
 
   const requestId = randomUUID();
@@ -52,7 +65,7 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [],
+    trades: [trade],
     preHooks: [prehook],
     postHooks: [],
   };
@@ -61,6 +74,7 @@ async function main() {
   const bundle = await createBundle(requestBody);
   console.log("Bundle created successfully!");
   console.log(`PreHooks count: ${bundle.preHooks?.length}`);
+  console.log(`Intents count: ${bundle.intents?.length}`);
 
   await refreshSolanaPreHookBlockhashes(bundle);
 
