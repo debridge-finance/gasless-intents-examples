@@ -1,5 +1,4 @@
 import { privateKeyToAccount } from "viem/accounts";
-;
 import { randomUUID } from "crypto";
 
 import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
