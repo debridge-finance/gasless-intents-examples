@@ -7,9 +7,9 @@ import { processIntentBundle } from "../../../utils/signatures/intent-signatures
 import { randomUUID } from 'crypto';
 
 
-import { BundleProposeBody, TradingAlgorithm } from "../../types";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
-import { getPolyUsdcToBscUsdcTrade, getPolyUsdcToBscUsdt, getPolyUsdcToMatic, getPolyUsdcToPolyUsdt } from '../../trades';
+import { getPolyUsdcToBscUsdcTrade, getPolyUsdcToBscUsdt, getPolyUsdcToMatic, getPolyUsdcToPolyUsdt } from '@gasless-intents/trades';
 
 async function main() {
   // Wallet setup

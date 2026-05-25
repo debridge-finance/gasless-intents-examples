@@ -3,7 +3,7 @@ import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { randomUUID } from 'crypto';
 
 
-import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "./../../trades";
+import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "@gasless-intents/trades";
 import { Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { createBundle, submitBundle } from '@utils/api';

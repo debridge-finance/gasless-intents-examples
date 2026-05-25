@@ -7,7 +7,7 @@ import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 
 
-import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../../types";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { CHAIN_IDS } from '@utils/chains';
 import { USDC } from '@utils/constants';

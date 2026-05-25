@@ -5,8 +5,8 @@ import { polygon } from "viem/chains";
 
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
-import { BundleProposeBody, TradingAlgorithm } from "../../types";
-import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "../../trades";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
+import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "@gasless-intents/trades";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { getSendNativeAssetHook } from "@utils/hooks/native-assets";

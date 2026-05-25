@@ -5,10 +5,10 @@ import { randomUUID } from "crypto";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
 import { toHexPrefixString, getEnvConfig } from "@utils/index";
 import { createBundle, submitBundle } from "@utils/api";
-import { BundleProposeBody, TradingAlgorithm } from "../../types";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import {
   getArbitrumUsdcToArbitrumEth,
-} from "../../trades";
+} from "@gasless-intents/trades";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";

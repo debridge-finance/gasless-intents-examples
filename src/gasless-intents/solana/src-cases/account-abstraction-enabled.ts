@@ -2,10 +2,10 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
-import { getSolUsdcToPolyUsdcTradeV1_1 } from "./../../trades";
+import { getSolUsdcToPolyUsdcTradeV1_1 } from "@gasless-intents/trades";
 import { Keypair } from "@solana/web3.js"
 import { createBundle, submitBundle } from '@utils/api';
-import { Bundle, BundleProposeBody, TradingAlgorithm } from "../../types";
+import { Bundle, BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 
