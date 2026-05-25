@@ -1,14 +1,12 @@
 import { privateKeyToAccount } from 'viem/accounts'
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { randomUUID } from 'crypto';
-
-
-import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "@gasless-intents/trades";
-import { Keypair } from "@solana/web3.js";
-import bs58 from "bs58";
+import bs58 from 'bs58';
+import { getSolUsdcToPolyUsdcTradeV1_1 } from "@gasless-intents/trade-blueprints";
+import { Keypair } from "@solana/web3.js"
 import { createBundle, submitBundle } from '@utils/api';
+import { Bundle, BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
-import { TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 
 async function main() {
@@ -16,48 +14,41 @@ async function main() {
   const { privateKey, solPrivateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
-
-  const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
-
-  console.log(`account: ${account.address}`)
+  const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey))
 
   const requestId = randomUUID();
 
-  const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey));
-  const solanaAddress = solanaKey.publicKey.toBase58();
+  const chainIdToWalletClientMap = getChainIdToWalletClientMap(account, solanaKey);
 
   // Trades body
-  const requestBody = {
+  console.log(`Solana Address: ${solanaKey.publicKey.toBase58()}`)
+  console.log(`EVM Address: ${account.address}`)
+  const requestBody: BundleProposeBody = {
     requestId,
+    referralCode: 110000002,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getPolyUsdcToSolUsdcTrade(account.address, solanaAddress, solanaAddress),
-      getPolyUsdcToSolJupTrade(account.address, solanaAddress, solanaAddress),
+      getSolUsdcToPolyUsdcTradeV1_1(solanaKey.publicKey.toString(), account.address)
     ],
     preHooks: [],
     postHooks: []
   }
 
-  console.log(`Creating bundle..., ${JSON.stringify(requestBody)}`);
+  console.log(`Creating bundle... ${JSON.stringify(requestBody)}`);
   const bundle = await createBundle(requestBody);
-  console.log("Bundle created successfully!");
+  console.log(`Bundle created successfully!, ${JSON.stringify(bundle)}`);
 
-  // Using processIntentBundle to handle all intents at once
-  console.log("Collecting signatures for all intents...");
-  const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
+  const signedData = await processIntentBundle(bundle, chainIdToWalletClientMap);
 
-  console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
-
-  // Prepare the bundle with intent signatures for submission
-  const submitPayload = {
+  const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
     enableAccountAbstraction: true,
     isAtomic: true,
-    signedData: signedDataArray
+    signedData
   };
 
   console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);

@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
-import { getSolUsdcToPolyUsdcTrade } from "@gasless-intents/trades";
+import { getWrapSolToBscUsdcTrade } from "@gasless-intents/trade-blueprints";
 import { createBundle } from '@utils/api';
 import { TradingAlgorithm } from "@gasless-intents/types";
 import { extractTransactionHexData } from '@utils/solana';
@@ -31,7 +31,7 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      getSolUsdcToPolyUsdcTrade(solanaKey.publicKey.toBase58(), account.address)
+      getWrapSolToBscUsdcTrade(solanaKey.publicKey.toBase58(), account.address)
     ],
     preHooks: [],
     postHooks: []

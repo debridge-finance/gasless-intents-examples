@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 
 
 import {
-  getPolyMaticToBscBnb} from "@gasless-intents/trades";
+  getPolyMaticToBscBnb} from "@gasless-intents/trade-blueprints";
 import { Bundle, BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 

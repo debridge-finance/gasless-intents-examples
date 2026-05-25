@@ -11,7 +11,7 @@ import {
   getPolyUsdcToBscUsdcTrade,
   getPolyMaticToBscBnb,
   getPolyMaticToWethTradeV1_1
-} from "@gasless-intents/trades";
+} from "@gasless-intents/trade-blueprints";
 import { Bundle, BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 

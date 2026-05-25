@@ -5,7 +5,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { clipHexPrefix, getEnvConfig } from "@utils/index";
 import { createBundle, submitBundle } from "@utils/api";
 import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
-import { getBaseUsdcToPolygonUsdc } from "@gasless-intents/trades";
+import { getBaseUsdcToPolygonUsdc } from "@gasless-intents/trade-blueprints";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 

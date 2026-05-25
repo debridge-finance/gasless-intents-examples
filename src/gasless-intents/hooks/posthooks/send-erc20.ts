@@ -7,7 +7,7 @@ import { USDC } from '@utils/constants';
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
 import { createBundle, submitBundle } from '@utils/api';
 import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
-import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "@gasless-intents/trades";
+import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "@gasless-intents/trade-blueprints";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { getTransferHook } from "@utils/hooks/erc20-hooks";

@@ -12,7 +12,7 @@ import {
   getPolyUsdcToBscUsdcTrade,
   getPolyMaticToBscBnb,
   getPolyMaticToBscBnbStuck
-} from "../trades";
+} from "../trade-blueprints";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { Bundle, TradingAlgorithm } from '@gasless-intents/types';
 

@@ -8,7 +8,7 @@ import { createBundle, submitBundle } from "@utils/api";
 import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import {
   getArbitrumUsdcToArbitrumEth,
-} from "@gasless-intents/trades";
+} from "@gasless-intents/trade-blueprints";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";

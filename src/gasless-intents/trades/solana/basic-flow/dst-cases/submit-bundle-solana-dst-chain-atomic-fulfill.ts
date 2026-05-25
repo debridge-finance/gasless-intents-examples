@@ -1,45 +1,47 @@
-import {
-  privateKeyToAccount
-} from 'viem/accounts'
-import { getEnvConfig, toHexPrefixString } from "../../../utils";
-import { createBundle, submitBundle } from "../../../utils/api";
-import { processIntentBundle } from "../../../utils/signatures/intent-signatures";
+import { privateKeyToAccount } from 'viem/accounts'
+import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { randomUUID } from 'crypto';
 
 
-import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
+import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "@gasless-intents/trade-blueprints";
+import { Keypair } from "@solana/web3.js";
+import bs58 from "bs58";
+import { createBundle, submitBundle } from '@utils/api';
+import { processIntentBundle } from '@utils/signatures/intent-signatures';
+import { TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
-import { getPolyUsdcToBscUsdcTrade, getPolyUsdcToBscUsdt, getPolyUsdcToMatic, getPolyUsdcToPolyUsdt } from '@gasless-intents/trades';
 
 async function main() {
   // Wallet setup
-  const { privateKey } = getEnvConfig();
+  const { privateKey, solPrivateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
+  console.log(`account: ${account.address}`)
+
   const requestId = randomUUID();
 
+  const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey));
+  const solanaAddress = solanaKey.publicKey.toBase58();
+
   // Trades body
-  const requestBody: BundleProposeBody = {
+  const requestBody = {
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    referralCode: 110000002,
     trades: [
-      getPolyUsdcToMatic(account.address), // default USDC on Polygon -> MATIC on Polygon
-      getPolyUsdcToBscUsdcTrade(account.address), // default USDC on Polygon -> USDC on BSC
-      getPolyUsdcToBscUsdt(account.address),
-      getPolyUsdcToPolyUsdt(account.address)
+      getPolyUsdcToSolUsdcTrade(account.address, solanaAddress, solanaAddress),
+      getPolyUsdcToSolJupTrade(account.address, solanaAddress, solanaAddress),
     ],
     preHooks: [],
     postHooks: []
   }
 
-  console.log("Creating bundle...");
+  console.log(`Creating bundle..., ${JSON.stringify(requestBody)}`);
   const bundle = await createBundle(requestBody);
   console.log("Bundle created successfully!");
 
@@ -58,7 +60,7 @@ async function main() {
     signedData: signedDataArray
   };
 
-  console.log("Payload prepared with signatures. Ready for submission.");
+  console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);
 
   const submitResponse = await submitBundle(submitPayload);
   console.log("Submit response:", submitResponse);

@@ -2,7 +2,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
-import { getSolUsdcToPolyUsdcTrade } from "@gasless-intents/trades";
+import { getSolUsdcToPolyUsdcTrade } from "@gasless-intents/trade-blueprints";
 import { Keypair } from "@solana/web3.js"
 import { createBundle, submitBundle } from '@utils/api';
 import { Bundle, BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";

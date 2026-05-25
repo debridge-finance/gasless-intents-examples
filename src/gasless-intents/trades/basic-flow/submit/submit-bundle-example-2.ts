@@ -1,55 +1,46 @@
-
+import {
+  privateKeyToAccount
+} from 'viem/accounts'
+import { getEnvConfig, toHexPrefixString } from "../../../../utils";
+import { createBundle, submitBundle } from "../../../../utils/api";
+import { processIntentBundle } from "../../../../utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
-import { privateKeyToAccount } from "viem/accounts";
-import { base } from "viem/chains";
 
-import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { createBundle, submitBundle } from '@utils/api';
+
 import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
-import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "@gasless-intents/trade-blueprints";
-import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
-import { getSendNativeAssetHook } from "@utils/hooks/native-assets";
+import { getPolyUsdcToBscUsdcTrade, getPolyUsdcToBscUsdt, getPolyUsdcToMatic, getPolyUsdcToPolyUsdt } from '@gasless-intents/trade-blueprints';
 
-/**
- * Pre-requisites:
- * - Polygon: 2.3 USDC, 2 MATIC
- */
 async function main() {
+  // Wallet setup
   const { privateKey } = getEnvConfig();
 
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const senderAddress = account.address;
-  const beneficiaryAddress = "0x6098841a6B27feBdb30e51d07c1BD17499efED38"; // DevRel's 2nd address
-
-  const baseSendNativePosthook = await getSendNativeAssetHook(senderAddress, beneficiaryAddress, base.id);
-
-  console.log("Send Native PostHook Calldata:", baseSendNativePosthook);
-
   const requestId = randomUUID();
 
+  // Trades body
   const requestBody: BundleProposeBody = {
     requestId,
     expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
+    referralCode: 110000002,
     trades: [
-      getPolygonUsdcToBaseEth(account.address), // 2.3 USDC
-      getPolyMaticToBaseEth(account.address), // 2 MATIC
+      getPolyUsdcToMatic(account.address), // default USDC on Polygon -> MATIC on Polygon
+      getPolyUsdcToBscUsdcTrade(account.address), // default USDC on Polygon -> USDC on BSC
+      getPolyUsdcToBscUsdt(account.address),
+      getPolyUsdcToPolyUsdt(account.address)
     ],
-    postHooks: [
-      baseSendNativePosthook
-    ],
+    preHooks: [],
+    postHooks: []
   }
 
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
-
-  console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
 
   // Using processIntentBundle to handle all intents at once
