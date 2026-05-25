@@ -2,7 +2,7 @@ import { EVM_NATIVE_TOKEN, USDC, USDT } from '@utils/constants';
 import utils from "util";
 import { randomUUID } from 'crypto';
 import { createBundle } from '@utils/api';
-import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 
 async function main() {
 

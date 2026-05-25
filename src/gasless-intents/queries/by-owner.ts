@@ -1,5 +1,5 @@
 import { getBundles } from '@utils/api';
-import { GetBundlesFilterParams } from "../types";
+import { GetBundlesFilterParams } from "@gasless-intents/types";
 
 async function main() {
   const filters: GetBundlesFilterParams = {

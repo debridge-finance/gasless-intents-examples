@@ -1,6 +1,6 @@
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { privateKeyToAccount } from "viem/accounts";
-import { BundleCancelRequest, CancelBundleReasonCodes } from "../types";
+import { BundleCancelRequest, CancelBundleReasonCodes } from "@gasless-intents/types";
 import { cancelBundles, getBundleById } from '@utils/api';
 
 const bundleId = "1c8b4195-7487-4015-aae3-a0e72fc0c59a"; // Change this to your desired bundle ID

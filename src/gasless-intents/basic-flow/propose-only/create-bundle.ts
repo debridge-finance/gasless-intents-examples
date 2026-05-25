@@ -1,6 +1,6 @@
 import { createBundle } from '@utils/api';
 import { USDC } from '@utils/constants';
-import { BundleProposeBody, TradingAlgorithm } from "../types";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { randomUUID } from 'crypto';
 
 async function main() {

@@ -14,7 +14,7 @@ import {
   getPolyMaticToBscBnbStuck
 } from "../trades";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
-import { Bundle, TradingAlgorithm } from '../types';
+import { Bundle, TradingAlgorithm } from '@gasless-intents/types';
 
 async function main() {
   // Wallet setup
