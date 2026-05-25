@@ -1,10 +1,9 @@
 import { privateKeyToAccount } from "viem/accounts";
-import util from "util";
 import { randomUUID } from "crypto";
 
 import { AAVE_V3_POOL_ARBITRUM, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
 import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { getAaveWithdrawExtendedHook, getMorphoDepositExtendedHook } from "@utils/posthooks";
+import { getMorphoDepositExtendedHook } from "@utils/posthooks";
 import { createBundle, submitBundle } from "@utils/api";
 import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../../types";
 import { getArbitrumUsdcToBaseUsdc } from "../../trades";
@@ -14,6 +13,7 @@ import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 import { createApproveCall } from "@utils/contract-calls";
 import { replaceNamedPlaceholders } from "@utils/hooks-common";
+import { getAaveWithdrawHook } from "@utils/hooks/aave";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -24,12 +24,11 @@ async function main() {
 
   const amountToRebalance = "3204714"; // 3.204714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
 
-  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawExtendedHook(
+  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawHook(
     AAVE_V3_POOL_ARBITRUM,
     toHexPrefixString(USDC.Arbitrum),
     CHAIN_IDS.Arbitrum,
     account.address,
-    "aaveDepositAmount",
     BigInt(amountToRebalance),
   );
 
@@ -89,11 +88,6 @@ async function main() {
 
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
