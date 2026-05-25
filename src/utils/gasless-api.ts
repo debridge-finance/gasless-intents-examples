@@ -1,5 +1,5 @@
 import { getAddress } from "viem";
-import { generateCancelPreimage, getUrl, postUrl } from ".";
+import { generateCancelPreimage } from ".";
 import {
   Bundle,
   BundleCancelRequest,
@@ -12,6 +12,7 @@ import {
 import { ENDPOINTS } from "./constants";
 import { privateKeyToAccount } from "viem/accounts";
 import { getWalletClients } from "./wallet";
+import { postUrl, getUrl } from "./http";
 
 const { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL } = ENDPOINTS;
 
