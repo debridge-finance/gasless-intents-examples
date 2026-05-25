@@ -2,15 +2,15 @@ import { privateKeyToAccount } from "viem/accounts";
 ;
 import { randomUUID } from "crypto";
 
-import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "../../utils/constants";
-import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { createBundle, submitBundle } from "../../utils/api";
+import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
 import { BundleProposeBody, ExtendedHook, PlaceHolder, Trade, TradingAlgorithm } from "../types";
-import { processIntentBundle } from "../../utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "../../utils/wallet";
-import { CHAIN_IDS } from "../../utils/chains";
-import { createApproveCall } from "../../utils/contract-calls";
-import { replaceAmountPlaceholder } from "../../utils/hooks-common";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { createApproveCall } from "@utils/contract-calls";
+import { replaceAmountPlaceholder } from "@utils/hooks-common";
 
 async function main() {
   const { privateKey } = getEnvConfig();
