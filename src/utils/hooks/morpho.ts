@@ -1,14 +1,17 @@
-import { clipHexPrefix, toHexPrefixString } from ".";
-import { ExtendedHook, PlaceHolder } from "../gasless-intents/types";
-import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
-import { createAaveWithdrawCall, createDepositCall } from "./contract-calls";
-import { getVaultAddressByToken } from "./morpho/get-vault-address";
+import { clipHexPrefix, toHexPrefixString } from "@utils/index";
+import { ExtendedHook, GasCompensationInfo, PlaceHolder } from "@gasless-intents/types";
+import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "@utils/constants";
+import { createDepositCall } from "@utils/contract-calls";
+import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 
-export async function getMorphoDepositExtendedHook(
+export async function getMorphoDepositHook(
   tokenAddress: `0x${string}`,
   chainId: number,
+  senderAddress: `0x${string}`,
   beneficiaryAddress: `0x${string}`,
-  placeholderName: string,
+  additionalAmount: string = "0",
+  gasCompensationInfo?: GasCompensationInfo,
+  gasLimit?: string,
 ): Promise<ExtendedHook> {
   const vaultAddress = await getVaultAddressByToken(tokenAddress, chainId);
 
@@ -22,12 +25,14 @@ export async function getMorphoDepositExtendedHook(
     beneficiaryAddress,
   );
 
+  const placeholderName = "morphoDepositAmount";
   hookTransaction.data = hookTransaction.data.replace(clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT), `{${placeholderName}}`);
 
   const placeholder: PlaceHolder = {
     nameVariable: placeholderName,
     tokenAddress,
-    address: beneficiaryAddress,
+    address: senderAddress,
+    additionalAmount,
   };
 
   const result: ExtendedHook = {
@@ -36,8 +41,10 @@ export async function getMorphoDepositExtendedHook(
     to: hookTransaction.to,
     value: hookTransaction.value.toString(),
     chainId,
-    from: beneficiaryAddress,
+    from: senderAddress,
     placeHolders: [placeholder],
+    gasCompensationInfo,
+    gasLimit,
   };
 
   return result;

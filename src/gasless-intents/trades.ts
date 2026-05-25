@@ -859,7 +859,7 @@ export function getArbitrumUsdcToBaseUsdc(signer: string, amount?: string): Trad
   return {
     srcChainId: CHAIN_IDS.Arbitrum,
     srcChainTokenIn: USDC.Arbitrum,
-    srcChainTokenInAmount: amount || "3000000", // 1 USDC
+    srcChainTokenInAmount: amount || "3000000",
     srcChainTokenInMinAmount: amount || "3000000",
     srcChainTokenInMaxAmount: amount || "3000000",
     dstChainId: CHAIN_IDS.Base,

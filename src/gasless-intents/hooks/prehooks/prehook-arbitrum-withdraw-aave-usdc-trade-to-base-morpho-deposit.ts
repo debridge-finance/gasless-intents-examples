@@ -1,20 +1,23 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
-import { AAVE_V3_POOL_ARBITRUM, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
+import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
 import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { getMorphoDepositExtendedHook } from "@utils/posthooks";
 import { createBundle, submitBundle } from "@utils/api";
-import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../../types";
-import { getArbitrumUsdcToBaseUsdc } from "../../trades";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
+import { getArbitrumUsdcToBaseUsdc } from "@gasless-intents/trades";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
-import { createApproveCall } from "@utils/contract-calls";
-import { replaceNamedPlaceholders } from "@utils/hooks-common";
 import { getAaveWithdrawHook } from "@utils/hooks/aave";
+import { getMorphoDepositHook } from "@utils/hooks/morpho";
+import { getApproveHook } from "@utils/hooks/erc20-hooks";
 
+/**
+ * Example result: 
+ * https://anchorage.debridge.com/bundle/0x08ea91b85e281824182700553ce43cbe06ffc51060b2e8c7bdaafae74b2dd820
+ */
 async function main() {
   const { privateKey } = getEnvConfig();
 
@@ -32,11 +35,11 @@ async function main() {
     BigInt(amountToRebalance),
   );
 
-  const morphoDeposit = await getMorphoDepositExtendedHook(
+  const morphoDeposit = await getMorphoDepositHook(
     toHexPrefixString(USDC.Base),
     CHAIN_IDS.Base,
     account.address,
-    "morphoDepositAmount",
+    account.address
   );
 
   const morphoVaultAddress = await getVaultAddressByToken(USDC.Base, CHAIN_IDS.Base);
@@ -45,29 +48,12 @@ async function main() {
     throw new Error(`No Morpho vault found for ${USDC.Base} on ${CHAIN_IDS.Base}`);
   }
 
-  const approveUsdcForMorphoCall = createApproveCall(
-    toHexPrefixString(USDC.Base),
-    toHexPrefixString(morphoVaultAddress), // Morpho Aave V3 on Base - https://docs.morpho.xyz/deployment-addresses#base
-    BigInt(PLACEHOLDER_TOKEN_AMOUNT),
+  const approveUsdcForMorphoHook = getApproveHook(
+    account.address,
+    USDC.Base,
+    CHAIN_IDS.Base,
+    morphoVaultAddress
   );
-
-  const placeholderMorphoDeposit: PlaceHolder = {
-    nameVariable: "morphoApproveAmount",
-    tokenAddress: USDC.Base,
-    address: account.address,
-  }
-
-  approveUsdcForMorphoCall.data = replaceNamedPlaceholders(approveUsdcForMorphoCall.data, [placeholderMorphoDeposit.nameVariable]);
-
-  const approveMorphoDepositHook: ExtendedHook = {
-    isAtomic: true,
-    data: approveUsdcForMorphoCall.data,
-    to: approveUsdcForMorphoCall.to,
-    value: approveUsdcForMorphoCall.value.toString(),
-    chainId: CHAIN_IDS.Base,
-    from: account.address,
-    placeHolders: [placeholderMorphoDeposit]
-  }
 
   const requestId = randomUUID();
 
@@ -80,7 +66,7 @@ async function main() {
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [getArbitrumUsdcToBaseUsdc(account.address, amountToRebalance)],
     preHooks: [arbitrumUsdcAaveWithdraw],
-    postHooks: [approveMorphoDepositHook, morphoDeposit],
+    postHooks: [approveUsdcForMorphoHook, morphoDeposit],
   };
 
   console.log("Creating bundle...");
@@ -117,3 +103,7 @@ main().catch((error) => {
   console.error("\n🚨 FATAL ERROR in script execution:", error);
   process.exitCode = 1;
 });
+function getMorphoDepositExtendedHook(arg0: string, Base: number, address: string, arg3: string) {
+  throw new Error("Function not implemented.");
+}
+

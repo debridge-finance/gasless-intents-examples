@@ -2,19 +2,22 @@ import { privateKeyToAccount } from "viem/accounts";
 
 import { randomUUID } from 'crypto';
 
-import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from '@utils/constants';
+import { USDC } from '@utils/constants';
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { getMorphoDepositExtendedHook } from '@utils/posthooks';
 import { createBundle, submitBundle } from '@utils/api';
-import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../types";
-import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "../trades";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
+import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "@gasless-intents/trades";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { CHAIN_IDS } from "@utils/chains";
-import { createApproveCall } from "@utils/contract-calls";
-import { replaceNamedPlaceholders } from "@utils/hooks-common";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
+import { getMorphoDepositHook } from "@utils/hooks/morpho";
+import { getApproveHook } from "@utils/hooks/erc20-hooks";
 
+/**
+ * Example result:
+ * https://anchorage.debridge.com/bundle/0x11f4cc86d5ee4323af54ab740f11b3aa4ebde88116780de9a7439953e7b99344
+ */
 async function main() {
   const { privateKey } = getEnvConfig();
 
@@ -22,11 +25,11 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const baseUsdcMorphoDeposit = await getMorphoDepositExtendedHook(
+  const baseUsdcMorphoDeposit = await getMorphoDepositHook(
     toHexPrefixString(USDC.Base),
     CHAIN_IDS.Base,
     account.address,
-    "morphoDepositAmount",
+    account.address
   );
 
   const morphoVaultAddress = await getVaultAddressByToken(USDC.Base, CHAIN_IDS.Base);
@@ -35,32 +38,12 @@ async function main() {
     throw new Error(`No Morpho vault found for ${USDC.Base} on ${CHAIN_IDS.Base}`);
   }
 
-  const approveUsdcForMorphoCall = createApproveCall(
-    toHexPrefixString(USDC.Base),
-    toHexPrefixString(morphoVaultAddress),
-    BigInt(PLACEHOLDER_TOKEN_AMOUNT),
-  );
-
-  const morphoApprovePlaceholder: PlaceHolder = {
-    nameVariable: "morphoApproveAmount",
-    tokenAddress: USDC.Base,
-    address: account.address,
-  };
-
-  approveUsdcForMorphoCall.data = replaceNamedPlaceholders(
-    approveUsdcForMorphoCall.data,
-    [morphoApprovePlaceholder.nameVariable],
-  );
-
-  const approveMorphoDepositHook: ExtendedHook = {
-    isAtomic: true,
-    data: approveUsdcForMorphoCall.data,
-    to: approveUsdcForMorphoCall.to,
-    value: approveUsdcForMorphoCall.value.toString(),
-    chainId: CHAIN_IDS.Base,
-    from: account.address,
-    placeHolders: [morphoApprovePlaceholder],
-  };
+  const approveMorphoDepositHook = getApproveHook(
+    account.address,
+    USDC.Base,
+    CHAIN_IDS.Base,
+    morphoVaultAddress
+  )
 
   console.log("Deposit Call PostHook Calldata:", baseUsdcMorphoDeposit);
 
