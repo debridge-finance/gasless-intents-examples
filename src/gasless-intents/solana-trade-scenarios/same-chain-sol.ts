@@ -7,8 +7,6 @@ import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
 
-import util from "util"
-
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "../types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { Keypair } from '@solana/web3.js';
@@ -57,21 +55,15 @@ async function main() {
   }
 
 
-  // console.log("Creating bundle...");
+  console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
-  // console.log(JSON.stringify(bundle, null, 2));
-  // console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    // console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
+  console.log("Bundle created successfully!");
 
   // Using processIntentBundle to handle all intents at once
-  // console.log("Collecting signatures for all intents...");
+  console.log("Collecting signatures for all intents...");
   const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
 
-  // console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
+  console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
 
   // Prepare the bundle with intent signatures for submission
   const submitPayload: Bundle = {
@@ -82,8 +74,6 @@ async function main() {
     isAtomic: true,
     signedData: signedDataArray
   };
-
-  console.log(util.inspect(submitPayload, { showHidden: false, depth: null, colors: false }));
 
   const submitResponse = await submitBundle(submitPayload);
   console.log("Submit response:", submitResponse);

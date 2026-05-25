@@ -1,10 +1,10 @@
 import { privateKeyToAccount } from "viem/accounts";
-import util from "util";
+;
 import { randomUUID } from "crypto";
 
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
 import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { getAaveSupplyHook } from "@utils/hooks";
+import { getAaveSupplyHook } from "@utils/hooks/aave";
 import { createBundle, submitBundle } from "@utils/api";
 import { BundleProposeBody, TradingAlgorithm } from "../types";
 import { getPolygonUsdcToArbitrumUsdc } from "../trades";
@@ -60,11 +60,6 @@ async function main() {
 
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");

@@ -6,7 +6,7 @@ import { createBundle, submitBundle } from "../../../utils/api";
 import { processIntentBundle } from "../../../utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
 
-import util from "util"
+
 import { BundleProposeBody, TradingAlgorithm } from "../../types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
 import { getPolyUsdcToBscUsdcTrade, getPolyUsdcToBscUsdt, getPolyUsdcToMatic, getPolyUsdcToPolyUsdt } from '../../trades';
@@ -42,11 +42,6 @@ async function main() {
   console.log("Creating bundle...");
   const bundle = await createBundle(requestBody);
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");

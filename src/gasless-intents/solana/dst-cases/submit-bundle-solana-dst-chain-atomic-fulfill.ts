@@ -2,7 +2,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { randomUUID } from 'crypto';
 
-import util from "util"
+
 import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "./../../trades";
 import { Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
@@ -44,11 +44,6 @@ async function main() {
   console.log(`Creating bundle..., ${JSON.stringify(requestBody)}`);
   const bundle = await createBundle(requestBody);
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");

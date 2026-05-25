@@ -1,4 +1,4 @@
-import util from "util";
+;
 import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -74,10 +74,6 @@ async function main() {
 
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   console.log("Collecting signatures for all intents...");
   const signedDataArray = await processIntentBundle(bundle, walletClientMap);

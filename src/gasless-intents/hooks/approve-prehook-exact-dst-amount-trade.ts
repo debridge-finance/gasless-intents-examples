@@ -1,5 +1,5 @@
 import { privateKeyToAccount } from "viem/accounts";
-import util from "util";
+;
 import { randomUUID } from "crypto";
 
 import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "../../utils/constants";
@@ -74,11 +74,6 @@ async function main() {
 
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
