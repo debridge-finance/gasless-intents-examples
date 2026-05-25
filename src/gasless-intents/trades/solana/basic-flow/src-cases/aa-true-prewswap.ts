@@ -3,7 +3,7 @@ import { getEnvConfig, toHexPrefixString } from '@utils/index';
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
 import { Keypair } from "@solana/web3.js"
-import { createBundle, submitBundle } from '@utils/api';
+import { createBundle, submitBundle } from '@utils/gasless-api';
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { SOL_NATIVE, USDC } from '@utils/constants';
 import { processIntentBundle } from '@utils/signatures/intent-signatures';

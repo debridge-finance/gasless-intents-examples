@@ -1,4 +1,4 @@
-import { getBundles } from '@utils/api';
+import { getBundles } from '@utils/gasless-api';
 import { GetBundlesFilterParams } from "@gasless-intents/types";
 
 async function main() {

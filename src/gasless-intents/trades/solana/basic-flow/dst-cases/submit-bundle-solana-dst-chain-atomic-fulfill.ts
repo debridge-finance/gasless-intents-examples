@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto';
 import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "@gasless-intents/trade-blueprints";
 import { Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
-import { createBundle, submitBundle } from '@utils/api';
+import { createBundle, submitBundle } from '@utils/gasless-api';
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { TradingAlgorithm } from "@gasless-intents/types";
 import { getChainIdToWalletClientMap } from '@utils/wallet';

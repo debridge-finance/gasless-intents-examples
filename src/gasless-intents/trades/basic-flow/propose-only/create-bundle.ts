@@ -1,4 +1,4 @@
-import { createBundle } from '@utils/api';
+import { createBundle } from '@utils/gasless-api';
 import { USDC } from '@utils/constants';
 import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { randomUUID } from 'crypto';

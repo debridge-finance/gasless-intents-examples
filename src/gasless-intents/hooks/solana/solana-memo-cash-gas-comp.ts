@@ -4,7 +4,7 @@ import bs58 from 'bs58';
 import { Keypair } from "@solana/web3.js";
 
 import { getEnvConfig, toHexPrefixString } from '@utils/index';
-import { createBundle, submitBundle } from '@utils/api';
+import { createBundle, submitBundle } from '@utils/gasless-api';
 import { CASH } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';
 import { Bundle, BundleProposeBody, ExtendedHook, TradingAlgorithm } from "@gasless-intents/types";

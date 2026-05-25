@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 
 import { USDC } from '@utils/constants';
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { createBundle, submitBundle } from '@utils/api';
+import { createBundle, submitBundle } from '@utils/gasless-api';
 import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { getPolygonUsdcToBaseUsdc, getPolyMaticToBaseUsdc } from "@gasless-intents/trade-blueprints";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';

@@ -30,7 +30,7 @@ import { randomUUID } from "crypto";
 
 import { SOLANA_RPC_URL } from "@utils/constants";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
-import { createBundle, submitBundle } from "@utils/api";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { Bundle, BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 

@@ -3,7 +3,7 @@
 // inspection and downstream analysis; this script does not validate the response shape.
 import { privateKeyToAccount } from "viem/accounts";
 import { getEnvConfig, clipHexPrefix } from "@utils/index";
-import { createBundle } from "@utils/api";
+import { createBundle } from "@utils/gasless-api";
 import { randomUUID } from "crypto";
 import { mkdirSync, writeFileSync } from "fs";
 import { join } from "path";

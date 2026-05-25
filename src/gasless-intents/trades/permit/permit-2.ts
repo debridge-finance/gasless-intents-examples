@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { privateKeyToAccount } from "viem/accounts";
 
 import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { createBundle, submitBundle } from "@utils/api";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { ApprovalMode, ApproveAmount, BundleProposeBody, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";

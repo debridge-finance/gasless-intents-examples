@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 
 import { toHexPrefixString, getEnvConfig } from '@utils/index';
-import { createBundle, submitBundle } from '@utils/api';
+import { createBundle, submitBundle } from '@utils/gasless-api';
 import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import { getPolygonUsdcToBaseEth, getPolyMaticToBaseEth } from "@gasless-intents/trade-blueprints";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';

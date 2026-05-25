@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 
 import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
 import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { createBundle, submitBundle } from "@utils/api";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { BundleProposeBody, ExtendedHook, PlaceHolder, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
