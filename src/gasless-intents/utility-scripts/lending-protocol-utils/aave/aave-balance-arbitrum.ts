@@ -3,7 +3,8 @@ import { createPublicClient, http, formatUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arbitrum } from "viem/chains";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
-import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
 import { Erc20Abi } from "@utils/contract-calls/abis";
 
 const USDC_DECIMALS = 6;

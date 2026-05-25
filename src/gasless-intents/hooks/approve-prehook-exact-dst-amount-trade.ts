@@ -3,7 +3,8 @@ import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
 import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
-import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
 import { createBundle, submitBundle } from "@utils/gasless-api";
 import { BundleProposeBody, ExtendedHook, PlaceHolder, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";

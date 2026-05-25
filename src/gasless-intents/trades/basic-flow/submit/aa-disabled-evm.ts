@@ -1,7 +1,8 @@
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { getEnvConfig, clipHexPrefix } from "@utils/index";
+import { clipHexPrefix } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
 import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import { randomUUID } from 'crypto';

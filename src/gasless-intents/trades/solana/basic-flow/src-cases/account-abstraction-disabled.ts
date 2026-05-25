@@ -1,5 +1,6 @@
 import { privateKeyToAccount } from 'viem/accounts'
-import { getEnvConfig, toHexPrefixString } from '@utils/index';
+import { toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
 import { randomUUID } from 'crypto';
 import bs58 from 'bs58';
 import { getSolUsdcToPolyUsdcTrade } from "@gasless-intents/trade-blueprints";

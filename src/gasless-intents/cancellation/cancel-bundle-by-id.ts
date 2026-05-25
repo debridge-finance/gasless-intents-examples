@@ -1,4 +1,5 @@
-import { getEnvConfig, toHexPrefixString } from '@utils/index';
+import { toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
 import { privateKeyToAccount } from "viem/accounts";
 import { BundleCancelRequest, CancelBundleReasonCodes } from "@gasless-intents/types";
 import { cancelBundles, getBundleById } from '@utils/gasless-api';

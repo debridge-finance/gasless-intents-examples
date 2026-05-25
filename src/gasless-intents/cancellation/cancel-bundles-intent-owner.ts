@@ -1,4 +1,5 @@
-import { getEnvConfig, clipHexPrefix, sortBundlesByIntentTimestampAscending } from '@utils/index';
+import { getEnvConfig } from "@utils/env";
+import { clipHexPrefix, sortBundlesByIntentTimestampAscending } from '@utils/index';
 import { privateKeyToAccount } from "viem/accounts";
 import { BundleCancelRequest, BundleStatus, CancelBundleReasonCodes, GetBundlesFilterParams } from "@gasless-intents/types";
 import { cancelBundles, getBundles } from '@utils/gasless-api';

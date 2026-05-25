@@ -1,5 +1,6 @@
 import { createWalletClient, http } from "viem";
-import { getEnvConfig, toHexPrefixString } from '@utils/index';
+import { toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
 import { base } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 

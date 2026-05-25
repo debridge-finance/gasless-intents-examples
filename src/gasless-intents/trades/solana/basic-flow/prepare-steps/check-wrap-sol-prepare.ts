@@ -2,7 +2,8 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { randomUUID } from 'crypto';
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
-import { getEnvConfig, toHexPrefixString } from '@utils/index';
+import { toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
 import { getWrapSolToBscUsdcTrade } from "@gasless-intents/trade-blueprints";
 import { createBundle } from '@utils/gasless-api';
 import { TradingAlgorithm } from "@gasless-intents/types";

@@ -3,7 +3,8 @@ import { privateKeyToAccount } from 'viem/accounts';
 import bs58 from 'bs58';
 import { Keypair } from "@solana/web3.js";
 
-import { getEnvConfig, toHexPrefixString } from '@utils/index';
+import { toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
 import { createBundle, submitBundle } from '@utils/gasless-api';
 import { SOL_NATIVE, WSOL } from '@utils/constants';
 import { CHAIN_IDS } from '@utils/chains';

@@ -1,4 +1,5 @@
-import { getHeaders } from ".";
+import { getHeaders } from "./env";
+
 
 export async function getUrl(url: string) {
   const response = await fetch(url, {
