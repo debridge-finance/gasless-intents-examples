@@ -2,7 +2,7 @@ import { createPublicClient, http, type Address } from "viem";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { CHAIN_IDS } from "@utils/chains";
 import { EVM_NATIVE_TOKEN, SOL_NATIVE } from "@utils/constants";
-import { Erc20Abi } from "@utils/abis";
+import { Erc20Abi } from "@utils/contract-calls/abis";
 import { ChainName, evmChainConfig, tokenRegistry } from "./tokens";
 import { Holding } from "./holding";
 

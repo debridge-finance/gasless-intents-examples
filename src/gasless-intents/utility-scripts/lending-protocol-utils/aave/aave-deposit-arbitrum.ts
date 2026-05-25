@@ -5,7 +5,7 @@ import { arbitrum } from "viem/chains";
 import { createApproveCall, createAaveSupplyCall } from "@utils/contract-calls";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
 import { getEnvConfig, toHexPrefixString } from "@utils/index";
-import { Erc20Abi } from "@utils/abis";
+import { Erc20Abi } from "@utils/contract-calls/abis";
 
 const USDC_DECIMALS = 6;
 const SUPPLY_AMOUNT = BigInt(process.env.USDC_AMOUNT || "1000000"); // Default: 1 USDC

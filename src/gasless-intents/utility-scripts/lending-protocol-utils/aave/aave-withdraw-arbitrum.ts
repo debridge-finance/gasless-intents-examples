@@ -5,7 +5,7 @@ import { arbitrum } from "viem/chains";
 import { createAaveWithdrawCall } from "@utils/contract-calls";
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
 import { getEnvConfig, toHexPrefixString } from "@utils/index";
-import { Erc20Abi } from "@utils/abis";
+import { Erc20Abi } from "@utils/contract-calls/abis";
 
 const USDC_DECIMALS = 6;
 const WITHDRAW_AMOUNT = BigInt("1000000"); // 1 USDC

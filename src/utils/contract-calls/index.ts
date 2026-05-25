@@ -1,5 +1,5 @@
 import { encodeFunctionData, Address } from "viem";
-import { Erc20Abi, Erc4626Abi, AaveV3Abi } from "@utils/abis";
+import { Erc20Abi, Erc4626Abi, AaveV3Abi } from "@utils/contract-calls/abis";
 import { EvmTx } from "@gasless-intents/types";
 
 export function createApproveCall(tokenAddress: Address, spenderAddress: Address, amount: bigint): EvmTx {

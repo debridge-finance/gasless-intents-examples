@@ -7,7 +7,7 @@ import { USDC } from "@utils/constants";
 import { getEnvConfig, toHexPrefixString } from "@utils/index";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 import { CHAIN_IDS } from "@utils/chains";
-import { Erc20Abi, Erc4626Abi } from "@utils/abis";
+import { Erc20Abi, Erc4626Abi } from "@utils/contract-calls/abis";
 
 const USDC_DECIMALS = 6;
 const DEPOSIT_AMOUNT = BigInt("1000000"); // Default: 1 USDC

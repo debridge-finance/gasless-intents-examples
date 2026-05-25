@@ -1,9 +1,9 @@
 import {
   privateKeyToAccount
 } from 'viem/accounts'
-import { getEnvConfig, toHexPrefixString } from "../../../../utils";
-import { createBundle, submitBundle } from "../../../../utils/api";
-import { processIntentBundle } from "../../../../utils/signatures/intent-signatures";
+import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { randomUUID } from 'crypto';
 
 

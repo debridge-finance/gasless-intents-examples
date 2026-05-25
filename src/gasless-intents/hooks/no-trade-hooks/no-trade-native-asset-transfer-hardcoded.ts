@@ -2,13 +2,13 @@
 import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { toHexPrefixString, getEnvConfig } from "../../../utils";
-import { createBundle, submitBundle } from "../../../utils/api";
+import { toHexPrefixString, getEnvConfig } from "@utils/index";
+import { createBundle, submitBundle } from "@utils/api";
 import { BundleProposeBody, ExtendedHook, TradingAlgorithm } from "@gasless-intents/types";
-import { processIntentBundle } from "../../../utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "../../../utils/wallet";
-import { USDC } from "../../../utils/constants";
-import { CHAIN_IDS } from "../../../utils/chains";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { USDC } from "@utils/constants";
+import { CHAIN_IDS } from "@utils/chains";
 
 /**
  * Demonstrates a PreHook with Gas Compensation on Polygon without trades — native asset variant
