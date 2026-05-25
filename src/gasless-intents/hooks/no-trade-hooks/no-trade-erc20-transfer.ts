@@ -1,4 +1,3 @@
-;
 import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
 
