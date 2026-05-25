@@ -3,7 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from 'crypto';
 
 import { USDC } from '@utils/constants';
-import { toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/string";
 import { getEnvConfig } from "@utils/env";
 import { createBundle, submitBundle } from '@utils/gasless-api';
 import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";

@@ -12,7 +12,7 @@ import {
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import { SOLANA_RPC_URL } from "../constants";
 import { prepareSolanaTransaction, signHexMessageBySolanaKey } from "../solana";
-import { clipHexPrefix, toHexPrefixString } from "..";
+import { clipHexPrefix, toHexPrefixString } from "@utils/string";
 
 export async function signAction(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);

@@ -1,5 +1,5 @@
 import { privateKeyToAccount } from 'viem/accounts'
-import { toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/string";
 import { getEnvConfig } from "@utils/env";
 import { randomUUID } from 'crypto';
 

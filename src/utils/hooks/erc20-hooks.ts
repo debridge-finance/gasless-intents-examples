@@ -1,7 +1,7 @@
 import { ExtendedHook, GasCompensationInfo, PlaceHolder } from "@gasless-intents/types";
 import { replaceAmountPlaceholder, replaceNamedPlaceholders } from "../hooks-common";
 import { createApproveCall, createTransferCall } from "@utils/contract-calls";
-import { toHexPrefixString } from "..";
+import { toHexPrefixString } from "@utils/string";
 import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT } from "../constants";
 
 export function getApproveHook(

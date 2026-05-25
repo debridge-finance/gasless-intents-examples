@@ -3,7 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
-import { toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/string";
 import { getEnvConfig } from "@utils/env";
 import { getAaveSupplyHook } from "@utils/hooks/aave";
 import { createBundle, submitBundle } from "@utils/gasless-api";

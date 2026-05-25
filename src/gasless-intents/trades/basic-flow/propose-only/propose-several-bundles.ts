@@ -2,7 +2,7 @@
 // Captures and saves the raw response of POST /v1.1/gasless/bundles for
 // inspection and downstream analysis; this script does not validate the response shape.
 import { privateKeyToAccount } from "viem/accounts";
-import { clipHexPrefix } from "@utils/index";
+import { clipHexPrefix } from "@utils/string";
 import { getEnvConfig } from "@utils/env";
 import { createBundle } from "@utils/gasless-api";
 import { randomUUID } from "crypto";

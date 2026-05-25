@@ -5,7 +5,7 @@ import { base } from "viem/chains";
 import { USDC } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
-import { toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/string";
 import { getEnvConfig } from "@utils/env";
 import { Erc20Abi, Erc4626Abi } from "@utils/contract-calls/abis";
 

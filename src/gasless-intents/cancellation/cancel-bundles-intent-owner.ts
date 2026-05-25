@@ -1,9 +1,10 @@
 import { getEnvConfig } from "@utils/env";
-import { clipHexPrefix, sortBundlesByIntentTimestampAscending } from '@utils/index';
+import { sortBundlesByIntentTimestampAscending } from '@utils/index';
 import { privateKeyToAccount } from "viem/accounts";
 import { BundleCancelRequest, BundleStatus, CancelBundleReasonCodes, GetBundlesFilterParams } from "@gasless-intents/types";
 import { cancelBundles, getBundles } from '@utils/gasless-api';
 import { getAddress } from "viem";
+import { clipHexPrefix } from "@utils/string";
 
 async function main() {
 

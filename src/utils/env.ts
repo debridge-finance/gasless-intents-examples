@@ -1,8 +1,4 @@
 import "dotenv/config";
-import { VersionedTransaction } from "@solana/web3.js";
-import { Bundle, BundleCancelRequest } from '@gasless-intents/types';
-import { getAddress } from 'viem';
-
 
 export function getEnvConfig(): {
   privateKey: string;

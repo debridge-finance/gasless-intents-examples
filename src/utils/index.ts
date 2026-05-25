@@ -1,48 +1,6 @@
 import "dotenv/config";
-import { VersionedTransaction } from "@solana/web3.js";
 import { Bundle, BundleCancelRequest } from '@gasless-intents/types';
 import { getAddress } from 'viem';
-
-function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
-  const result = new Uint8Array(arraySize);
-  for (let i = 0; i < arraySize; i++) {
-    result[i] = Number(num & 0xff);
-    num >>= 8;
-  }
-
-  return result;
-}
-
-export function updatePriorityFee(tx: VersionedTransaction, computeUnitPrice: number, computeUnitLimit?: number) {
-  const computeBudgetOffset = 1;
-  const computeUnitPriceData = tx.message.compiledInstructions[1].data;
-  const encodedPrice = encodeNumberToArrayLE(computeUnitPrice, 8);
-  for (let i = 0; i < encodedPrice.length; i++) {
-    computeUnitPriceData[i + computeBudgetOffset] = encodedPrice[i];
-  }
-
-  if (computeUnitLimit) {
-    const computeUnitLimitData = tx.message.compiledInstructions[0].data;
-    const encodedLimit = encodeNumberToArrayLE(computeUnitLimit, 4);
-    for (let i = 0; i < encodedLimit.length; i++) {
-      computeUnitLimitData[i + computeBudgetOffset] = encodedLimit[i];
-    }
-  }
-}
-
-export function clipHexPrefix(input: string): string {
-  if (input.startsWith("0x")) {
-    return input.slice(2);
-  }
-  return input;
-}
-
-export function toHexPrefixString(input: string): `0x${string}` {
-  if (input.startsWith("0x")) {
-    return input as `0x${string}`;
-  }
-  return `0x${input}`;
-}
 
 export function generateCancelPreimage(request: BundleCancelRequest, authorityAddress: string): string {
   const parts = ["deBridge:BundleCancel:v1", authorityAddress, request.creationTimestamp, request.expirationTimestamp];

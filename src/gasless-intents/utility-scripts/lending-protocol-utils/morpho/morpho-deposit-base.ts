@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { createApproveCall, createDepositCall } from "@utils/contract-calls";
 import { USDC } from "@utils/constants";
-import { toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/string";
 import { getEnvConfig } from "@utils/env";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 import { CHAIN_IDS } from "@utils/chains";

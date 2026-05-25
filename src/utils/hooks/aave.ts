@@ -1,4 +1,4 @@
-import { clipHexPrefix, toHexPrefixString } from "@utils/index";
+import { clipHexPrefix, toHexPrefixString } from "@utils/string";
 import { ExtendedHook, GasCompensationInfo, PlaceHolder } from "@gasless-intents/types";
 import { EVM_NATIVE_TOKEN, PLACEHOLDER_TOKEN_AMOUNT } from "@utils/constants";
 import { createAaveSupplyCall, createAaveWithdrawCall } from "@utils/contract-calls";

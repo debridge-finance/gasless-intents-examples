@@ -1,6 +1,6 @@
 import { PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { generateSentinel, hexToLittleEndian } from "@utils/hooks-common";
-import { toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/string";
 
 const PLACEHOLDER_BLOCKHASH = "11111111111111111111111111111111";
 

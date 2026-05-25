@@ -1,5 +1,5 @@
 import { getAddress } from "viem";
-import { generateCancelPreimage } from ".";
+import { generateCancelPreimage } from "@utils/index";
 import {
   Bundle,
   BundleCancelRequest,

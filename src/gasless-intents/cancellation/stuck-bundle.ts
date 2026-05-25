@@ -4,7 +4,7 @@ import {
 import { randomUUID } from 'crypto';
 
 
-import { toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/string";
 import { getEnvConfig } from "@utils/env";
 import { createBundle, submitBundle } from '@utils/gasless-api';
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
