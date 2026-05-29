@@ -21,6 +21,11 @@ export const AaveV3Abi = {
   Withdraw: parseAbi(["function withdraw(address asset, uint256 amount, address to)"]),
 } as const;
 
+/** Echo test contract */
+export const EchoAbi = {
+  Echo: parseAbi(["function echo(string message) external"]),
+} as const;
+
 /** EchoWithSig test contract */
 export const EchoWithSigAbi = {
   EchoWithSig: parseAbi([

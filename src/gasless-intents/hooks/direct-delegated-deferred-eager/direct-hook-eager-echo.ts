@@ -1,12 +1,13 @@
 import { randomUUID } from "crypto";
-import { encodeFunctionData, parseAbi, parseUnits } from "viem";
+import { encodeFunctionData, parseUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { getEnvConfig } from "@utils/env";
 import { toHexPrefixString } from "@utils/string";
 import { createBundle, submitBundle } from "@utils/gasless-api";
-import { USDC, USDT } from "@utils/constants";
+import { ECHO_BASE, USDC, USDT } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
+import { EchoAbi } from "@utils/contract-calls/abis";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
@@ -21,9 +22,6 @@ import {
 } from "@gasless-intents/types";
 
 const SCENARIO = "direct-eager-echo-usdt-amount";
-
-const ECHO_CONTRACT = "0xa77563ce5dfb7fe631d4b9fba8968efbb1f722c8";
-const ECHO_ABI = parseAbi(["function echo(string message) external"]);
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -58,7 +56,7 @@ async function main() {
   // API's 32-byte uint256 substitution lands cleanly: encode with a 32-char
   // sentinel ('@' = 0x40), then patch its hex with the {usdtAmount} marker.
   const callData = encodeFunctionData({
-    abi: ECHO_ABI,
+    abi: EchoAbi.Echo,
     functionName: "echo",
     args: ["@".repeat(32)],
   }).replace("40".repeat(32), `{${usdtAmountPlaceholder.nameVariable}}`) as `0x${string}`;
@@ -78,7 +76,7 @@ async function main() {
     type: HookExecutionType.Direct,
     chainId: CHAIN_IDS.Base,
     from: sender,
-    to: ECHO_CONTRACT,
+    to: ECHO_BASE,
     value: "0",
     data: callData,
     placeHolders: [usdtAmountPlaceholder],
