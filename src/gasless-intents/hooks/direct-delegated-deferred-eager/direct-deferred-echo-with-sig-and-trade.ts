@@ -1,17 +1,17 @@
 import { randomBytes, randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
-import {
-  encodeFunctionData,
-  hexToBytes,
-} from "viem";
+import { hexToBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { getEnvConfig } from "@utils/env";
 import { clipHexPrefix } from "@utils/string";
 import { createBundle, submitBundle } from "@utils/gasless-api";
 import { CHAIN_IDS } from "@utils/chains";
-import { EchoWithSigAbi } from "@utils/contract-calls/abis";
+import {
+  createEchoWithSigCallDataWithSignaturePlaceholder,
+  EchoWithSigMessageArgs,
+} from "@utils/contract-calls";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
@@ -29,27 +29,6 @@ import { ECHO_WITH_SIG_BASE, USDC, USDT } from "@utils/constants";
 
 const SCENARIO = "echo-direct-deferred";
 
-type EchoMessageArgs = {
-  user: `0x${string}`;
-  nonce: `0x${string}`;
-  message: string;
-  deadline: bigint;
-};
-
-function buildPrehookCalldataTemplate(args: EchoMessageArgs): `0x${string}` {
-  const dummySig = ("0x" + "00".repeat(65)) as `0x${string}`;
-  const encoded = encodeFunctionData({
-    abi: EchoWithSigAbi.EchoWithSig,
-    functionName: "echoWithSig",
-    args: [args.user, args.nonce, args.message, args.deadline, dummySig],
-  });
-  // Last 192 hex chars = 65 sig bytes + 31 zero-pad bytes (3 × 32-byte ABI words).
-  // bytes signature is the LAST argument, so this slice maps to the sig data slot.
-  const head = encoded.slice(0, encoded.length - 192);
-  const tail = "{signature.65}" + "00".repeat(31);
-  return (head + tail) as `0x${string}`;
-}
-
 async function main() {
   const { privateKey } = getEnvConfig();
   const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
@@ -61,7 +40,7 @@ async function main() {
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
   const requestId = randomUUID();
 
-  const echoMsg: EchoMessageArgs = { user: operator, nonce, message, deadline };
+  const echoMsg: EchoWithSigMessageArgs = { user: operator, nonce, message, deadline };
 
   console.log(`[${SCENARIO}] Operator (=user, =from): ${operator}`);
   console.log(`[${SCENARIO}] Nonce:    ${nonce}`);
@@ -93,7 +72,7 @@ async function main() {
   }
   console.log(`[${SCENARIO}] EchoMessage signature: ${operatorSignature}`);
 
-  const calldata = buildPrehookCalldataTemplate(echoMsg);
+  const calldata = createEchoWithSigCallDataWithSignaturePlaceholder(echoMsg);
 
   const preHook: ExtendedHook = {
     chainId: CHAIN_IDS.Base,

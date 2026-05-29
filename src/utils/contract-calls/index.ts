@@ -1,5 +1,5 @@
 import { encodeFunctionData, Address } from "viem";
-import { Erc20Abi, Erc4626Abi, AaveV3Abi } from "@utils/contract-calls/abis";
+import { Erc20Abi, Erc4626Abi, AaveV3Abi, EchoWithSigAbi } from "@utils/contract-calls/abis";
 import { EvmTx } from "@gasless-intents/types";
 
 export function createApproveCall(tokenAddress: Address, spenderAddress: Address, amount: bigint): EvmTx {
@@ -83,4 +83,28 @@ export function createAaveWithdrawCall(
     data,
     value: 0n,
   };
+}
+
+/** EchoWithSig */
+
+export type EchoWithSigMessageArgs = {
+  user: `0x${string}`;
+  nonce: `0x${string}`;
+  message: string;
+  deadline: bigint;
+};
+
+export function createEchoWithSigCallDataWithSignaturePlaceholder(args: EchoWithSigMessageArgs): `0x${string}` {
+  const dummySig = ("0x" + "00".repeat(65)) as `0x${string}`;
+  const encoded = encodeFunctionData({
+    abi: EchoWithSigAbi.EchoWithSig,
+    functionName: "echoWithSig",
+    args: [args.user, args.nonce, args.message, args.deadline, dummySig],
+  });
+
+  // Last 192 hex chars = 65 sig bytes + 31 zero-pad bytes (3 * 32-byte ABI words).
+  // bytes signature is the last argument, so this slice maps to the sig data slot.
+  const head = encoded.slice(0, encoded.length - 192);
+  const tail = "{signature.65}" + "00".repeat(31);
+  return (head + tail) as `0x${string}`;
 }
