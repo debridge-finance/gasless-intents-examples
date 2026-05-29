@@ -1,9 +1,9 @@
 import { createWalletClient, http } from "viem";
-import { getEnvConfig, toHexPrefixString } from "../utils";
+import { getEnvConfig, toHexPrefixString } from "@utils/index";
 import { base } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { USDT } from "../utils/constants";
-import { Erc20Abi } from "../utils/abis";
+import { USDT } from "@utils/constants";
+import { Erc20Abi } from "@utils/abis";
 
 const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 

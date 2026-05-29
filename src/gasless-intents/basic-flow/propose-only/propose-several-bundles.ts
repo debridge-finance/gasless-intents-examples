@@ -8,7 +8,7 @@ import { randomUUID } from "crypto";
 import { mkdirSync, writeFileSync } from "fs";
 import { join } from "path";
 
-import { BundleProposeBody, Trade, TradingAlgorithm } from "./types";
+import { BundleProposeBody, Trade, TradingAlgorithm } from "@gasless-intents/types";
 import { CHAIN_IDS } from "@utils/chains";
 import { EVM_NATIVE_TOKEN, USDC, USDT } from "@utils/constants";
 
