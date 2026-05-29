@@ -12,7 +12,7 @@ import {
   EchoWithSigMessageArgs,
 } from "@utils/contract-calls";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
-import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { buildHookProvidedDataMap, processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
 
 import {
@@ -20,7 +20,6 @@ import {
   ExtendedHook,
   HookExecutionType,
   PlaceholderResolutionType,
-  ProvidedDataMap,
   Trade,
   TradingAlgorithm,
 } from "@gasless-intents/types";
@@ -106,21 +105,7 @@ async function main() {
   const bundle = await createBundle(requestBody);
   logActionTypes(bundle);
 
-  // Walk every requiredAction; supply { signature: operatorSignature } for any
-  // action that declares a "signature" placeholder. Same shape as anton-spender-bundle.ts.
-  const providedDataMap: ProvidedDataMap = {};
-  for (const hook of [...(bundle.preHooks ?? []), ...(bundle.postHooks ?? [])]) {
-    for (const action of hook.requiredActions ?? []) {
-      const phs = (action.data as { placeholders?: { nameVariable: string }[] }).placeholders;
-      if (!phs) continue;
-      providedDataMap[action.actionId] = providedDataMap[action.actionId] ?? {};
-      for (const ph of phs) {
-        if (ph.nameVariable === "signature") {
-          providedDataMap[action.actionId].signature = operatorSignature;
-        }
-      }
-    }
-  }
+  const providedDataMap = buildHookProvidedDataMap(bundle, { signature: operatorSignature });
 
   const signedDataArray = await processIntentBundle(
     bundle,

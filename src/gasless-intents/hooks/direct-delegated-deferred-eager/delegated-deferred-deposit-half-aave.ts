@@ -10,7 +10,7 @@ import { CHAIN_IDS } from "@utils/chains";
 import { AAVE_V3_POOL_ARBITRUM, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
 import { replaceNamedPlaceholders } from "@utils/hooks-common";
 import { logActionTypes } from "@utils/logging";
-import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { buildHookProvidedDataMap, processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 
 import {
@@ -19,7 +19,6 @@ import {
   HookExecutionType,
   PlaceHolder,
   PlaceholderResolutionType,
-  ProvidedDataMap,
   Trade,
   TradingAlgorithm,
 } from "@gasless-intents/types";
@@ -162,23 +161,10 @@ async function main() {
     `[${SCENARIO}] dst auto-quoted = ${dstAuto} → half = ${half} (0x-padded: ${halfHex})`,
   );
 
-  // Same value supplied for BOTH placeholder names (we want both hooks to see half).
-  const providedDataMap: ProvidedDataMap = {};
-  const allHooks = [...(bundle.preHooks ?? []), ...(bundle.postHooks ?? [])];
-  for (const hook of allHooks) {
-    for (const action of hook.requiredActions ?? []) {
-      const phs = (action.data as { placeholders?: { nameVariable: string }[] }).placeholders;
-      if (!phs) continue;
-      providedDataMap[action.actionId] = providedDataMap[action.actionId] ?? {};
-      for (const ph of phs) {
-        if (ph.nameVariable === APPROVE_PLACEHOLDER_NAME) {
-          providedDataMap[action.actionId][APPROVE_PLACEHOLDER_NAME] = halfHex;
-        } else if (ph.nameVariable === SUPPLY_PLACEHOLDER_NAME) {
-          providedDataMap[action.actionId][SUPPLY_PLACEHOLDER_NAME] = halfHex;
-        }
-      }
-    }
-  }
+  const providedDataMap = buildHookProvidedDataMap(bundle, {
+    [APPROVE_PLACEHOLDER_NAME]: halfHex,
+    [SUPPLY_PLACEHOLDER_NAME]: halfHex,
+  });
 
   const signedDataArray = await processIntentBundle(
     bundle,

@@ -292,6 +292,31 @@ export async function processIntentBundle(
   return [...a, ...b, ...c];
 }
 
+export function buildHookProvidedDataMap(
+  bundle: BundleProposeResponse,
+  placeholderValues: Record<string, string | undefined>,
+): ProvidedDataMap {
+  const providedDataMap: ProvidedDataMap = {};
+  const hooks = [...(bundle.preHooks ?? []), ...(bundle.postHooks ?? [])];
+
+  for (const hook of hooks) {
+    for (const action of hook.requiredActions ?? []) {
+      const placeholders = (action.data as { placeholders?: Array<{ nameVariable: string }> }).placeholders;
+      if (!Array.isArray(placeholders)) continue;
+
+      for (const { nameVariable } of placeholders) {
+        const value = placeholderValues[nameVariable];
+        if (value === undefined) continue;
+
+        providedDataMap[action.actionId] = providedDataMap[action.actionId] ?? {};
+        providedDataMap[action.actionId][nameVariable] = value;
+      }
+    }
+  }
+
+  return providedDataMap;
+}
+
 async function sign7702Authorization(walletClient: WalletClient, data: Sign7702AuthorizationData): Promise<`0x${string}`> {
   if (!data.chainId) {
     throw new Error("chainId not specified");

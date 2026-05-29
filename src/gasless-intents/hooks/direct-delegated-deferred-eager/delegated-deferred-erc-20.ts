@@ -10,7 +10,7 @@ import { CHAIN_IDS } from "@utils/chains";
 import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
 import { replaceNamedPlaceholders } from "@utils/hooks-common";
 import { logActionTypes } from "@utils/logging";
-import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { buildHookProvidedDataMap, processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 
 import {
@@ -19,7 +19,6 @@ import {
   HookExecutionType,
   PlaceHolder,
   PlaceholderResolutionType,
-  ProvidedDataMap,
   Trade,
   TradingAlgorithm,
 } from "@gasless-intents/types";
@@ -131,21 +130,9 @@ async function main() {
   const halfHex = `0x${half.toString(16).padStart(64, "0")}` as `0x${string}`;
   console.log(`[${SCENARIO}] dst auto-quoted = ${dstAuto} → half = ${half} (0x-padded: ${halfHex})`);
 
-  // Walk every requiredAction; for every {transferAmount} placeholder, supply halfHex.
-  const providedDataMap: ProvidedDataMap = {};
-  const allHooks = [...(bundle.preHooks ?? []), ...(bundle.postHooks ?? [])];
-  for (const hook of allHooks) {
-    for (const action of hook.requiredActions ?? []) {
-      const phs = (action.data as { placeholders?: { nameVariable: string }[] }).placeholders;
-      if (!phs) continue;
-      providedDataMap[action.actionId] = providedDataMap[action.actionId] ?? {};
-      for (const ph of phs) {
-        if (ph.nameVariable === TRANSFER_PLACEHOLDER_NAME) {
-          providedDataMap[action.actionId][TRANSFER_PLACEHOLDER_NAME] = halfHex;
-        }
-      }
-    }
-  }
+  const providedDataMap = buildHookProvidedDataMap(bundle, {
+    [TRANSFER_PLACEHOLDER_NAME]: halfHex,
+  });
 
   const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap, providedDataMap);
   console.log(`[${SCENARIO}] Generated ${signedDataArray.length} signedData items`);
