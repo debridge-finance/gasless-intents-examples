@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Bundle, BundleCancelRequest } from '@gasless-intents/types';
+import { BundleCancelRequest, BundleProposeResponse } from '@gasless-intents/types';
 import { getAddress } from 'viem';
 
 export function generateCancelPreimage(request: BundleCancelRequest, authorityAddress: string): string {
@@ -22,7 +22,7 @@ export function generateCancelPreimage(request: BundleCancelRequest, authorityAd
  * Sorts bundles by their earliest intentTimestamp (ascending).
  * If a bundle has multiple intents, the one with the smallest timestamp is used.
  */
-export function sortBundlesByIntentTimestampAscending(bundles: Array<Bundle>): Array<Bundle> {
+export function sortBundlesByIntentTimestampAscending(bundles: Array<BundleProposeResponse>): Array<BundleProposeResponse> {
   return [...bundles].sort((a, b) => {
     const aTimestamps = a.intents.map((i) => i.intent.intentTimestamp);
     const bTimestamps = b.intents.map((i) => i.intent.intentTimestamp);

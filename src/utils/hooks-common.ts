@@ -38,7 +38,7 @@ export function replaceAmountPlaceholder(encodedCalldata: string, placeholderNam
  * each occurrence in calldata order: {amount1}, {amount2}, etc.
  */
 export function replaceNamedPlaceholders(
-  encodedCalldata: string,
+  encodedCalldata: string | `0x${string}`,
   placeholderNames: string[]
 ): string {
   const sentinel = clipHexPrefix(PLACEHOLDER_TOKEN_AMOUNT);

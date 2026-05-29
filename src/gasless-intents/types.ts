@@ -130,6 +130,8 @@ export type SubmitBundleResponse = {
 export enum SignatureTypes {
   Sign712 = "Sign712",
   Sign712MetaMask = "Sign712MetaMask",
+  Sign712MetaMaskWithPlaceholders = "Sign712MetaMaskWithPlaceholders", // Delegated hook with deferred placeholders
+  ProvidePlaceholders = "ProvidePlaceholders",                         // Direct hook with deferred placeholders
   Sign7702Authorization = "Sign7702Authorization",
   Sign = "Sign", // Solana Hex Sign - Authorization
   SignTransaction = "SignTransaction", // Solana Versioned Transaction signing
@@ -161,12 +163,35 @@ export type Sign7702AuthorizationData = {
   chainId?: number;
 }
 
+// Placeholder entry returned in solver-hook actions (ProvidePlaceholders, Sign712MetaMaskWithPlaceholders).
+export type PlaceholderItem = {
+  nameVariable: string;
+};
+
+// data shape for ProvidePlaceholders actions (direct hooks with deferred placeholders).
+export type ProvidePlaceholdersData = {
+  transaction: {
+    to: string;
+    data: string;
+    value: string;
+    chainId: number;
+  };
+  placeholders: PlaceholderItem[];
+};
+
+// data shape for Sign712MetaMaskWithPlaceholders actions (delegated hooks with deferred placeholders).
+export type Sign712MetaMaskWithPlaceholdersData = EIP712Data & {
+  placeholders: PlaceholderItem[];
+};
+
 // Combined action data type using discriminated union
 export type ActionData =
-  | (EIP712Data & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never })
-  | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never })
-  | (Tx & { domain?: never; contractAddress?: never })
-  | (SolanaSign & { domain?: never; contractAddress?: never; to?: never; value?: never });
+  | (EIP712Data & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never; transaction?: never; placeholders?: never })
+  | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never; transaction?: never; placeholders?: never })
+  | (Tx & { domain?: never; contractAddress?: never; transaction?: never; placeholders?: never })
+  | (SolanaSign & { domain?: never; contractAddress?: never; to?: never; value?: never; transaction?: never; placeholders?: never })
+  | (ProvidePlaceholdersData & { domain?: never; types?: never; message?: never; contractAddress?: never; to?: never; value?: never })
+  | (Sign712MetaMaskWithPlaceholdersData & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never; transaction?: never });
 
 export type Action = {
   type: SignatureTypes;
@@ -409,11 +434,13 @@ export type Bundle = {
   isAtomic?: boolean;
 
   // Signatures
-  signedData?: Array<{ actionId: string; signedData: string }>;
+  signedData?: Array<{ actionId: string; signedData: string; providedData?: Record<string, string> }>;
 
   // Only when cancelled
   cancel?: CancelBundleData;
 }
+
+export type BundleProposeResponse = Bundle;
 
 export type CancelBundleData = {
   preImage: string;
@@ -430,10 +457,23 @@ export type PaginatedResponseMetadata = {
   totalPages: number;
 }
 
+// Resolution type for placeholders.
+// "eager" (default) — resolved at bundle creation from trade amounts.
+// "deferred" — marker stays in calldata; value supplied at submit via providedData.
+export enum PlaceholderResolutionType {
+  Eager = "eager",
+  Deferred = "deferred",
+}
+
 export type PlaceHolder = {
   nameVariable: string;      // e.g. "amount1" — matches {amount1} in data
-  tokenAddress: string;      // token used for cumulative amount lookup
-  address: string;           // user address for grouping key
+  type?: PlaceholderResolutionType; // Defaults to "eager" when omitted.
+  // Byte length of the value to substitute. Alternative to the `.N` suffix inside the marker
+  // (e.g. {amount1.32}). Not currently listed in the public swagger — set only if you've
+  // confirmed the backend you target accepts it.
+  byteCount?: number;
+  tokenAddress: string;      // token used for cumulative amount lookup — required on every placeholder
+  address: string;           // user address for grouping key — required on every placeholder
   additionalAmount?: string; // optional offset added to cumulative amount
 };
 
@@ -443,8 +483,17 @@ export type GasCompensationInfo = {
   sender: string;
 };
 
+// Hook execution type.
+// "delegated" (default) — wrapped in MetaMask delegation caveats; user signs.
+// "direct" — raw transaction executed by the solver; no caveats, no MetaMask gas costs.
+export enum HookExecutionType {
+  Delegated = "delegated",
+  Direct = "direct",
+}
+
 export type ExtendedHook = {
   isAtomic: boolean;
+  type?: HookExecutionType;  // Defaults to "delegated" when omitted.
   data: string;              // hex calldata with {amount1}, {amount2}, etc.
   to?: string;               // EVM-only
   value?: string;            // EVM-only; wei string; can be "{amount.N}" for native transfers
@@ -480,7 +529,23 @@ export type SolanaSign = {
 export type WalletClientLike = WalletClient | Keypair;
 
 /**
- * Mapping of chainId to WalletClientLike, which can be either a Viem WalletClient 
+ * Mapping of chainId to WalletClientLike, which can be either a Viem WalletClient
  * for EVM chains or a Solana Keypair for Solana chain.
  */
 export type WalletClientMap = Record<number, WalletClientLike>;
+
+export type EvmTxCall = {
+  to: string;
+  data: string;
+  value: bigint;
+}
+
+// providedData map, keyed by actionId → (nameVariable → hex value).
+// Keying by actionId avoids collisions when multiple hooks share a placeholder name.
+export type ProvidedDataMap = Record<string, Record<string, string>>;
+
+export type SignedDataItem = {
+  actionId: string;
+  signedData: string;
+  providedData?: Record<string, string>;
+};
