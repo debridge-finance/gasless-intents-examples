@@ -1,6 +1,4 @@
 import { randomBytes, randomUUID } from "crypto";
-import fs from "fs";
-import path from "path";
 import { hexToBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -90,12 +88,6 @@ async function main() {
   };
   (requestBody as unknown as { approveAmountFlag: string }).approveAmountFlag = "exactApproveAmount";
 
-  const ARTIFACT_DIR = path.resolve(__dirname, "../../../../findings/echo-direct-deferred-artifacts");
-  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-  const proposePath = path.join(ARTIFACT_DIR, `${requestId}-propose.json`);
-  fs.writeFileSync(proposePath, JSON.stringify(requestBody, null, 2));
-  console.log(`[${SCENARIO}] wrote propose payload: ${proposePath}`);
-
   console.log(`[${SCENARIO}] Creating bundle…`);
   const bundle = await createBundle(requestBody);
   logActionTypes(bundle);
@@ -136,10 +128,6 @@ async function main() {
     isAtomic: true,
     signedData: signedDataArray,
   };
-
-  const submitPath = path.join(ARTIFACT_DIR, `${requestId}-submit.json`);
-  fs.writeFileSync(submitPath, JSON.stringify(submitPayload, null, 2));
-  console.log(`[${SCENARIO}] wrote submit payload: ${submitPath}`);
 
   let submitResponse: unknown;
   try {
