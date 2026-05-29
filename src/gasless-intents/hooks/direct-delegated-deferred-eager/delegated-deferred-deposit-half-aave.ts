@@ -2,14 +2,15 @@ import { randomUUID } from "crypto";
 import { encodeFunctionData, parseUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { clipHexPrefix, getEnvConfig, toHexPrefixString } from "@utils/index";
-import { AaveV3Abi, Erc20Abi } from "@utils/abis";
-import { createBundle, submitBundle } from "@utils/api";
+import { getEnvConfig } from "@utils/env";
+import { clipHexPrefix, toHexPrefixString } from "@utils/string";
+import { AaveV3Abi, Erc20Abi } from "@utils/contract-calls/abis";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { CHAIN_IDS } from "@utils/chains";
-import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
+import { AAVE_V3_POOL_ARBITRUM, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
 import { replaceNamedPlaceholders } from "@utils/hooks-common";
 import { logActionTypes } from "@utils/logging";
-import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { buildHookProvidedDataMap, processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 
 import {
@@ -18,15 +19,11 @@ import {
   HookExecutionType,
   PlaceHolder,
   PlaceholderResolutionType,
-  ProvidedDataMap,
   Trade,
   TradingAlgorithm,
-} from "../../types";
+} from "@gasless-intents/types";
 
 const SCENARIO = "another-delegated-deferred-distinct";
-
-// AAVE V3 Pool on Arbitrum.
-const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD" as const;
 
 const APPROVE_PLACEHOLDER_NAME = "approveAmount";
 const SUPPLY_PLACEHOLDER_NAME = "supplyAmount";
@@ -164,23 +161,10 @@ async function main() {
     `[${SCENARIO}] dst auto-quoted = ${dstAuto} → half = ${half} (0x-padded: ${halfHex})`,
   );
 
-  // Same value supplied for BOTH placeholder names (we want both hooks to see half).
-  const providedDataMap: ProvidedDataMap = {};
-  const allHooks = [...(bundle.preHooks ?? []), ...(bundle.postHooks ?? [])];
-  for (const hook of allHooks) {
-    for (const action of hook.requiredActions ?? []) {
-      const phs = (action.data as { placeholders?: { nameVariable: string }[] }).placeholders;
-      if (!phs) continue;
-      providedDataMap[action.actionId] = providedDataMap[action.actionId] ?? {};
-      for (const ph of phs) {
-        if (ph.nameVariable === APPROVE_PLACEHOLDER_NAME) {
-          providedDataMap[action.actionId][APPROVE_PLACEHOLDER_NAME] = halfHex;
-        } else if (ph.nameVariable === SUPPLY_PLACEHOLDER_NAME) {
-          providedDataMap[action.actionId][SUPPLY_PLACEHOLDER_NAME] = halfHex;
-        }
-      }
-    }
-  }
+  const providedDataMap = buildHookProvidedDataMap(bundle, {
+    [APPROVE_PLACEHOLDER_NAME]: halfHex,
+    [SUPPLY_PLACEHOLDER_NAME]: halfHex,
+  });
 
   const signedDataArray = await processIntentBundle(
     bundle,

@@ -1,10 +1,10 @@
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import nacl from "tweetnacl";
 import bs58 from 'bs58';
-import { clipHexPrefix } from "..";
+import { clipHexPrefix } from "@utils/string";
 import { ActionType, Bundle, SignatureTypes, SolanaSign } from "@gasless-intents/types";
-import { SOLANA_RPC_URL } from "../constants";
-import { CHAIN_IDS } from "../chains";
+import { SOLANA_RPC_URL } from "@utils/constants";
+import { CHAIN_IDS } from "@utils/chains";
 
 export function extractTransactionHexData(obj: any): string[] {
   const result: string[] = [];

@@ -1,0 +1,75 @@
+import { privateKeyToAccount } from 'viem/accounts'
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { randomUUID } from 'crypto';
+
+
+import { getPolyUsdcToSolJupTrade, getPolyUsdcToSolUsdcTrade } from "@gasless-intents/trade-blueprints";
+import { Keypair } from "@solana/web3.js";
+import bs58 from "bs58";
+import { createBundle, submitBundle } from '@utils/gasless-api';
+import { processIntentBundle } from '@utils/signatures/intent-signatures';
+import { TradingAlgorithm } from "@gasless-intents/types";
+import { getChainIdToWalletClientMap } from '@utils/wallet';
+
+async function main() {
+  // Wallet setup
+  const { privateKey, solPrivateKey } = getEnvConfig();
+
+  const account = privateKeyToAccount(toHexPrefixString(privateKey));
+
+  const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
+
+  console.log(`account: ${account.address}`)
+
+  const requestId = randomUUID();
+
+  const solanaKey = Keypair.fromSecretKey(bs58.decode(solPrivateKey));
+  const solanaAddress = solanaKey.publicKey.toBase58();
+
+  // Trades body
+  const requestBody = {
+    requestId,
+    expirationTimestamp: Math.floor(new Date().getTime() * 2 / 1000),
+    enableAccountAbstraction: true,
+    isAtomic: true,
+    tradingAlgorithm: TradingAlgorithm.MARKET,
+    trades: [
+      getPolyUsdcToSolUsdcTrade(account.address, solanaAddress, solanaAddress),
+      getPolyUsdcToSolJupTrade(account.address, solanaAddress, solanaAddress),
+    ],
+    preHooks: [],
+    postHooks: []
+  }
+
+  console.log(`Creating bundle..., ${JSON.stringify(requestBody)}`);
+  const bundle = await createBundle(requestBody);
+  console.log("Bundle created successfully!");
+
+  // Using processIntentBundle to handle all intents at once
+  console.log("Collecting signatures for all intents...");
+  const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
+
+  console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length || 0} intents`);
+
+  // Prepare the bundle with intent signatures for submission
+  const submitPayload = {
+    ...bundle,
+    requestId: requestBody.requestId,
+    enableAccountAbstraction: true,
+    isAtomic: true,
+    signedData: signedDataArray
+  };
+
+  console.log(`Payload prepared with signatures. Ready for submission. payload: ${JSON.stringify(submitPayload)}`);
+
+  const submitResponse = await submitBundle(submitPayload);
+  console.log("Submit response:", submitResponse);
+
+  return submitPayload;
+}
+
+main().catch((error) => {
+  console.error("\n🚨 FATAL ERROR in script execution:", error);
+  process.exitCode = 1;
+});

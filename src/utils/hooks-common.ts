@@ -1,5 +1,5 @@
-import { clipHexPrefix } from ".";
-import { PLACEHOLDER_TOKEN_AMOUNT } from "./constants";
+import { clipHexPrefix } from "@utils/string";
+import { PLACEHOLDER_TOKEN_AMOUNT } from "@utils/constants";
 
 const DEADBEEF = "deadbeef";
 

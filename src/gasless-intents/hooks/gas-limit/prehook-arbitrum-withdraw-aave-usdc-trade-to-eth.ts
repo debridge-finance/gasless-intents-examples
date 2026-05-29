@@ -1,18 +1,18 @@
 import { privateKeyToAccount } from "viem/accounts";
-import util from "util";
 import { randomUUID } from "crypto";
 
 import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
-import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { getAaveWithdrawExtendedHook } from "@utils/posthooks";
-import { createBundle, submitBundle } from "@utils/api";
-import { BundleProposeBody, TradingAlgorithm } from "../../types";
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { createBundle, submitBundle } from "@utils/gasless-api";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
 import {
   getArbitrumUsdcToArbitrumEth,
-} from "../../trades";
+} from "@gasless-intents/trade-blueprints";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
+import { getAaveWithdrawHook } from "@utils/hooks/aave";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -21,14 +21,13 @@ async function main() {
 
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  const amountToRebalance = "1504714"; // 1.504714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
+  const amountToRebalance = "2504714"; // 2.504714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
 
-  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawExtendedHook(
+  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawHook(
     AAVE_V3_POOL_ARBITRUM,
     toHexPrefixString(USDC.Arbitrum),
     CHAIN_IDS.Arbitrum,
     account.address,
-    "aaveDepositAmount",
     BigInt(amountToRebalance),
   );
 
@@ -54,11 +53,6 @@ async function main() {
 
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");

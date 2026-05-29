@@ -1,8 +1,10 @@
-import { getEnvConfig, clipHexPrefix, sortBundlesByIntentTimestampAscending } from '@utils/index';
+import { getEnvConfig } from "@utils/env";
+import { sortBundlesByIntentTimestampAscending } from '@utils/index';
 import { privateKeyToAccount } from "viem/accounts";
-import { BundleCancelRequest, BundleStatus, CancelBundleReasonCodes, GetBundlesFilterParams } from "../types";
-import { cancelBundles, getBundles } from '@utils/api';
+import { BundleCancelRequest, BundleStatus, CancelBundleReasonCodes, GetBundlesFilterParams } from "@gasless-intents/types";
+import { cancelBundles, getBundles } from '@utils/gasless-api';
 import { getAddress } from "viem";
+import { clipHexPrefix } from "@utils/string";
 
 async function main() {
 
@@ -29,7 +31,12 @@ async function main() {
     console.log("\nℹ️ No processing bundles found for the specified intent owner and authority. Exiting.");
     return;
   }
-  
+
+  // const firstBundle: Bundle = sortedBundles[0];
+  // const lastBundle: Bundle = sortedBundles[sortedBundles.length - 1];
+
+  // const creationTimestamp = new Date(firstBundle.intents[0].intent.intentTimestamp * 1000).toISOString();
+  // const expirationTimestamp = new Date(lastBundle.intents[0].intent.expirationTimestamp * 1000).toISOString();;
   const intentOwner = filters.intentOwner;
 
   if (!intentOwner) {
@@ -46,7 +53,7 @@ async function main() {
     cancelAuthority: {
       intentOwner: intentOwner,
     },
-    // creationTimestamp, 
+    // creationTimestamp,
     // expirationTimestamp,
     reasonCode
   };

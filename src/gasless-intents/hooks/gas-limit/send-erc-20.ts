@@ -1,10 +1,10 @@
-import util from "util";
 import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { createBundle, submitBundle } from "@utils/api";
-import { BundleProposeBody, ExtendedHook, TradingAlgorithm } from "../../types";
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { createBundle, submitBundle } from "@utils/gasless-api";
+import { BundleProposeBody, ExtendedHook, TradingAlgorithm } from "@gasless-intents/types";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { createTransferCall } from "@utils/contract-calls";
@@ -74,10 +74,6 @@ async function main() {
 
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   console.log("Collecting signatures for all intents...");
   const signedDataArray = await processIntentBundle(bundle, walletClientMap);

@@ -1,17 +1,19 @@
 import { randomBytes, randomUUID } from "crypto";
-import fs from "fs";
-import path from "path";
-import {
-  encodeFunctionData,
-  hexToBytes,
-} from "viem";
+import { hexToBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { clipHexPrefix, getEnvConfig } from "@utils/index";
-import { createBundle, submitBundle } from "@utils/api";
+import { getEnvConfig } from "@utils/env";
+import { clipHexPrefix } from "@utils/string";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { CHAIN_IDS } from "@utils/chains";
+import { ECHO_WITH_SIG_BASE, USDC } from "@utils/constants";
+import {
+  createEchoWithSigCallDataWithSignaturePlaceholder,
+  createEchoWithSigMessageTypedData,
+  EchoWithSigMessageArgs,
+} from "@utils/contract-calls";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
-import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { buildHookProvidedDataMap, processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
 
 import {
@@ -19,62 +21,10 @@ import {
   ExtendedHook,
   HookExecutionType,
   PlaceholderResolutionType,
-  ProvidedDataMap,
   TradingAlgorithm,
-} from "../../types";
+} from "@gasless-intents/types";
 
 const SCENARIO = "echo-direct-deferred";
-
-const ECHO_WITH_SIG = "0x30f1acea1948fa286f6ebd948d79fadeb2ae1ca9";
-const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-
-const echoWithSigAbi = [
-  {
-    type: "function",
-    name: "echoWithSig",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "user", type: "address" },
-      { name: "nonce", type: "bytes32" },
-      { name: "message", type: "string" },
-      { name: "deadline", type: "uint256" },
-      { name: "signature", type: "bytes" },
-    ],
-    outputs: [],
-  },
-  {
-    type: "event",
-    name: "MessageEchoed",
-    inputs: [
-      { name: "user", type: "address", indexed: true },
-      { name: "nonce", type: "bytes32", indexed: true },
-      { name: "message", type: "string", indexed: false },
-      { name: "signature", type: "bytes", indexed: false },
-    ],
-    anonymous: false,
-  },
-] as const;
-
-type EchoMessageArgs = {
-  user: `0x${string}`;
-  nonce: `0x${string}`;
-  message: string;
-  deadline: bigint;
-};
-
-function buildPrehookCalldataTemplate(args: EchoMessageArgs): `0x${string}` {
-  const dummySig = ("0x" + "00".repeat(65)) as `0x${string}`;
-  const encoded = encodeFunctionData({
-    abi: echoWithSigAbi,
-    functionName: "echoWithSig",
-    args: [args.user, args.nonce, args.message, args.deadline, dummySig],
-  });
-  // Last 192 hex chars = 65 sig bytes + 31 zero-pad bytes (3 × 32-byte ABI words).
-  // bytes signature is the LAST argument, so this slice maps to the sig data slot.
-  const head = encoded.slice(0, encoded.length - 192);
-  const tail = "{signature.65}" + "00".repeat(31);
-  return (head + tail) as `0x${string}`;
-}
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -87,31 +37,14 @@ async function main() {
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600);
   const requestId = randomUUID();
 
-  const echoMsg: EchoMessageArgs = { user: operator, nonce, message, deadline };
+  const echoMsg: EchoWithSigMessageArgs = { user: operator, nonce, message, deadline };
 
   console.log(`[${SCENARIO}] Operator (=user, =from): ${operator}`);
   console.log(`[${SCENARIO}] Nonce:    ${nonce}`);
   console.log(`[${SCENARIO}] Message:  ${message}`);
   console.log(`[${SCENARIO}] Deadline: ${deadline}`);
 
-  const operatorSignature = await account.signTypedData({
-    domain: {
-      name: "EchoWithSig",
-      version: "1",
-      chainId: CHAIN_IDS.Base,
-      verifyingContract: ECHO_WITH_SIG as `0x${string}`,
-    },
-    types: {
-      EchoMessage: [
-        { name: "user", type: "address" },
-        { name: "nonce", type: "bytes32" },
-        { name: "message", type: "string" },
-        { name: "deadline", type: "uint256" },
-      ],
-    },
-    primaryType: "EchoMessage",
-    message: echoMsg,
-  });
+  const operatorSignature = await account.signTypedData(createEchoWithSigMessageTypedData(echoMsg));
   if (hexToBytes(operatorSignature).length !== 65) {
     throw new Error(
       `[${SCENARIO}] Unexpected operator signature length: ${hexToBytes(operatorSignature).length}`,
@@ -119,13 +52,13 @@ async function main() {
   }
   console.log(`[${SCENARIO}] EchoMessage signature: ${operatorSignature}`);
 
-  const calldata = buildPrehookCalldataTemplate(echoMsg);
+  const calldata = createEchoWithSigCallDataWithSignaturePlaceholder(echoMsg);
 
   const preHook: ExtendedHook = {
     chainId: CHAIN_IDS.Base,
     type: HookExecutionType.Direct,
     from: operator,
-    to: ECHO_WITH_SIG,
+    to: ECHO_WITH_SIG_BASE,
     value: "0",
     isAtomic: true,
     data: calldata,
@@ -136,7 +69,7 @@ async function main() {
       } as ExtendedHook["placeHolders"][number],
     ],
     gasCompensationInfo: {
-      tokenAddress: USDC_BASE,
+      tokenAddress: USDC.Base,
       chainId: CHAIN_IDS.Base,
       sender: operator,
     },
@@ -154,31 +87,11 @@ async function main() {
   };
   (requestBody as unknown as { approveAmountFlag: string }).approveAmountFlag = "exactApproveAmount";
 
-  const ARTIFACT_DIR = path.resolve(__dirname, "../../../../findings/echo-direct-deferred-artifacts");
-  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-  const proposePath = path.join(ARTIFACT_DIR, `${requestId}-propose.json`);
-  fs.writeFileSync(proposePath, JSON.stringify(requestBody, null, 2));
-  console.log(`[${SCENARIO}] wrote propose payload: ${proposePath}`);
-
   console.log(`[${SCENARIO}] Creating bundle…`);
   const bundle = await createBundle(requestBody);
   logActionTypes(bundle);
 
-  // Walk every requiredAction; supply { signature: operatorSignature } for any
-  // action that declares a "signature" placeholder. Same shape as anton-spender-bundle.ts.
-  const providedDataMap: ProvidedDataMap = {};
-  for (const hook of [...(bundle.preHooks ?? []), ...(bundle.postHooks ?? [])]) {
-    for (const action of hook.requiredActions ?? []) {
-      const phs = (action.data as { placeholders?: { nameVariable: string }[] }).placeholders;
-      if (!phs) continue;
-      providedDataMap[action.actionId] = providedDataMap[action.actionId] ?? {};
-      for (const ph of phs) {
-        if (ph.nameVariable === "signature") {
-          providedDataMap[action.actionId].signature = operatorSignature;
-        }
-      }
-    }
-  }
+  const providedDataMap = buildHookProvidedDataMap(bundle, { signature: operatorSignature });
 
   const signedDataArray = await processIntentBundle(
     bundle,
@@ -200,10 +113,6 @@ async function main() {
     isAtomic: true,
     signedData: signedDataArray,
   };
-
-  const submitPath = path.join(ARTIFACT_DIR, `${requestId}-submit.json`);
-  fs.writeFileSync(submitPath, JSON.stringify(submitPayload, null, 2));
-  console.log(`[${SCENARIO}] wrote submit payload: ${submitPath}`);
 
   let submitResponse: unknown;
   try {

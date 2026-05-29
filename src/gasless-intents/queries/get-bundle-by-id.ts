@@ -1,4 +1,4 @@
-import { getBundleById } from '@utils/api';
+import { getBundleById } from '@utils/gasless-api';
 
 const bundleId = "0xa2245c8e4e25c328ce6315c9ed416dc0e6098136aa761c093cac800c3600949f"; // Replace - use your own, get after submitting a bundle
 

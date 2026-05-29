@@ -2,8 +2,9 @@ import util from "util";
 import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { createBundle, submitBundle } from "@utils/api";
+import { getEnvConfig } from "@utils/env";
+import { toHexPrefixString } from "@utils/string";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { createTransferCall } from "@utils/contract-calls";
 import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
@@ -17,7 +18,7 @@ import {
   PlaceholderResolutionType,
   Trade,
   TradingAlgorithm,
-} from "../../types";
+} from "@gasless-intents/types";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
 
