@@ -20,3 +20,11 @@ export const AaveV3Abi = {
   Supply: parseAbi(["function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode)"]),
   Withdraw: parseAbi(["function withdraw(address asset, uint256 amount, address to)"]),
 } as const;
+
+/** EchoWithSig test contract */
+export const EchoWithSigAbi = {
+  EchoWithSig: parseAbi([
+    "function echoWithSig(address user, bytes32 nonce, string message, uint256 deadline, bytes signature)",
+    "event MessageEchoed(address indexed user, bytes32 indexed nonce, string message, bytes signature)",
+  ]),
+} as const;

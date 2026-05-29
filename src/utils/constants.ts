@@ -87,6 +87,8 @@ export const DE_BRIDGE_CONTRACTS = {
   },
 };
 
+export const ECHO_WITH_SIG_BASE = "0x30f1acea1948fa286f6ebd948d79fadeb2ae1ca9";
+
 export const CASH = {
   Solana: "CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH",
 };

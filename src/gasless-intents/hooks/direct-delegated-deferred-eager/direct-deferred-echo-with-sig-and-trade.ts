@@ -11,6 +11,7 @@ import { getEnvConfig } from "@utils/env";
 import { clipHexPrefix } from "@utils/string";
 import { createBundle, submitBundle } from "@utils/gasless-api";
 import { CHAIN_IDS } from "@utils/chains";
+import { EchoWithSigAbi } from "@utils/contract-calls/abis";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
@@ -24,38 +25,9 @@ import {
   Trade,
   TradingAlgorithm,
 } from "@gasless-intents/types";
-import { USDC, USDT } from "@utils/constants";
+import { ECHO_WITH_SIG_BASE, USDC, USDT } from "@utils/constants";
 
 const SCENARIO = "echo-direct-deferred";
-
-const ECHO_WITH_SIG = "0x30f1acea1948fa286f6ebd948d79fadeb2ae1ca9";
-
-const echoWithSigAbi = [
-  {
-    type: "function",
-    name: "echoWithSig",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "user", type: "address" },
-      { name: "nonce", type: "bytes32" },
-      { name: "message", type: "string" },
-      { name: "deadline", type: "uint256" },
-      { name: "signature", type: "bytes" },
-    ],
-    outputs: [],
-  },
-  {
-    type: "event",
-    name: "MessageEchoed",
-    inputs: [
-      { name: "user", type: "address", indexed: true },
-      { name: "nonce", type: "bytes32", indexed: true },
-      { name: "message", type: "string", indexed: false },
-      { name: "signature", type: "bytes", indexed: false },
-    ],
-    anonymous: false,
-  },
-] as const;
 
 type EchoMessageArgs = {
   user: `0x${string}`;
@@ -67,7 +39,7 @@ type EchoMessageArgs = {
 function buildPrehookCalldataTemplate(args: EchoMessageArgs): `0x${string}` {
   const dummySig = ("0x" + "00".repeat(65)) as `0x${string}`;
   const encoded = encodeFunctionData({
-    abi: echoWithSigAbi,
+    abi: EchoWithSigAbi.EchoWithSig,
     functionName: "echoWithSig",
     args: [args.user, args.nonce, args.message, args.deadline, dummySig],
   });
@@ -101,7 +73,7 @@ async function main() {
       name: "EchoWithSig",
       version: "1",
       chainId: CHAIN_IDS.Base,
-      verifyingContract: ECHO_WITH_SIG as `0x${string}`,
+      verifyingContract: ECHO_WITH_SIG_BASE as `0x${string}`,
     },
     types: {
       EchoMessage: [
@@ -127,7 +99,7 @@ async function main() {
     chainId: CHAIN_IDS.Base,
     type: HookExecutionType.Direct,
     from: operator,
-    to: ECHO_WITH_SIG,
+    to: ECHO_WITH_SIG_BASE,
     value: "0",
     isAtomic: true,
     data: calldata,
