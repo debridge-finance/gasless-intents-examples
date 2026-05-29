@@ -7,7 +7,7 @@ import { clipHexPrefix, toHexPrefixString } from "@utils/string";
 import { AaveV3Abi, Erc20Abi } from "@utils/contract-calls/abis";
 import { createBundle, submitBundle } from "@utils/gasless-api";
 import { CHAIN_IDS } from "@utils/chains";
-import { PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
+import { AAVE_V3_POOL_ARBITRUM, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
 import { replaceNamedPlaceholders } from "@utils/hooks-common";
 import { logActionTypes } from "@utils/logging";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
@@ -25,9 +25,6 @@ import {
 } from "@gasless-intents/types";
 
 const SCENARIO = "another-delegated-deferred-distinct";
-
-// AAVE V3 Pool on Arbitrum.
-const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD" as const;
 
 const APPROVE_PLACEHOLDER_NAME = "approveAmount";
 const SUPPLY_PLACEHOLDER_NAME = "supplyAmount";
