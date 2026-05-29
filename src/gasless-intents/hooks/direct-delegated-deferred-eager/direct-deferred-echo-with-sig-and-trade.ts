@@ -138,7 +138,7 @@ async function main() {
       } as ExtendedHook["placeHolders"][number],
     ],
     // gasCompensationInfo: {
-    //   tokenAddress: USDC_BASE,
+    //   tokenAddress: USDC.Base,
     //   chainId: CHAIN_IDS.Base,
     //   sender: operator,
     // },

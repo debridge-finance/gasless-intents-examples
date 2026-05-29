@@ -11,6 +11,7 @@ import { getEnvConfig } from "@utils/env";
 import { clipHexPrefix } from "@utils/string";
 import { createBundle, submitBundle } from "@utils/gasless-api";
 import { CHAIN_IDS } from "@utils/chains";
+import { USDC } from "@utils/constants";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { logActionTypes } from "@utils/logging";
@@ -27,7 +28,6 @@ import {
 const SCENARIO = "echo-direct-deferred";
 
 const ECHO_WITH_SIG = "0x30f1acea1948fa286f6ebd948d79fadeb2ae1ca9";
-const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 
 const echoWithSigAbi = [
   {
@@ -137,7 +137,7 @@ async function main() {
       } as ExtendedHook["placeHolders"][number],
     ],
     gasCompensationInfo: {
-      tokenAddress: USDC_BASE,
+      tokenAddress: USDC.Base,
       chainId: CHAIN_IDS.Base,
       sender: operator,
     },
