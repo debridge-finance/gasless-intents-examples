@@ -10,6 +10,7 @@ import { createBundle, submitBundle } from "@utils/gasless-api";
 import { CHAIN_IDS } from "@utils/chains";
 import {
   createEchoWithSigCallDataWithSignaturePlaceholder,
+  createEchoWithSigMessageTypedData,
   EchoWithSigMessageArgs,
 } from "@utils/contract-calls";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
@@ -47,24 +48,7 @@ async function main() {
   console.log(`[${SCENARIO}] Message:  ${message}`);
   console.log(`[${SCENARIO}] Deadline: ${deadline}`);
 
-  const operatorSignature = await account.signTypedData({
-    domain: {
-      name: "EchoWithSig",
-      version: "1",
-      chainId: CHAIN_IDS.Base,
-      verifyingContract: ECHO_WITH_SIG_BASE as `0x${string}`,
-    },
-    types: {
-      EchoMessage: [
-        { name: "user", type: "address" },
-        { name: "nonce", type: "bytes32" },
-        { name: "message", type: "string" },
-        { name: "deadline", type: "uint256" },
-      ],
-    },
-    primaryType: "EchoMessage",
-    message: echoMsg,
-  });
+  const operatorSignature = await account.signTypedData(createEchoWithSigMessageTypedData(echoMsg));
   if (hexToBytes(operatorSignature).length !== 65) {
     throw new Error(
       `[${SCENARIO}] Unexpected operator signature length: ${hexToBytes(operatorSignature).length}`,

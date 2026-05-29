@@ -1,6 +1,8 @@
 import { encodeFunctionData, Address } from "viem";
 import { Erc20Abi, Erc4626Abi, AaveV3Abi, EchoWithSigAbi } from "@utils/contract-calls/abis";
 import { EvmTx } from "@gasless-intents/types";
+import { CHAIN_IDS } from "@utils/chains";
+import { ECHO_WITH_SIG_BASE } from "@utils/constants";
 
 export function createApproveCall(tokenAddress: Address, spenderAddress: Address, amount: bigint): EvmTx {
   const data = encodeFunctionData({
@@ -93,6 +95,27 @@ export type EchoWithSigMessageArgs = {
   message: string;
   deadline: bigint;
 };
+
+export function createEchoWithSigMessageTypedData(args: EchoWithSigMessageArgs) {
+  return {
+    domain: {
+      name: "EchoWithSig",
+      version: "1",
+      chainId: CHAIN_IDS.Base,
+      verifyingContract: ECHO_WITH_SIG_BASE as `0x${string}`,
+    },
+    types: {
+      EchoMessage: [
+        { name: "user", type: "address" },
+        { name: "nonce", type: "bytes32" },
+        { name: "message", type: "string" },
+        { name: "deadline", type: "uint256" },
+      ],
+    },
+    primaryType: "EchoMessage",
+    message: args,
+  } as const;
+}
 
 export function createEchoWithSigCallDataWithSignaturePlaceholder(args: EchoWithSigMessageArgs): `0x${string}` {
   const dummySig = ("0x" + "00".repeat(65)) as `0x${string}`;
