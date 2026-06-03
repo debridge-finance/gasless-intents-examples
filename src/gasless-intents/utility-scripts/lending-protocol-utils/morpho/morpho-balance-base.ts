@@ -5,8 +5,9 @@ import { base } from "viem/chains";
 import { USDC } from "@utils/constants";
 import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
-import { getEnvConfig, toHexPrefixString } from "@utils/index";
-import { Erc20Abi, Erc4626Abi } from "@utils/abis";
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { Erc20Abi, Erc4626Abi } from "@utils/contract-calls/abis";
 
 const USDC_DECIMALS = 6;
 

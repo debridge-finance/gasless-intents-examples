@@ -1,9 +1,10 @@
 import { createWalletClient, http } from "viem";
-import { getEnvConfig, toHexPrefixString } from "../../utils";
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
 import { arbitrum } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { DAI } from "../../utils/constants";
-import { Erc20Abi } from "../../utils/abis";
+import { DAI } from "@utils/constants";
+import { Erc20Abi } from "@utils/contract-calls/abis";
 
 const ALLOWANCE_HOLDER_CONTRACT = "0xddddddddd4B6472c5002F95610b194D1161223d0";
 

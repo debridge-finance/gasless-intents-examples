@@ -1,16 +1,16 @@
 import { privateKeyToAccount } from "viem/accounts";
-import util from "util";
 import { randomUUID } from "crypto";
 
-import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "../../utils/constants";
-import { toHexPrefixString, getEnvConfig } from "../../utils";
-import { createBundle, submitBundle } from "../../utils/api";
-import { BundleProposeBody, ExtendedHook, PlaceHolder, Trade, TradingAlgorithm } from "../types";
-import { processIntentBundle } from "../../utils/signatures/intent-signatures";
-import { getChainIdToWalletClientMap } from "../../utils/wallet";
-import { CHAIN_IDS } from "../../utils/chains";
-import { createApproveCall } from "../../utils/contract-calls";
-import { replaceAmountPlaceholder } from "../../utils/hooks-common";
+import { DE_BRIDGE_CONTRACTS, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { createBundle, submitBundle } from "@utils/gasless-api";
+import { BundleProposeBody, ExtendedHook, PlaceHolder, Trade, TradingAlgorithm } from "@gasless-intents/types";
+import { processIntentBundle } from "@utils/signatures/intent-signatures";
+import { getChainIdToWalletClientMap } from "@utils/wallet";
+import { CHAIN_IDS } from "@utils/chains";
+import { createApproveCall } from "@utils/contract-calls";
+import { replaceAmountPlaceholder } from "@utils/hooks-common";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -74,11 +74,6 @@ async function main() {
 
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");

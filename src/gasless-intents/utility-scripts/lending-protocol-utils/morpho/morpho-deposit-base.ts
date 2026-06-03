@@ -4,10 +4,11 @@ import { privateKeyToAccount } from "viem/accounts";
 import { base } from "viem/chains";
 import { createApproveCall, createDepositCall } from "@utils/contract-calls";
 import { USDC } from "@utils/constants";
-import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
 import { CHAIN_IDS } from "@utils/chains";
-import { Erc20Abi, Erc4626Abi } from "@utils/abis";
+import { Erc20Abi, Erc4626Abi } from "@utils/contract-calls/abis";
 
 const USDC_DECIMALS = 6;
 const DEPOSIT_AMOUNT = BigInt("1000000"); // Default: 1 USDC

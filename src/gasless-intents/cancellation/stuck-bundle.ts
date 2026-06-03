@@ -2,19 +2,20 @@ import {
   privateKeyToAccount
 } from 'viem/accounts'
 import { randomUUID } from 'crypto';
-import util from "util"
 
-import { getEnvConfig, toHexPrefixString } from '@utils/index';
-import { createBundle, submitBundle } from '@utils/api';
+
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { createBundle, submitBundle } from '@utils/gasless-api';
 import { processIntentBundle } from '@utils/signatures/intent-signatures';
 import {
   getPolyMaticToWethTrade,
   getPolyUsdcToBscUsdcTrade,
   getPolyMaticToBscBnb,
   getPolyMaticToBscBnbStuck
-} from "../trades";
+} from "../trade-blueprints";
 import { getChainIdToWalletClientMap } from '@utils/wallet';
-import { Bundle, TradingAlgorithm } from '../types';
+import { Bundle, TradingAlgorithm } from '@gasless-intents/types';
 
 async function main() {
   // Wallet setup
@@ -46,11 +47,6 @@ async function main() {
   const bundle = await createBundle(requestBody);
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
