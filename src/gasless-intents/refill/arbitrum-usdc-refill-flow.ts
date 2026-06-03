@@ -96,7 +96,7 @@ async function main() {
   const submitPayload: Bundle = {
     ...proposal,
     requestId: requestBody.requestId,
-    enableAccountAbstraction: true,
+    enableAccountAbstraction: requestBody.enableAccountAbstraction,
     isAtomic: true,
     signedData,
   };
