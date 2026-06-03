@@ -19,6 +19,8 @@ import {
   waitForApprovalGas,
 } from "./utils";
 import { getEnvConfig } from "@utils/env";
+import { createPublicClient, http } from "viem";
+import { arbitrum } from "viem/chains";
 
 const REFERRAL_CODE = 110000002;
 const USDC_AMOUNT_RAW = "3000000"; // 3 USDC
@@ -72,6 +74,11 @@ async function main() {
   const account = privateKeyToAccount(toHexPrefixString(privateKey));
   const walletClientMap = getChainIdToWalletClientMap(account);
 
+  const arbitrumClient = createPublicClient({
+    chain: arbitrum,
+    transport: http(process.env.ARB_RPC_URL),
+  });
+
   const requestBody = buildRequestBody(account.address);
 
   console.log("Gas Refill example: Arbitrum USDC -> Base USDC");
@@ -87,7 +94,7 @@ async function main() {
   }
   logRequiredActions(summarizeRequiredActions(requiredActions));
 
-  const initialGasCheck = await getApprovalGasCheck(budgetApproval, account.address);
+  const initialGasCheck = await getApprovalGasCheck(budgetApproval, account.address, arbitrumClient);
   logApprovalGas("Arbitrum native gas for Budget approval", initialGasCheck.balanceWei, initialGasCheck.requiredWei);
 
   const signedData = await processIntentBundleActions(proposal, walletClientMap, {}, { skipBudgetApprovalTransactions: true });
@@ -105,21 +112,24 @@ async function main() {
   const submitResponse = await submitBundle(submitPayload);
   console.log(`Bundle submitted: ${submitResponse.bundleId}`);
 
-  let approvalGasCheck = await getApprovalGasCheck(budgetApproval, account.address);
+  let approvalGasCheck = await getApprovalGasCheck(budgetApproval, account.address, arbitrumClient);
   if (!approvalGasCheck.hasEnough) {
     console.log("Waiting for refill to fund Arbitrum native gas before broadcasting Budget approval...");
 
-    const refilledGasCheck = await waitForApprovalGas({
-      approval: budgetApproval,
-      authorityAddress: account.address,
-      pollIntervalMs: POLL_INTERVAL_MS,
-      maxAttempts: MAX_POLL_ATTEMPTS,
-      onPoll: (attempt, gasCheck) => {
-        console.log(
-          `Refill poll ${attempt}/${MAX_POLL_ATTEMPTS}: ${formatNativeWei(gasCheck.balanceWei)} available, ${formatNativeWei(gasCheck.requiredWei)} required`,
-        );
+    const refilledGasCheck = await waitForApprovalGas(
+      arbitrumClient,
+      {
+        approval: budgetApproval,
+        authorityAddress: account.address,
+        pollIntervalMs: POLL_INTERVAL_MS,
+        maxAttempts: MAX_POLL_ATTEMPTS,
+        onPoll: (attempt, gasCheck) => {
+          console.log(
+            `Refill poll ${attempt}/${MAX_POLL_ATTEMPTS}: ${formatNativeWei(gasCheck.balanceWei)} available, ${formatNativeWei(gasCheck.requiredWei)} required`,
+          );
+        },
       },
-    });
+    );
 
     if (!refilledGasCheck) {
       console.log("Budget approval was not broadcast because refill did not fund enough Arbitrum ETH in time.");
