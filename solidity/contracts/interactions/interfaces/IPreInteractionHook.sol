@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-/// @notice Demo-only interface. The real Intent Manager calls hooks with this
-///         selector; the field shape will match exactly once the submit
-///         endpoint is wired end-to-end. Until then these contracts deploy
-///         and can be exercised by direct calls.
+/// @notice Pre-interaction callback interface invoked by the Intent Manager.
+///         The selector and field shape match the current Intent Manager
+///         callback interface.
 interface IPreInteractionHook {
     function onPreCall(
         bytes32 intentId,

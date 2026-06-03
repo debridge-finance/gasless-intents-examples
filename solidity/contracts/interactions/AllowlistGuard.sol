@@ -3,15 +3,19 @@ pragma solidity 0.8.24;
 
 import {IPreInteractionHook} from "./interfaces/IPreInteractionHook.sol";
 import {IPostInteractionHook} from "./interfaces/IPostInteractionHook.sol";
+import {IIntentSubmissionView} from "./interfaces/IIntentSubmissionView.sol";
+import {IntentManagerCallable} from "./IntentManagerCallable.sol";
 
 /// @title  AllowlistGuard
 /// @notice EIP-712 gated allowlist. `onPreCall` decodes the `hookPayload` as
-///         `(address subject, bytes32 nonce, uint256 deadline, bytes signature)`,
+///         `(address subject, bytes32 intentId, bytes32 nonce, uint256 deadline, bytes signature)`,
 ///         recovers an `AllowlistAuthorization` digest, and reverts unless:
 ///           1. `block.timestamp <= deadline`,
-///           2. `usedNonces[subject][nonce] == false`,
-///           3. the recovered signer equals `subject`,
-///           4. `allowed[subject] == true`.
+///           2. the signed intent id matches the callback `intentId`,
+///           3. `usedNonces[subject][nonce] == false`,
+///           4. the recovered signer equals `subject`,
+///           5. `allowed[subject] == true`,
+///           6. `subject` has submitted `intentId` to the Intent Manager.
 ///         On success it marks the nonce used and emits `AllowedCallLogged`.
 ///
 /// @dev Unlike a "decode-subject-only" guard, this design prevents
@@ -21,13 +25,15 @@ import {IPostInteractionHook} from "./interfaces/IPostInteractionHook.sol";
 ///
 ///      Owner ops (`setAllowed` / `setManyAllowed` / `transferOwnership`) are
 ///      unchanged. No timelock — demo contract.
-contract AllowlistGuard is IPreInteractionHook, IPostInteractionHook {
+contract AllowlistGuard is IPreInteractionHook, IPostInteractionHook, IntentManagerCallable {
     error NotOwner();
     error NotAllowed(address subject);
     error ZeroAddress();
     error Expired();
     error InvalidSignatureLength();
     error InvalidSignature();
+    error IntentIdMismatch(bytes32 signedIntentId, bytes32 callbackIntentId);
+    error IntentNotSubmitted(address subject, bytes32 intentId);
     error NonceUsed();
 
     event AllowedCallLogged(
@@ -51,7 +57,7 @@ contract AllowlistGuard is IPreInteractionHook, IPostInteractionHook {
     string  public constant VERSION = "1";
 
     bytes32 public constant ALLOWLIST_AUTHORIZATION_TYPEHASH =
-        keccak256("AllowlistAuthorization(address subject,bytes32 nonce,uint256 deadline)");
+        keccak256("AllowlistAuthorization(address subject,bytes32 intentId,bytes32 nonce,uint256 deadline)");
 
     bytes32 private constant _EIP712_DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
@@ -88,10 +94,16 @@ contract AllowlistGuard is IPreInteractionHook, IPostInteractionHook {
     function decodePayload(bytes calldata hookPayload)
         public
         pure
-        returns (address subject, bytes32 nonce, uint256 deadline, bytes memory signature)
+        returns (
+            address subject,
+            bytes32 intentId,
+            bytes32 nonce,
+            uint256 deadline,
+            bytes memory signature
+        )
     {
-        (subject, nonce, deadline, signature) =
-            abi.decode(hookPayload, (address, bytes32, uint256, bytes));
+        (subject, intentId, nonce, deadline, signature) =
+            abi.decode(hookPayload, (address, bytes32, bytes32, uint256, bytes));
     }
 
     function setAllowed(address subject, bool isAllowed) external onlyOwner {
@@ -118,18 +130,45 @@ contract AllowlistGuard is IPreInteractionHook, IPostInteractionHook {
         bytes32 intentId,
         bytes32 tradeId,
         bytes calldata hookPayload
-    ) external override {
-        (address subject, bytes32 nonce, uint256 deadline, bytes memory signature) =
+    ) external override onlyIntentManager {
+        (
+            address subject,
+            bytes32 signedIntentId,
+            bytes32 nonce,
+            uint256 deadline,
+            bytes memory signature
+        ) =
             decodePayload(hookPayload);
 
         if (block.timestamp > deadline) revert Expired();
-        if (signature.length != 65) revert InvalidSignatureLength();
+        if (signedIntentId != intentId) revert IntentIdMismatch(signedIntentId, intentId);
         if (usedNonces[subject][nonce]) revert NonceUsed();
+
+        address recovered = _recoverSigner(subject, intentId, nonce, deadline, signature);
+        if (recovered == address(0) || recovered != subject) revert InvalidSignature();
+        if (!allowed[subject]) revert NotAllowed(subject);
+        if (!IIntentSubmissionView(INTENT_MANAGER).isIntentSubmitted(subject, intentId)) {
+            revert IntentNotSubmitted(subject, intentId);
+        }
+
+        usedNonces[subject][nonce] = true;
+        emit AllowedCallLogged(intentId, tradeId, subject, nonce, msg.sender);
+    }
+
+    function _recoverSigner(
+        address subject,
+        bytes32 intentId,
+        bytes32 nonce,
+        uint256 deadline,
+        bytes memory signature
+    ) private view returns (address) {
+        if (signature.length != 65) revert InvalidSignatureLength();
 
         bytes32 structHash = keccak256(
             abi.encode(
                 ALLOWLIST_AUTHORIZATION_TYPEHASH,
                 subject,
+                intentId,
                 nonce,
                 deadline
             )
@@ -145,29 +184,24 @@ contract AllowlistGuard is IPreInteractionHook, IPostInteractionHook {
             v := byte(0, mload(add(signature, 0x60)))
         }
 
-        address recovered = ecrecover(digest, v, r, s);
-        if (recovered == address(0) || recovered != subject) revert InvalidSignature();
-        if (!allowed[subject]) revert NotAllowed(subject);
-
-        usedNonces[subject][nonce] = true;
-        emit AllowedCallLogged(intentId, tradeId, subject, nonce, msg.sender);
+        return ecrecover(digest, v, r, s);
     }
 
     function onPostCallForSameChainIntentWithPreSwap(
         SameChainWithPreSwapChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         emit PostObserved(ctx.intentId, ctx.tradeId, msg.sender);
     }
 
     function onPostCallForCrossChainIntentWithPreSwap(
         CrossChainWithPreSwapContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         emit PostObserved(ctx.intentId, ctx.tradeId, msg.sender);
     }
 
     function onPostCallForCrossChainIntent(
         CrossChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         emit PostObserved(ctx.intentId, ctx.tradeId, msg.sender);
     }
 }

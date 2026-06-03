@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { execFileSync } from "node:child_process";
 import * as path from "node:path";
-import { readLedger } from "../lib/ledger";
+import { readLedger } from "../../lib/ledger";
 
-const INTERACTIONS_DIR = __dirname;
+const VERIFY_DIR = __dirname;
 const ZERO_ADDR = "0x0000000000000000000000000000000000000000";
 
 const HOOK_CONTRACTS = [
@@ -27,7 +27,7 @@ function main(): void {
   });
   if (planned.length === 0) {
     console.log(
-      "No interaction contracts in deployed-base.json. Run deploy-interaction-contracts.ts first.",
+      "No interaction contracts in deployed-base.json. Run deploy/deploy-interaction-contracts.ts first.",
     );
     return;
   }
@@ -35,7 +35,7 @@ function main(): void {
   console.log(`Verifying ${planned.length} interaction contracts on Basescan...`);
   for (const name of planned) {
     const entry = ledger.contracts[name];
-    const script = path.join(INTERACTIONS_DIR, `verify-${kebabCase(name)}.ts`);
+    const script = path.join(VERIFY_DIR, `verify-${kebabCase(name)}.ts`);
     console.log(`\n=== ${name} (${entry.address}) ===`);
     try {
       execFileSync("npx", ["tsx", script, entry.address], { stdio: "inherit" });

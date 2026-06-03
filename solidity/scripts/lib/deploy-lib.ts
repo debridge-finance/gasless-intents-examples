@@ -20,6 +20,8 @@ import { recordDeployment } from "./ledger";
 
 const MIN_ETH_FOR_DEPLOY = parseEther("0.0005");
 const ARTEFACTS_DIR = path.resolve(__dirname, "../../build-artefacts");
+const createPublicClientUntyped = createPublicClient as unknown as (opts: unknown) => PublicClient;
+const createWalletClientUntyped = createWalletClient as unknown as (opts: unknown) => WalletClient;
 
 export type DeployedContext = {
   contractAddress: Address;
@@ -53,8 +55,15 @@ export async function deployToBase(opts: {
   const bytecode = (rawBytecode.startsWith("0x") ? rawBytecode : `0x${rawBytecode}`) as Hex;
 
   const account = privateKeyToAccount(pk);
-  const publicClient = createPublicClient({ chain: base, transport: http(rpcUrl) }) as PublicClient;
-  const walletClient = createWalletClient({ account, chain: base, transport: http(rpcUrl) }) as WalletClient;
+  const publicClient = createPublicClientUntyped({
+    chain: base,
+    transport: http(rpcUrl),
+  });
+  const walletClient = createWalletClientUntyped({
+    account,
+    chain: base,
+    transport: http(rpcUrl),
+  });
 
   const balance = await publicClient.getBalance({ address: account.address });
   console.log(`Deployer: ${account.address}`);
@@ -72,7 +81,7 @@ export async function deployToBase(opts: {
     args: (opts.constructorArgs ?? []) as never,
     account,
     chain: base,
-  });
+  } as never);
   console.log(`  Tx: ${deployHash} (https://basescan.org/tx/${deployHash})`);
   const deployReceipt = await publicClient.waitForTransactionReceipt({ hash: deployHash });
   if (deployReceipt.status !== "success") {

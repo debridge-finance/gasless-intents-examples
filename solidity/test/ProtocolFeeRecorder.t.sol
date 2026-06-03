@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {Test} from "forge-std/Test.sol";
+import {IntentManagerCallable} from "../contracts/interactions/IntentManagerCallable.sol";
 import {ProtocolFeeRecorder} from "../contracts/interactions/ProtocolFeeRecorder.sol";
 import {IPostInteractionHook} from "../contracts/interactions/interfaces/IPostInteractionHook.sol";
 import {IPreSwapResult} from "../contracts/interactions/interfaces/IPreSwapResult.sol";
@@ -12,6 +13,7 @@ contract ProtocolFeeRecorderTest is Test {
     address internal constant SUBJECT = address(0xA11CE);
     address internal constant TAKE_TOKEN = address(0xDA1);
     address internal constant GIVE_TOKEN = address(0xC0FFEE);
+    address internal constant INTENT_MANAGER = 0xDDDDDDDdeB2E68Ee19832e356FCB5537124A9708;
     bytes32 internal constant INTENT_ID = bytes32(uint256(1));
     bytes32 internal constant TRADE_ID = bytes32(uint256(2));
 
@@ -25,7 +27,7 @@ contract ProtocolFeeRecorderTest is Test {
         legs[1] = IPreSwapResult.PreSwapResult({inputToken: address(0x2), inputAmount: 200, outputAmount: b});
     }
 
-    function _ctx(uint256 leg1, uint256 leg2, uint256 takeAfterFee) internal view returns (IPostInteractionHook.SameChainWithPreSwapChainContext memory ctx) {
+    function _ctx(uint256 leg1, uint256 leg2, uint256 takeAfterFee) internal pure returns (IPostInteractionHook.SameChainWithPreSwapChainContext memory ctx) {
         ctx = IPostInteractionHook.SameChainWithPreSwapChainContext({
             intentId: INTENT_ID,
             tradeId: TRADE_ID,
@@ -38,18 +40,26 @@ contract ProtocolFeeRecorderTest is Test {
     }
 
     function test_OnPreCall_NoOp() public {
+        vm.prank(INTENT_MANAGER);
         recorder.onPreCall(INTENT_ID, TRADE_ID, abi.encode(SUBJECT));
         // Confirms it doesn't revert; no observable state.
     }
 
+    function test_OnPreCall_RevertsWhenNotIntentManager() public {
+        vm.expectRevert(IntentManagerCallable.OnlyIntentManager.selector);
+        recorder.onPreCall(INTENT_ID, TRADE_ID, abi.encode(SUBJECT));
+    }
+
     function test_SameChain_Fee30() public {
         // total = 1000, takeAfter = 970, fee = 30, bps = 300
+        vm.prank(INTENT_MANAGER);
         recorder.onPostCallForSameChainIntentWithPreSwap(_ctx(600, 400, 970));
         assertEq(recorder.intentTokenFee(INTENT_ID, TAKE_TOKEN), 30);
         assertEq(recorder.tokenTotalFee(TAKE_TOKEN), 30);
     }
 
     function test_SameChain_FeeZeroWhenEqual() public {
+        vm.prank(INTENT_MANAGER);
         recorder.onPostCallForSameChainIntentWithPreSwap(_ctx(500, 500, 1000));
         assertEq(recorder.intentTokenFee(INTENT_ID, TAKE_TOKEN), 0);
         assertEq(recorder.tokenTotalFee(TAKE_TOKEN), 0);
@@ -57,6 +67,7 @@ contract ProtocolFeeRecorderTest is Test {
 
     function test_SameChain_FeeSaturatesWhenOutputBelow() public {
         // total = 100, takeAfter = 500 → fee = 0 (saturating)
+        vm.prank(INTENT_MANAGER);
         recorder.onPostCallForSameChainIntentWithPreSwap(_ctx(50, 50, 500));
         assertEq(recorder.intentTokenFee(INTENT_ID, TAKE_TOKEN), 0);
     }
@@ -72,6 +83,7 @@ contract ProtocolFeeRecorderTest is Test {
                 takeAmountAfterFeeCharge: 0,
                 receiver: SUBJECT
             });
+        vm.prank(INTENT_MANAGER);
         recorder.onPostCallForSameChainIntentWithPreSwap(ctx);
         assertEq(recorder.intentTokenFee(INTENT_ID, TAKE_TOKEN), 0);
     }
@@ -89,8 +101,9 @@ contract ProtocolFeeRecorderTest is Test {
                 takeAmount: 1,
                 takeChainId: uint32(8453),
                 takeChainReceiver: abi.encodePacked(SUBJECT)
-            });
+        });
         vm.expectRevert(ProtocolFeeRecorder.Unsupported.selector);
+        vm.prank(INTENT_MANAGER);
         recorder.onPostCallForCrossChainIntentWithPreSwap(ctx);
     }
 
@@ -107,12 +120,15 @@ contract ProtocolFeeRecorderTest is Test {
             takeChainReceiver: abi.encodePacked(SUBJECT)
         });
         vm.expectRevert(ProtocolFeeRecorder.Unsupported.selector);
+        vm.prank(INTENT_MANAGER);
         recorder.onPostCallForCrossChainIntent(ctx);
     }
 
     function test_AccumulatesAcrossCalls() public {
+        vm.startPrank(INTENT_MANAGER);
         recorder.onPostCallForSameChainIntentWithPreSwap(_ctx(600, 400, 970)); // fee=30
         recorder.onPostCallForSameChainIntentWithPreSwap(_ctx(800, 200, 990)); // fee=10
+        vm.stopPrank();
         assertEq(recorder.intentTokenFee(INTENT_ID, TAKE_TOKEN), 40);
         assertEq(recorder.tokenTotalFee(TAKE_TOKEN), 40);
     }

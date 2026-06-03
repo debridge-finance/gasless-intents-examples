@@ -1,10 +1,10 @@
 import "dotenv/config";
-import { verifyOnBasescan } from "../lib/etherscan-verify";
+import { verifyOnBasescan } from "../../lib/etherscan-verify";
 
 verifyOnBasescan({
   contractName: "RewardMinter",
   contractPath: "contracts/interactions/RewardMinter.sol",
-  cliScriptName: "solidity/scripts/interactions/verify-reward-minter.ts",
+  cliScriptName: "solidity/scripts/interactions/verify/verify-reward-minter.ts",
 }).catch((err) => {
   console.error(err instanceof Error ? err.message : String(err));
   process.exit(1);

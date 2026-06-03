@@ -3,6 +3,7 @@ pragma solidity 0.8.24;
 
 import {IPreInteractionHook} from "./interfaces/IPreInteractionHook.sol";
 import {IPostInteractionHook} from "./interfaces/IPostInteractionHook.sol";
+import {IntentManagerCallable} from "./IntentManagerCallable.sol";
 
 /// @title  FillCapEnforcer
 /// @notice Hard-cap counterpart to `LoggingInteractionHook`'s soft cap.
@@ -13,7 +14,7 @@ import {IPostInteractionHook} from "./interfaces/IPostInteractionHook.sol";
 ///
 /// @dev Owner-gated `setCap` / `setManyCaps` / `transferOwnership`. Post-call
 ///      variants are observation-only. No timelock — demo contract.
-contract FillCapEnforcer is IPreInteractionHook, IPostInteractionHook {
+contract FillCapEnforcer is IPreInteractionHook, IPostInteractionHook, IntentManagerCallable {
     error NotOwner();
     error ZeroAddress();
     error HardCapExceeded(address subject, uint256 cap, uint256 attempted);
@@ -78,7 +79,7 @@ contract FillCapEnforcer is IPreInteractionHook, IPostInteractionHook {
         bytes32 intentId,
         bytes32 tradeId,
         bytes calldata hookPayload
-    ) external override {
+    ) external override onlyIntentManager {
         address subject = decodePayload(hookPayload);
         uint256 cap = caps[subject];
         uint256 fillNumber = ++fills[intentId];
@@ -90,19 +91,19 @@ contract FillCapEnforcer is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForSameChainIntentWithPreSwap(
         SameChainWithPreSwapChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         emit PostObserved(ctx.intentId, ctx.tradeId, msg.sender);
     }
 
     function onPostCallForCrossChainIntentWithPreSwap(
         CrossChainWithPreSwapContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         emit PostObserved(ctx.intentId, ctx.tradeId, msg.sender);
     }
 
     function onPostCallForCrossChainIntent(
         CrossChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         emit PostObserved(ctx.intentId, ctx.tradeId, msg.sender);
     }
 }

@@ -4,6 +4,7 @@ pragma solidity 0.8.24;
 import {IPreInteractionHook} from "./interfaces/IPreInteractionHook.sol";
 import {IPostInteractionHook} from "./interfaces/IPostInteractionHook.sol";
 import {IPreSwapResult} from "./interfaces/IPreSwapResult.sol";
+import {IntentManagerCallable} from "./IntentManagerCallable.sol";
 
 /// @title  ProtocolFeeRecorder
 /// @notice Same-chain-with-pre-swap fee derivation:
@@ -16,7 +17,7 @@ import {IPreSwapResult} from "./interfaces/IPreSwapResult.sol";
 /// @dev Decodes `hookPayload` as `abi.encode(address subject)`. `subject` is
 ///      recorded alongside the fee for off-chain attribution (e.g. referrer
 ///      or partner accounting).
-contract ProtocolFeeRecorder is IPreInteractionHook, IPostInteractionHook {
+contract ProtocolFeeRecorder is IPreInteractionHook, IPostInteractionHook, IntentManagerCallable {
     error Unsupported();
 
     event ProtocolFeeRecorded(
@@ -43,7 +44,7 @@ contract ProtocolFeeRecorder is IPreInteractionHook, IPostInteractionHook {
         bytes32, /* intentId */
         bytes32, /* tradeId */
         bytes calldata /* hookPayload */
-    ) external pure override {
+    ) external view override onlyIntentManager {
         // No-op: this recorder only cares about post-call data. The interface
         // is still implemented so the same address can be referenced in both
         // `preInteractions` and `postInteractions` arrays without tripping a
@@ -52,7 +53,7 @@ contract ProtocolFeeRecorder is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForSameChainIntentWithPreSwap(
         SameChainWithPreSwapChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         address subject = decodePayload(ctx.payload);
 
         uint256 totalOutput = _sumOutputs(ctx.preSwapResults);
@@ -78,13 +79,13 @@ contract ProtocolFeeRecorder is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForCrossChainIntentWithPreSwap(
         CrossChainWithPreSwapContext calldata /* ctx */
-    ) external pure override {
+    ) external view override onlyIntentManager {
         revert Unsupported();
     }
 
     function onPostCallForCrossChainIntent(
         CrossChainContext calldata /* ctx */
-    ) external pure override {
+    ) external view override onlyIntentManager {
         revert Unsupported();
     }
 

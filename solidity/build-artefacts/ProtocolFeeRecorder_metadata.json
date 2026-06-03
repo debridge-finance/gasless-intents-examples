@@ -8,6 +8,11 @@
       {
         "inputs": [],
         "type": "error",
+        "name": "OnlyIntentManager"
+      },
+      {
+        "inputs": [],
+        "type": "error",
         "name": "Unsupported"
       },
       {
@@ -64,6 +69,19 @@
         "type": "event",
         "name": "ProtocolFeeRecorded",
         "anonymous": false
+      },
+      {
+        "inputs": [],
+        "stateMutability": "view",
+        "type": "function",
+        "name": "INTENT_MANAGER",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ]
       },
       {
         "inputs": [
@@ -163,7 +181,7 @@
             ]
           }
         ],
-        "stateMutability": "pure",
+        "stateMutability": "view",
         "type": "function",
         "name": "onPostCallForCrossChainIntent"
       },
@@ -244,7 +262,7 @@
             ]
           }
         ],
-        "stateMutability": "pure",
+        "stateMutability": "view",
         "type": "function",
         "name": "onPostCallForCrossChainIntentWithPreSwap"
       },
@@ -332,7 +350,7 @@
             "type": "bytes"
           }
         ],
-        "stateMutability": "pure",
+        "stateMutability": "view",
         "type": "function",
         "name": "onPreCall"
       },
@@ -392,11 +410,19 @@
     "libraries": {}
   },
   "sources": {
-    "contracts/interactions/ProtocolFeeRecorder.sol": {
-      "keccak256": "0x440a69944b6245965a6e90c4e6577bcaf968302c39bb418e2a5eb90096716b6d",
+    "contracts/interactions/IntentManagerCallable.sol": {
+      "keccak256": "0x8720cf7df95a530070355264bf10a3830a3ef1cfb4700256828745c4eec902d5",
       "urls": [
-        "bzz-raw://2f2ff347082bd437b471a9ed5342c96c5b76c755c4f7bbe0b6fb3c5fb72ade0a",
-        "dweb:/ipfs/QmZCFmond8f4ZdYWMSTTBmkMjSHp2wb1Ehv92Qb9eP6Sac"
+        "bzz-raw://4a324b13c1db987b23d3233f904738009c14b519a5d64f9a127b837652ca663c",
+        "dweb:/ipfs/QmUpWfQqLZWt8ADBcNitAy2Q4YzP1pKstF1gqojShsqe1E"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/ProtocolFeeRecorder.sol": {
+      "keccak256": "0x84b3f735ccefb021c45edcfe02facaf17f523d25611d262ae0dd868d29656f43",
+      "urls": [
+        "bzz-raw://fe56fd9efae7973b11c1da4cfc5f2035f5794dd20663444309ea24f8fd462a55",
+        "dweb:/ipfs/QmZVteiSXUtq3qzRzD4rVT8GS7GHvtj1NvRL931Awy8Hxz"
       ],
       "license": "MIT"
     },
@@ -409,10 +435,10 @@
       "license": "MIT"
     },
     "contracts/interactions/interfaces/IPreInteractionHook.sol": {
-      "keccak256": "0x512db03a8e629aaf8812ff4775b9093ad2d90a8f72d7c133e85e4629a9609e80",
+      "keccak256": "0x282bcf4ee350ba5b031cd0d43c035972976a4eda972d4a962c4e897b15b7541c",
       "urls": [
-        "bzz-raw://17cdc5dbd00cf4655b997c6aea370783ad4b80079b01e6f3dab1a2eac6f480cf",
-        "dweb:/ipfs/QmbbbrBZib46iGUHyDzyU3DvMV7ACPyasdcg7gZHpoDRLj"
+        "bzz-raw://ab8827f4016ddb4506497bd2c4bb0edd8026eeff26e57f903ccfec73ddfaa8cf",
+        "dweb:/ipfs/QmZHX3GUu2cDDCNNzLSE9gKG8vMEAtRPaiDV5PzwrA4Ee5"
       ],
       "license": "MIT"
     },

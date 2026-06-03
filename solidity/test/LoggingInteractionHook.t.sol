@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {Test} from "forge-std/Test.sol";
+import {IntentManagerCallable} from "../contracts/interactions/IntentManagerCallable.sol";
 import {LoggingInteractionHook} from "../contracts/interactions/LoggingInteractionHook.sol";
 import {IPostInteractionHook} from "../contracts/interactions/interfaces/IPostInteractionHook.sol";
 import {IPreSwapResult} from "../contracts/interactions/interfaces/IPreSwapResult.sol";
@@ -13,6 +14,7 @@ contract LoggingInteractionHookTest is Test {
     address internal constant RECEIVER = address(0xB0B);
     address internal constant TAKE_TOKEN = address(0xDA1);
     address internal constant GIVE_TOKEN = address(0xC0FFEE);
+    address internal constant INTENT_MANAGER = 0xDDDDDDDdeB2E68Ee19832e356FCB5537124A9708;
     bytes32 internal constant INTENT_ID = bytes32(uint256(1));
     bytes32 internal constant TRADE_ID = bytes32(uint256(2));
 
@@ -20,7 +22,7 @@ contract LoggingInteractionHookTest is Test {
         hook = new LoggingInteractionHook();
     }
 
-    function _logPayload(string memory label, uint256 referenceId) internal view returns (bytes memory) {
+    function _logPayload(string memory label, uint256 referenceId) internal pure returns (bytes memory) {
         return abi.encode(label, SUBJECT, referenceId);
     }
 
@@ -42,29 +44,40 @@ contract LoggingInteractionHookTest is Test {
 
     function test_OnPreCall_IncrementsFillCount() public {
         bytes memory payload = _logPayload("pre", 0);
+        vm.startPrank(INTENT_MANAGER);
         hook.onPreCall(INTENT_ID, TRADE_ID, payload);
         assertEq(hook.fillCount(INTENT_ID), 1);
         hook.onPreCall(INTENT_ID, TRADE_ID, payload);
+        vm.stopPrank();
         assertEq(hook.fillCount(INTENT_ID), 2);
+    }
+
+    function test_OnPreCall_RevertsWhenNotIntentManager() public {
+        vm.expectRevert(IntentManagerCallable.OnlyIntentManager.selector);
+        hook.onPreCall(INTENT_ID, TRADE_ID, _logPayload("pre", 0));
     }
 
     function test_OnPreCall_SoftCap_DoesNotRevert() public {
         bytes memory payload = _logPayload("pre", 1);
+        vm.startPrank(INTENT_MANAGER);
         hook.onPreCall(INTENT_ID, TRADE_ID, payload);
         // Second call crosses the soft cap but must not revert.
         hook.onPreCall(INTENT_ID, TRADE_ID, payload);
+        vm.stopPrank();
         assertEq(hook.fillCount(INTENT_ID), 2);
     }
 
     function test_OnPreCall_NoCap_NeverExceeds() public {
         bytes memory payload = _logPayload("pre", 0);
+        vm.startPrank(INTENT_MANAGER);
         for (uint256 i; i < 5; ++i) {
             hook.onPreCall(INTENT_ID, TRADE_ID, payload);
         }
+        vm.stopPrank();
         assertEq(hook.fillCount(INTENT_ID), 5);
     }
 
-    function _legs(uint256 a, uint256 b) internal view returns (IPreSwapResult.PreSwapResult[] memory legs) {
+    function _legs(uint256 a, uint256 b) internal pure returns (IPreSwapResult.PreSwapResult[] memory legs) {
         legs = new IPreSwapResult.PreSwapResult[](2);
         legs[0] = IPreSwapResult.PreSwapResult({inputToken: address(0x1), inputAmount: 100, outputAmount: a});
         legs[1] = IPreSwapResult.PreSwapResult({inputToken: address(0x2), inputAmount: 200, outputAmount: b});
@@ -81,6 +94,7 @@ contract LoggingInteractionHookTest is Test {
                 takeAmountAfterFeeCharge: 970,
                 receiver: RECEIVER
             });
+        vm.prank(INTENT_MANAGER);
         hook.onPostCallForSameChainIntentWithPreSwap(ctx);
         // No state change to assert; events were emitted (covered separately in
         // integration tests). The non-reverting call is itself the assertion.
@@ -97,6 +111,7 @@ contract LoggingInteractionHookTest is Test {
                 takeAmountAfterFeeCharge: 500,
                 receiver: RECEIVER
             });
+        vm.prank(INTENT_MANAGER);
         hook.onPostCallForSameChainIntentWithPreSwap(ctx);
         // Path is exercised; no fee event emitted because totalOutput < takeAmountAfterFeeCharge.
     }
@@ -115,9 +130,11 @@ contract LoggingInteractionHookTest is Test {
                 takeChainId: uint32(8453),
                 takeChainReceiver: abi.encodePacked(RECEIVER)
             });
+        vm.startPrank(INTENT_MANAGER);
         hook.onPostCallForCrossChainIntentWithPreSwap(ctx);
         assertEq(hook.cumulativeGiveAmount(INTENT_ID), 1000);
         hook.onPostCallForCrossChainIntentWithPreSwap(ctx);
+        vm.stopPrank();
         assertEq(hook.cumulativeGiveAmount(INTENT_ID), 2000);
     }
 
@@ -133,6 +150,7 @@ contract LoggingInteractionHookTest is Test {
             takeChainId: uint32(42161),
             takeChainReceiver: abi.encodePacked(RECEIVER)
         });
+        vm.prank(INTENT_MANAGER);
         hook.onPostCallForCrossChainIntent(ctx);
         assertEq(hook.cumulativeGiveAmount(INTENT_ID), 1234);
     }

@@ -3,18 +3,18 @@ pragma solidity 0.8.24;
 
 import {IPreInteractionHook} from "./interfaces/IPreInteractionHook.sol";
 import {IPostInteractionHook} from "./interfaces/IPostInteractionHook.sol";
+import {IntentManagerCallable} from "./IntentManagerCallable.sol";
 
 /// @title  FillCounter
 /// @notice Per-intent, per-subject, and per-token fill metrics, readable via
 ///         `eth_call`. Decodes `hookPayload` as `abi.encode(address subject)`.
 ///
-/// @dev No access control on callbacks — production deployments should add
-///      `onlyIntentManager`. The cross-chain branches credit `giveAmount`
-///      against the source-chain `giveToken`; the same-chain branch credits
-///      `takeAmountAfterFeeCharge` against `takeToken`. Mixing same-chain and
-///      cross-chain semantics in one counter is intentional so the same
-///      contract can power any volume leaderboard.
-contract FillCounter is IPreInteractionHook, IPostInteractionHook {
+/// @dev The cross-chain branches credit `giveAmount` against the source-chain
+///      `giveToken`; the same-chain branch credits `takeAmountAfterFeeCharge`
+///      against `takeToken`. Mixing same-chain and cross-chain semantics in one
+///      counter is intentional so the same contract can power any volume
+///      leaderboard.
+contract FillCounter is IPreInteractionHook, IPostInteractionHook, IntentManagerCallable {
     event FillRecorded(
         bytes32 indexed intentId,
         address indexed subject,
@@ -43,7 +43,7 @@ contract FillCounter is IPreInteractionHook, IPostInteractionHook {
         bytes32 intentId,
         bytes32, /* tradeId */
         bytes calldata hookPayload
-    ) external override {
+    ) external override onlyIntentManager {
         address subject = decodePayload(hookPayload);
         intentFillCount[intentId] += 1;
         lifetimeFills[subject] += 1;
@@ -61,7 +61,7 @@ contract FillCounter is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForSameChainIntentWithPreSwap(
         SameChainWithPreSwapChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         address subject = decodePayload(ctx.payload);
         uint256 amount = ctx.takeAmountAfterFeeCharge;
         lifetimeGiveAmount[subject] += amount;
@@ -80,7 +80,7 @@ contract FillCounter is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForCrossChainIntentWithPreSwap(
         CrossChainWithPreSwapContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         address subject = decodePayload(ctx.payload);
         uint256 amount = ctx.giveAmount;
         lifetimeGiveAmount[subject] += amount;
@@ -99,7 +99,7 @@ contract FillCounter is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForCrossChainIntent(
         CrossChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         address subject = decodePayload(ctx.payload);
         uint256 amount = ctx.giveAmount;
         lifetimeGiveAmount[subject] += amount;

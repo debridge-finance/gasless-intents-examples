@@ -4,6 +4,7 @@ pragma solidity 0.8.24;
 import {IPreInteractionHook} from "./interfaces/IPreInteractionHook.sol";
 import {IPostInteractionHook} from "./interfaces/IPostInteractionHook.sol";
 import {IPreSwapResult} from "./interfaces/IPreSwapResult.sol";
+import {IntentManagerCallable} from "./IntentManagerCallable.sol";
 
 /// @title  LoggingInteractionHook
 /// @notice Implements both interaction-hook interfaces and emits an event for
@@ -15,10 +16,7 @@ import {IPreSwapResult} from "./interfaces/IPreSwapResult.sol";
 ///      `rateLimitExceeded = true` once `fillCount[intentId] > referenceId`
 ///      but never reverts. For hard caps see `FillCapEnforcer`.
 ///
-///      Callbacks have no access control: any caller may invoke them. A
-///      production deployment should gate `onPreCall` / `onPostCall*` with
-///      `onlyIntentManager`.
-contract LoggingInteractionHook is IPreInteractionHook, IPostInteractionHook {
+contract LoggingInteractionHook is IPreInteractionHook, IPostInteractionHook, IntentManagerCallable {
     struct Decoded {
         string label;
         address subject;
@@ -120,7 +118,7 @@ contract LoggingInteractionHook is IPreInteractionHook, IPostInteractionHook {
         bytes32 intentId,
         bytes32 tradeId,
         bytes calldata hookPayload
-    ) external override {
+    ) external override onlyIntentManager {
         Decoded memory d = decodePayload(hookPayload);
         uint256 fillNumber = ++fillCount[intentId];
         bool exceeded = d.referenceId > 0 && fillNumber > d.referenceId;
@@ -140,7 +138,7 @@ contract LoggingInteractionHook is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForSameChainIntentWithPreSwap(
         SameChainWithPreSwapChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         Decoded memory d = decodePayload(ctx.payload);
 
         uint256 totalOutput = _logPreSwapLegs(ctx.intentId, ctx.tradeId, ctx.preSwapResults);
@@ -174,7 +172,7 @@ contract LoggingInteractionHook is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForCrossChainIntentWithPreSwap(
         CrossChainWithPreSwapContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         Decoded memory d = decodePayload(ctx.payload);
 
         _logPreSwapLegs(ctx.intentId, ctx.tradeId, ctx.preSwapResults);
@@ -199,7 +197,7 @@ contract LoggingInteractionHook is IPreInteractionHook, IPostInteractionHook {
 
     function onPostCallForCrossChainIntent(
         CrossChainContext calldata ctx
-    ) external override {
+    ) external override onlyIntentManager {
         Decoded memory d = decodePayload(ctx.payload);
         cumulativeGiveAmount[ctx.intentId] += ctx.giveAmount;
 

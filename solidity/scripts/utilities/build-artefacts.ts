@@ -3,11 +3,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 const SOLIDITY_DIR = path.resolve(__dirname, "../..");
-const FORGE_BIN = process.env.FORGE_BIN || "/Users/damir/.foundry/bin/forge";
+const FORGE_BIN = process.env.FORGE_BIN || "forge";
 
 const CONTRACTS = [
-  "Echo",
-  "EchoWithSig",
   "LoggingInteractionHook",
   "FillCounter",
   "ProtocolFeeRecorder",

@@ -4,16 +4,7 @@ import type { Address, Hex } from "viem";
 
 /**
  * Dynamic deployed-address lookup that reads
- * `solidity/build-artefacts/deployed-base.json`. Replaced in the active code
- * path by the hardcoded map in
- * [`deployed-addresses.ts`](./deployed-addresses.ts) so examples can
- * run without a dependency on the Solidity source tree.
- *
- * To switch back: re-export `requireDeployedAddress` (and optionally
- * `readLedger`) from this module instead of the hardcoded one. The function
- * signature is identical, so call sites under `contract-utils/` and
- * `utility-scripts/echo/` don't need changes — just the import in
- * `deployed-addresses.ts` (re-export) or per-file imports.
+ * `solidity/build-artefacts/deployed-base.json`.
  */
 
 const LEDGER_PATH = path.resolve(
@@ -45,7 +36,7 @@ export function requireDeployedAddress(name: string): Address {
   if (!entry || entry.address === ZERO) {
     throw new Error(
       `${name} is not deployed (address missing or zero in deployed-base.json). ` +
-        `Run \`npx tsx solidity/scripts/interactions/deploy-${kebabCase(name)}.ts\` first.`,
+        `Run \`npx tsx solidity/scripts/interactions/deploy/deploy-${kebabCase(name)}.ts\` first.`,
     );
   }
   return entry.address;

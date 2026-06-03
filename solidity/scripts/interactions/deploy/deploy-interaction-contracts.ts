@@ -1,9 +1,9 @@
 import { execFileSync } from "node:child_process";
 import * as path from "node:path";
-import { readLedger } from "../lib/ledger";
+import { readLedger } from "../../lib/ledger";
 
-const INTERACTIONS_DIR = __dirname;
-const UTILITIES_DIR = path.resolve(__dirname, "../utilities");
+const DEPLOY_DIR = __dirname;
+const UTILITIES_DIR = path.resolve(__dirname, "../../utilities");
 
 const HOOK_CONTRACTS = [
   "LoggingInteractionHook",
@@ -53,7 +53,7 @@ function main(): void {
   console.log("");
   console.log(`Planned deployments (${plan.length}):`);
   for (const name of plan) {
-    console.log(`  - ${name} via interactions/deploy-${kebabCase(name)}.ts`);
+    console.log(`  - ${name} via interactions/deploy/deploy-${kebabCase(name)}.ts`);
   }
 
   if (dryRun) {
@@ -63,7 +63,7 @@ function main(): void {
 
   console.log("");
   for (const name of plan) {
-    const script = path.join(INTERACTIONS_DIR, `deploy-${kebabCase(name)}.ts`);
+    const script = path.join(DEPLOY_DIR, `deploy-${kebabCase(name)}.ts`);
     console.log(`\n=== ${name} ===`);
     execFileSync("npx", ["tsx", script], { stdio: "inherit" });
   }
@@ -83,7 +83,7 @@ function main(): void {
   }
   console.log(table.join("\n"));
   console.log("\nNext step:");
-  console.log("  npx tsx solidity/scripts/interactions/verify-interaction-contracts.ts");
+  console.log("  npx tsx solidity/scripts/interactions/verify/verify-interaction-contracts.ts");
 }
 
 try {

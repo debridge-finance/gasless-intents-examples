@@ -16,6 +16,38 @@
         "name": "Expired"
       },
       {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "signedIntentId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "callbackIntentId",
+            "type": "bytes32"
+          }
+        ],
+        "type": "error",
+        "name": "IntentIdMismatch"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32"
+          }
+        ],
+        "type": "error",
+        "name": "IntentNotSubmitted"
+      },
+      {
         "inputs": [],
         "type": "error",
         "name": "InvalidSignature"
@@ -45,6 +77,11 @@
         "inputs": [],
         "type": "error",
         "name": "NotOwner"
+      },
+      {
+        "inputs": [],
+        "type": "error",
+        "name": "OnlyIntentManager"
       },
       {
         "inputs": [],
@@ -181,6 +218,19 @@
         "inputs": [],
         "stateMutability": "view",
         "type": "function",
+        "name": "INTENT_MANAGER",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ]
+      },
+      {
+        "inputs": [],
+        "stateMutability": "view",
+        "type": "function",
         "name": "NAME",
         "outputs": [
           {
@@ -238,6 +288,11 @@
             "internalType": "address",
             "name": "subject",
             "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32"
           },
           {
             "internalType": "bytes32",
@@ -598,10 +653,26 @@
   },
   "sources": {
     "contracts/interactions/AllowlistGuard.sol": {
-      "keccak256": "0x49e2741537c67ef1bbbe19fd2d69d1d45ba6bec0e55e49de18980c22d2dbe166",
+      "keccak256": "0xd635c249b624a8dd4ea2015e7bd0de03a22bf1d9ddef98db30b99ccb9ea8c8d7",
       "urls": [
-        "bzz-raw://c4b0786301c54fc44041d3a9c62421b541afacfccc2664fa8dceecc2870aa45c",
-        "dweb:/ipfs/QmZQgA3LZFpJb85jjDgxri154Sh6yPDJnLMucrpAGpUjU9"
+        "bzz-raw://016df3a15f5c59adb54fdbdbb9bb2a4a928383f3a02cf2c22d69bd6c35408d46",
+        "dweb:/ipfs/QmQjg8VuLF2ptZfY1tJys1vtCsFFoaShVtCEQLKhxqx7wr"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/IntentManagerCallable.sol": {
+      "keccak256": "0x8720cf7df95a530070355264bf10a3830a3ef1cfb4700256828745c4eec902d5",
+      "urls": [
+        "bzz-raw://4a324b13c1db987b23d3233f904738009c14b519a5d64f9a127b837652ca663c",
+        "dweb:/ipfs/QmUpWfQqLZWt8ADBcNitAy2Q4YzP1pKstF1gqojShsqe1E"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/interfaces/IIntentSubmissionView.sol": {
+      "keccak256": "0xf934d600a6ad7db9efdbe335b843e325f00d3de460f2e84a385aaac07d05d4dc",
+      "urls": [
+        "bzz-raw://f88082450d23d7c0d07d015d2c11626209832d21045bb4e6c9e4e9a59028ca02",
+        "dweb:/ipfs/QmSVaKf3detwLyyN1cLkkZ88fKbFACBK37EaapcaBpv1m4"
       ],
       "license": "MIT"
     },
@@ -614,10 +685,10 @@
       "license": "MIT"
     },
     "contracts/interactions/interfaces/IPreInteractionHook.sol": {
-      "keccak256": "0x512db03a8e629aaf8812ff4775b9093ad2d90a8f72d7c133e85e4629a9609e80",
+      "keccak256": "0x282bcf4ee350ba5b031cd0d43c035972976a4eda972d4a962c4e897b15b7541c",
       "urls": [
-        "bzz-raw://17cdc5dbd00cf4655b997c6aea370783ad4b80079b01e6f3dab1a2eac6f480cf",
-        "dweb:/ipfs/QmbbbrBZib46iGUHyDzyU3DvMV7ACPyasdcg7gZHpoDRLj"
+        "bzz-raw://ab8827f4016ddb4506497bd2c4bb0edd8026eeff26e57f903ccfec73ddfaa8cf",
+        "dweb:/ipfs/QmZHX3GUu2cDDCNNzLSE9gKG8vMEAtRPaiDV5PzwrA4Ee5"
       ],
       "license": "MIT"
     },
