@@ -53,6 +53,11 @@ export enum TradingAlgorithm {
   MARKET = "market"
 }
 
+export type Interaction = {
+  hookTarget: string;
+  hookPayload: string;
+}
+
 export type Trade = {
   // Source chain params
   srcChainId: number;
@@ -84,6 +89,9 @@ export type Trade = {
   allowedTaker?: null;
   dlnHook?: null;
   metadata?: null;
+
+  preInteractions?: Array<Interaction>;
+  postInteractions?: Array<Interaction>;
 }
 
 export enum ApprovalMode {
@@ -294,6 +302,8 @@ export type Intent = {
   takeToken: TakeToken[];
   receiverDetails: Receiver[];
   dstAuthorityAddress: Receiver[];
+  preInteractions?: Array<Interaction>;
+  postInteractions?: Array<Interaction>;
 }
 
 export type IntentPayload = {
