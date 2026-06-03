@@ -82,7 +82,9 @@ async function main() {
   const proposal = await createBundle(requestBody);
   const requiredActions = collectRequiredActions(proposal);
   const budgetApproval = findBudgetApprovalAction(proposal);
-
+  if (!budgetApproval) {
+    throw new Error("No Budget approval action found in proposal requiredActions");
+  }
   logRequiredActions(summarizeRequiredActions(requiredActions));
 
   const initialGasCheck = await getApprovalGasCheck(budgetApproval, account.address);
