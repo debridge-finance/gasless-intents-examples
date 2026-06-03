@@ -289,7 +289,7 @@ export async function processIntentBundleActions(
   providedDataMap: ProvidedDataMap = {},
   options: { skipBudgetApprovalTransactions?: boolean } = {},
 ): Promise<SignedDataItem[]> {
-  // tmp debugging, TODO: FIX
+  // Collect signatures for all bundle intents and hooks.
   const a = await collectSignaturesFromItems(
     bundle.intents,
     (i) => i.intent.intentChainId,
