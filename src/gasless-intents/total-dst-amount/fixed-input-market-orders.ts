@@ -23,7 +23,6 @@
 
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
-import util from "util";
 
 import { clipHexPrefix } from "@utils/string";
 import { getEnvConfig } from "@utils/env";
