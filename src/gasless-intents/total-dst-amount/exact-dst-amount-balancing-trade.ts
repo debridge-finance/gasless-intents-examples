@@ -1,14 +1,15 @@
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
-import { clipHexPrefix, getEnvConfig, toHexPrefixString } from "@utils/index";
-import { createBundle, submitBundle } from "@utils/api";
+import { clipHexPrefix, toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
 import { USDC, AAVE_V3_POOL_ARBITRUM } from "@utils/constants";
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "../types";
-import { getAaveWithdrawExtendedHook } from "@utils/posthooks";
+import { getAaveWithdrawHook } from "@utils/hooks/aave";
 
 async function main() {
   const { privateKey } = getEnvConfig();
@@ -73,12 +74,11 @@ async function main() {
     prependOperatingExpenses: false,
   };
 
-  const aaveWithdrawHook = await getAaveWithdrawExtendedHook(
+  const aaveWithdrawHook = await getAaveWithdrawHook(
     toHexPrefixString(AAVE_V3_POOL_ARBITRUM),  // AAVE V3 Pool on Arbitrum
     toHexPrefixString(USDC.Arbitrum),            // asset to withdraw
     CHAIN_IDS.Arbitrum,                          // chain where AAVE lives
     account.address,                             // beneficiary (receives withdrawn USDC)
-    "aaveWithdrawAmount",                        // placeholder name in calldata
   );
 
   console.log("AAVE withdraw pre-hook:", JSON.stringify(aaveWithdrawHook, null, 2));

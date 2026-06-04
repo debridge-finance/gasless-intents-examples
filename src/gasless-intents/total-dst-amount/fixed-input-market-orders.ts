@@ -25,8 +25,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 import util from "util";
 
-import { clipHexPrefix, getEnvConfig } from "@utils/index";
-import { createBundle, submitBundle } from "@utils/api";
+import { clipHexPrefix } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
