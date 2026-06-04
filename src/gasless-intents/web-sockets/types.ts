@@ -1,4 +1,4 @@
-import { Bundle } from "../types";
+import { Bundle } from "@gasless-intents/types";
 
 /** Individual filter keys accepted by the WS API. */
 export enum WsFilterKey {

@@ -1,4 +1,4 @@
-import { getUrl, postUrl } from "@utils/index";
+import { postUrl, getUrl } from "@utils/http";
 import { PRICE_RATES_URL, PRICE_CHART_URL } from "@utils/constants";
 import {
   TokenPriceRequestItem,

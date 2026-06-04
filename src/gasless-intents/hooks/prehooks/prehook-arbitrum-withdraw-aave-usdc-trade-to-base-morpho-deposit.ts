@@ -1,20 +1,24 @@
 import { privateKeyToAccount } from "viem/accounts";
-import util from "util";
 import { randomUUID } from "crypto";
 
-import { AAVE_V3_POOL_ARBITRUM, PLACEHOLDER_TOKEN_AMOUNT, USDC } from "@utils/constants";
-import { toHexPrefixString, getEnvConfig } from "@utils/index";
-import { getAaveWithdrawExtendedHook, getMorphoDepositExtendedHook } from "@utils/posthooks";
-import { createBundle, submitBundle } from "@utils/api";
-import { BundleProposeBody, ExtendedHook, PlaceHolder, TradingAlgorithm } from "../../types";
-import { getArbitrumUsdcToBaseUsdc } from "../../trades";
+import { AAVE_V3_POOL_ARBITRUM, USDC } from "@utils/constants";
+import { toHexPrefixString } from "@utils/string";
+import { getEnvConfig } from "@utils/env";
+import { createBundle, submitBundle } from "@utils/gasless-api";
+import { BundleProposeBody, TradingAlgorithm } from "@gasless-intents/types";
+import { getArbitrumUsdcToBaseUsdc } from "@gasless-intents/trade-blueprints";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
 import { getVaultAddressByToken } from "@utils/morpho/get-vault-address";
-import { createApproveCall } from "@utils/contract-calls";
-import { replaceNamedPlaceholders } from "@utils/hooks-common";
+import { getAaveWithdrawHook } from "@utils/hooks/aave";
+import { getMorphoDepositHook } from "@utils/hooks/morpho";
+import { getApproveHook } from "@utils/hooks/erc20-hooks";
 
+/**
+ * Example result: 
+ * https://anchorage.debridge.com/bundle/0x08ea91b85e281824182700553ce43cbe06ffc51060b2e8c7bdaafae74b2dd820
+ */
 async function main() {
   const { privateKey } = getEnvConfig();
 
@@ -24,20 +28,19 @@ async function main() {
 
   const amountToRebalance = "3204714"; // 3.204714 USDC with 6 decimals - this is the amount that will be withdrawn from Aave in the pre-hook and swapped to ETH, adjust as needed
 
-  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawExtendedHook(
+  const arbitrumUsdcAaveWithdraw = await getAaveWithdrawHook(
     AAVE_V3_POOL_ARBITRUM,
     toHexPrefixString(USDC.Arbitrum),
     CHAIN_IDS.Arbitrum,
     account.address,
-    "aaveDepositAmount",
     BigInt(amountToRebalance),
   );
 
-  const morphoDeposit = await getMorphoDepositExtendedHook(
+  const morphoDeposit = await getMorphoDepositHook(
     toHexPrefixString(USDC.Base),
     CHAIN_IDS.Base,
     account.address,
-    "morphoDepositAmount",
+    account.address
   );
 
   const morphoVaultAddress = await getVaultAddressByToken(USDC.Base, CHAIN_IDS.Base);
@@ -46,29 +49,12 @@ async function main() {
     throw new Error(`No Morpho vault found for ${USDC.Base} on ${CHAIN_IDS.Base}`);
   }
 
-  const approveUsdcForMorphoCall = createApproveCall(
-    toHexPrefixString(USDC.Base),
-    toHexPrefixString(morphoVaultAddress), // Morpho Aave V3 on Base - https://docs.morpho.xyz/deployment-addresses#base
-    BigInt(PLACEHOLDER_TOKEN_AMOUNT),
+  const approveUsdcForMorphoHook = getApproveHook(
+    account.address,
+    USDC.Base,
+    CHAIN_IDS.Base,
+    morphoVaultAddress
   );
-
-  const placeholderMorphoDeposit: PlaceHolder = {
-    nameVariable: "morphoApproveAmount",
-    tokenAddress: USDC.Base,
-    address: account.address,
-  }
-
-  approveUsdcForMorphoCall.data = replaceNamedPlaceholders(approveUsdcForMorphoCall.data, [placeholderMorphoDeposit.nameVariable]);
-
-  const approveMorphoDepositHook: ExtendedHook = {
-    isAtomic: true,
-    data: approveUsdcForMorphoCall.data,
-    to: approveUsdcForMorphoCall.to,
-    value: approveUsdcForMorphoCall.value.toString(),
-    chainId: CHAIN_IDS.Base,
-    from: account.address,
-    placeHolders: [placeholderMorphoDeposit]
-  }
 
   const requestId = randomUUID();
 
@@ -81,7 +67,7 @@ async function main() {
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [getArbitrumUsdcToBaseUsdc(account.address, amountToRebalance)],
     preHooks: [arbitrumUsdcAaveWithdraw],
-    postHooks: [approveMorphoDepositHook, morphoDeposit],
+    postHooks: [approveUsdcForMorphoHook, morphoDeposit],
   };
 
   console.log("Creating bundle...");
@@ -89,11 +75,6 @@ async function main() {
 
   console.log(JSON.stringify(bundle, null, 2));
   console.log("Bundle created successfully!");
-
-  // Log the first intent for debugging
-  if (bundle.intents && bundle.intents.length > 0) {
-    console.log("First intent:", util.inspect(bundle.intents[0], { showHidden: false, depth: null, colors: true }));
-  }
 
   // Using processIntentBundle to handle all intents at once
   console.log("Collecting signatures for all intents...");
