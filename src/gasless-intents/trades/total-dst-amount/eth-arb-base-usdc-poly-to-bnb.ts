@@ -8,7 +8,7 @@ import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
 import { USDC, EVM_NATIVE_TOKEN } from "@utils/constants";
-import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "../../types";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "@gasless-intents/types";
 
 async function main() {
   const { privateKey } = getEnvConfig();
