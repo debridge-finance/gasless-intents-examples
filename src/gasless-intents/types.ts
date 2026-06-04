@@ -53,6 +53,11 @@ export enum TradingAlgorithm {
   MARKET = "market"
 }
 
+export enum TokenAmount {
+  AUTO = "auto",
+  MAX = "max",
+}
+
 export type Interaction = {
   hookTarget: string;
   hookPayload: string;
@@ -62,14 +67,14 @@ export type Trade = {
   // Source chain params
   srcChainId: number;
   srcChainTokenIn: string;
-  srcChainTokenInAmount: string;
+  srcChainTokenInAmount: string | TokenAmount;
   srcChainTokenInMinAmount?: string;
   srcChainTokenInMaxAmount?: string;
 
   // Destination chain params
   dstChainId: number;
   dstChainTokenOut: string;
-  dstChainTokenOutAmount: string;
+  dstChainTokenOutAmount: string | TokenAmount;
   dstChainTokenOutRecipient: string;
 
   // Authorities - can patch trades
@@ -119,8 +124,9 @@ export type BundleBase = {
   // Bundle execution params
   enableAccountAbstraction: boolean;
   isAtomic: boolean;
+  tradingAlgorithm: TradingAlgorithm;
+  totalDstAmount?: string;
 
-  // Permit flags 
   approvalMode?: ApprovalMode; // Defaults to "approve" if not provided
   approveAmountFlag?: ApproveAmount; // Defaults to "none" if not provided
 }
