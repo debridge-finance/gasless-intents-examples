@@ -7,23 +7,22 @@ import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
-import { USDC } from "@utils/constants";
-import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "../types";
+import { USDC, EVM_NATIVE_TOKEN } from "@utils/constants";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "../../types";
 
 async function main() {
   const { privateKey } = getEnvConfig();
   const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  // 8 USDC on BNB (18 decimals)
-  const totalDstAmount = (8n * 10n ** 18n).toString();
+  // 4 USDC on BNB (18 decimals)
+  const totalDstAmount = (4n * 10n ** 18n).toString();
 
   // ── Trades ─────────────────────────────────────────────────────────
 
-  // Trade 1: USDC on Base → USDC on BNB (max / auto)
-  const baseUsdcToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Base,
-    srcChainTokenIn: USDC.Base,
+  const arbEthToBnbUsdc: Trade = {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
     srcChainTokenInAmount: TokenAmount.MAX,
 
     dstChainId: CHAIN_IDS.BNB,
@@ -37,7 +36,22 @@ async function main() {
     prependOperatingExpenses: false,
   };
 
-  // Trade 2: USDC on Polygon → USDC on BNB (max / auto)
+  const baseEthToBnbUsdc: Trade = {
+    srcChainId: CHAIN_IDS.Base,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
+    srcChainTokenInAmount: TokenAmount.MAX,
+
+    dstChainId: CHAIN_IDS.BNB,
+    dstChainTokenOut: USDC.BNB,
+    dstChainTokenOutAmount: TokenAmount.AUTO,
+    dstChainTokenOutRecipient: account.address,
+
+    srcChainAuthorityAddress: account.address,
+    dstChainAuthorityAddress: account.address,
+
+    prependOperatingExpenses: false,
+  };
+
   const polyUsdcToBnbUsdc: Trade = {
     srcChainId: CHAIN_IDS.Polygon,
     srcChainTokenIn: USDC.Polygon,
@@ -63,11 +77,16 @@ async function main() {
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
     trades: [
-      baseUsdcToBnbUsdc,
-      polyUsdcToBnbUsdc,
+      arbEthToBnbUsdc,     // ETH from Arbitrum
+      baseEthToBnbUsdc,    // ETH from Base
+      polyUsdcToBnbUsdc,   // USDC from Polygon
     ],
     totalDstAmount,
   };
+
+  // ── Propose ────────────────────────────────────────────────────────
+  console.log("Creating bundle (2x ETH + USDC → 4 USDC on BNB)...");
+  console.log(`  totalDstAmount: ${totalDstAmount}`);
 
   const bundle = await createBundle(requestBody);
   console.log("\nBundle created!");
