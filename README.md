@@ -108,12 +108,12 @@ sending ERC-20 tokens to another address, and forwarding native assets to a bene
 ### Pre/Post-Interactions
 
 `preInteractions` / `postInteractions` are **per-intent** on-chain hook calls executed on the source chain around the maker's
-fill. The example scripts in [`src/gasless-intents/interactions/`](src/gasless-intents/interactions/) cover observability, on-chain metrics,
-protocol-fee derivation, compliance gating, and soft/hard rate limiting use cases.
+fill. The example scripts in [`src/gasless-intents/interactions/`](src/gasless-intents/interactions/) cover observability,
+on-chain metrics, protocol-fee derivation, rewards, and soft/hard rate limiting use cases.
 
 The Solidity receiver contracts and generated artefacts live under [`solidity/`](solidity/). Contract utility scripts use the
 hardcoded Base mainnet addresses in
-[`deployed-addresses.ts`](src/gasless-intents/interactions/contract-utils/shared/deployed-addresses.ts), so they do not depend on
+[`deployed-addresses.ts`](src/gasless-intents/interactions/shared/deployed-addresses.ts), so they do not depend on
 local deployment ledger files being present.
 
 ### Solana Examples

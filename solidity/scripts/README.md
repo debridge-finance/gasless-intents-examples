@@ -38,7 +38,7 @@ For each interaction contract it writes:
 
 ## Interaction Hooks
 
-Six receiver contracts implement `IPreInteractionHook` and
+Five receiver contracts implement `IPreInteractionHook` and
 `IPostInteractionHook`. These are the targets the deBridge Intent Manager calls
 around each fill via `preInteractions` and `postInteractions`.
 
@@ -55,7 +55,6 @@ https://gasless-docs.debridge.finance/overview/supported-chains
 | `LoggingInteractionHook` | Indexed events at every callback; soft rate-limit via `referenceId > 0` on the payload. |
 | `FillCounter` | Per-intent / per-subject / per-token fill counters readable on-chain. |
 | `ProtocolFeeRecorder` | Same-chain-with-preswap fee derivation. Cross-chain variants intentionally revert with `Unsupported`. |
-| `AllowlistGuard` | EIP-712 gated allowlist. Pre-hook requires an allowlisted signer, signed `intentId`, unused nonce, and a submitted intent in the IntentManager. |
 | `RewardMinter` | Accrues per-subject reward points on every callback; demo non-transferrable counter. |
 | `FillCapEnforcer` | Hard per-subject fill cap; pre-hook reverts `HardCapExceeded` past the cap. |
 
@@ -65,13 +64,13 @@ fill.
 
 ## Deploy
 
-Deploy all six contracts:
+Deploy all five contracts:
 
 ```bash
 npx tsx solidity/scripts/interactions/deploy/deploy-interaction-contracts.ts
 npx tsx solidity/scripts/interactions/deploy/deploy-interaction-contracts.ts --dry-run
 npx tsx solidity/scripts/interactions/deploy/deploy-interaction-contracts.ts --only RewardMinter
-npx tsx solidity/scripts/interactions/deploy/deploy-interaction-contracts.ts --skip AllowlistGuard
+npx tsx solidity/scripts/interactions/deploy/deploy-interaction-contracts.ts --skip FillCapEnforcer
 ```
 
 Deploy one contract:
@@ -81,7 +80,6 @@ npx tsx solidity/scripts/utilities/build-artefacts.ts
 npx tsx solidity/scripts/interactions/deploy/deploy-logging-interaction-hook.ts
 npx tsx solidity/scripts/interactions/deploy/deploy-fill-counter.ts
 npx tsx solidity/scripts/interactions/deploy/deploy-protocol-fee-recorder.ts
-npx tsx solidity/scripts/interactions/deploy/deploy-allowlist-guard.ts
 npx tsx solidity/scripts/interactions/deploy/deploy-reward-minter.ts
 npx tsx solidity/scripts/interactions/deploy/deploy-fill-cap-enforcer.ts
 ```
@@ -105,7 +103,6 @@ npx tsx solidity/scripts/interactions/verify/verify-interaction-contracts.ts
 npx tsx solidity/scripts/interactions/verify/verify-logging-interaction-hook.ts  <0xAddress>
 npx tsx solidity/scripts/interactions/verify/verify-fill-counter.ts              <0xAddress>
 npx tsx solidity/scripts/interactions/verify/verify-protocol-fee-recorder.ts     <0xAddress>
-npx tsx solidity/scripts/interactions/verify/verify-allowlist-guard.ts           <0xAddress>
 npx tsx solidity/scripts/interactions/verify/verify-reward-minter.ts             <0xAddress>
 npx tsx solidity/scripts/interactions/verify/verify-fill-cap-enforcer.ts         <0xAddress>
 ```
@@ -120,6 +117,5 @@ Verification uses Standard JSON Input mode against the Etherscan v2 API. Set
 | `LoggingInteractionHook` | Base mainnet | 8453 | [`0x20df8adc7b093594720334c69aa16a9d8d69580a`](https://basescan.org/address/0x20df8adc7b093594720334c69aa16a9d8d69580a#code) | yes |
 | `FillCounter` | Base mainnet | 8453 | [`0x0f3fed84e654fb3b1e2ae3af80e2dc786c9b7277`](https://basescan.org/address/0x0f3fed84e654fb3b1e2ae3af80e2dc786c9b7277#code) | yes |
 | `ProtocolFeeRecorder` | Base mainnet | 8453 | [`0xe04944aefa4d15aa0d322531b19cc8f06000c9c8`](https://basescan.org/address/0xe04944aefa4d15aa0d322531b19cc8f06000c9c8#code) | yes |
-| `AllowlistGuard` | Base mainnet | 8453 | [`0x8909accb3b437a00dcb268d34a07473a60269e1b`](https://basescan.org/address/0x8909accb3b437a00dcb268d34a07473a60269e1b#code) | yes |
 | `RewardMinter` | Base mainnet | 8453 | [`0xf1360c7d00b6cffa862f6645dba05babc47a097b`](https://basescan.org/address/0xf1360c7d00b6cffa862f6645dba05babc47a097b#code) | yes |
 | `FillCapEnforcer` | Base mainnet | 8453 | [`0x3454ace276329902caeab59135439fb05cc644e5`](https://basescan.org/address/0x3454ace276329902caeab59135439fb05cc644e5#code) | yes |

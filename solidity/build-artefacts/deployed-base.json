@@ -17,11 +17,6 @@
       "deployTxHash": "0x7603a690bdb8d6cd35b18d0807898afb1c8995c9ac299844f286bd308b7fd5c8",
       "blockNumber": 46369167
     },
-    "AllowlistGuard": {
-      "address": "0x8909accb3b437a00dcb268d34a07473a60269e1b",
-      "deployTxHash": "0x21947a5bf72ebf5dc08de02e50dd8ab6f783a42ba5d69fa0f79eeca5c3046cba",
-      "blockNumber": 46369172
-    },
     "RewardMinter": {
       "address": "0xf1360c7d00b6cffa862f6645dba05babc47a097b",
       "deployTxHash": "0x058d87e46dcf5d445fa4637443883add71f29021731852da2d414a3ace8c81d4",

@@ -9,7 +9,6 @@ const CONTRACTS = [
   "LoggingInteractionHook",
   "FillCounter",
   "ProtocolFeeRecorder",
-  "AllowlistGuard",
   "RewardMinter",
   "FillCapEnforcer",
 ];

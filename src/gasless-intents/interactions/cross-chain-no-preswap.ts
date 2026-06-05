@@ -2,28 +2,17 @@
  * Cross-chain trade WITHOUT a pre-swap (Base USDC → Arbitrum USDC).
  *
  * Exercises `onPostCallForCrossChainIntent` (no preswap variant). Targets
- * LoggingInteractionHook plus AllowlistGuard.
- *
- * AllowlistGuard requires an EIP-712 signature from the `subject` over
- * `AllowlistAuthorization(subject, nonce, deadline)`. The contract recovers
- * the signer and reverts unless:
- *   1. block.timestamp ≤ deadline,
- *   2. usedNonces[subject][nonce] == false,
- *   3. recovered signer == subject,
- *   4. allowed[subject] == true.
- *
- * Pre-flight: the AllowlistGuard owner must have called
- * `setAllowed(account.address, true)` for this script's signer. See
- * `contract-utils/allowlist-guard/allowlist-guard-seed.ts`.
+ * LoggingInteractionHook only.
  */
 import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
-import { createBundle, submitBundle } from "@utils/api";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
 import { USDC } from "@utils/constants";
-import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
+import { toHexPrefixString } from "@utils/string";
 import {
   Bundle,
   BundleProposeBody,
@@ -32,7 +21,6 @@ import {
   TradingAlgorithm,
 } from "@gasless-intents/types";
 import { encodeLogPayload } from "./helpers/log-payload";
-import { buildAllowlistPayload } from "./helpers/allowlist-payload";
 import { requireHookAddress } from "./helpers/hook-addresses";
 
 async function main(): Promise<Bundle> {
@@ -41,19 +29,8 @@ async function main(): Promise<Bundle> {
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
   const loggingHook = requireHookAddress("LoggingInteractionHook");
-  const allowlistGuard = requireHookAddress("AllowlistGuard");
-
-  const allowlist = await buildAllowlistPayload({
-    account,
-    guardAddress: allowlistGuard,
-    chainId: CHAIN_IDS.Base,
-  });
 
   const preInteractions: Interaction[] = [
-    {
-      hookTarget: allowlistGuard,
-      hookPayload: allowlist.payload,
-    },
     {
       hookTarget: loggingHook,
       hookPayload: encodeLogPayload("CrossChainNoPreSwap.pre", account.address, 0n),
