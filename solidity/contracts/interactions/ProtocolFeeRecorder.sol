@@ -10,16 +10,14 @@ import {IntentManagerCallable} from "./IntentManagerCallable.sol";
 /// @notice Same-chain-with-pre-swap fee derivation:
 ///         `feeAmount = Σ preSwapResults[i].outputAmount − ctx.takeAmountAfterFeeCharge`.
 ///         Stores per-intent and per-token cumulative fees, emits one event
-///         per fill. The cross-chain variants revert with `Unsupported()`
-///         because cross-chain post-hooks don't receive the data needed to
-///         derive the analogous fee.
+///         per fill. The cross-chain variants are accepted as no-ops because
+///         cross-chain post-hooks don't receive the data needed to derive the
+///         analogous fee.
 ///
 /// @dev Decodes `hookPayload` as `abi.encode(address subject)`. `subject` is
 ///      recorded alongside the fee for off-chain attribution (e.g. referrer
 ///      or partner accounting).
 contract ProtocolFeeRecorder is IPreInteractionHook, IPostInteractionHook, IntentManagerCallable {
-    error Unsupported();
-
     event ProtocolFeeRecorded(
         bytes32 indexed intentId,
         bytes32 indexed tradeId,
@@ -80,13 +78,13 @@ contract ProtocolFeeRecorder is IPreInteractionHook, IPostInteractionHook, Inten
     function onPostCallForCrossChainIntentWithPreSwap(
         CrossChainWithPreSwapContext calldata /* ctx */
     ) external view override onlyIntentManager {
-        revert Unsupported();
+        // No-op: cross-chain contexts don't expose same-chain fee derivation data.
     }
 
     function onPostCallForCrossChainIntent(
         CrossChainContext calldata /* ctx */
     ) external view override onlyIntentManager {
-        revert Unsupported();
+        // No-op: cross-chain contexts don't expose same-chain fee derivation data.
     }
 
     function _sumOutputs(IPreSwapResult.PreSwapResult[] calldata legs) private pure returns (uint256 total) {

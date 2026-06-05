@@ -11,11 +11,6 @@
         "name": "OnlyIntentManager"
       },
       {
-        "inputs": [],
-        "type": "error",
-        "name": "Unsupported"
-      },
-      {
         "inputs": [
           {
             "internalType": "bytes32",
@@ -419,10 +414,10 @@
       "license": "MIT"
     },
     "contracts/interactions/ProtocolFeeRecorder.sol": {
-      "keccak256": "0x84b3f735ccefb021c45edcfe02facaf17f523d25611d262ae0dd868d29656f43",
+      "keccak256": "0xf505d5b2aaf8789da68a4241bf37eea93f538b9912a1d163c414a545757b8a1f",
       "urls": [
-        "bzz-raw://fe56fd9efae7973b11c1da4cfc5f2035f5794dd20663444309ea24f8fd462a55",
-        "dweb:/ipfs/QmZVteiSXUtq3qzRzD4rVT8GS7GHvtj1NvRL931Awy8Hxz"
+        "bzz-raw://2c0212583ed46a6b8a34a4552caa5a50b253998a24f0e61869909c3ee52556cf",
+        "dweb:/ipfs/QmP7U6SqDm67UeQZv8W2zfxThzfokR2TpVAwSaAhvcLnDQ"
       ],
       "license": "MIT"
     },

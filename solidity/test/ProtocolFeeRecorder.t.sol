@@ -88,7 +88,7 @@ contract ProtocolFeeRecorderTest is Test {
         assertEq(recorder.intentTokenFee(INTENT_ID, TAKE_TOKEN), 0);
     }
 
-    function test_CrossChainPreSwap_Reverts() public {
+    function test_CrossChainPreSwap_NoOp() public {
         IPostInteractionHook.CrossChainWithPreSwapContext memory ctx = IPostInteractionHook
             .CrossChainWithPreSwapContext({
                 intentId: INTENT_ID,
@@ -102,12 +102,13 @@ contract ProtocolFeeRecorderTest is Test {
                 takeChainId: uint32(8453),
                 takeChainReceiver: abi.encodePacked(SUBJECT)
         });
-        vm.expectRevert(ProtocolFeeRecorder.Unsupported.selector);
         vm.prank(INTENT_MANAGER);
         recorder.onPostCallForCrossChainIntentWithPreSwap(ctx);
+        assertEq(recorder.intentTokenFee(INTENT_ID, TAKE_TOKEN), 0);
+        assertEq(recorder.tokenTotalFee(TAKE_TOKEN), 0);
     }
 
-    function test_CrossChain_Reverts() public {
+    function test_CrossChain_NoOp() public {
         IPostInteractionHook.CrossChainContext memory ctx = IPostInteractionHook.CrossChainContext({
             intentId: INTENT_ID,
             tradeId: TRADE_ID,
@@ -119,9 +120,10 @@ contract ProtocolFeeRecorderTest is Test {
             takeChainId: uint32(8453),
             takeChainReceiver: abi.encodePacked(SUBJECT)
         });
-        vm.expectRevert(ProtocolFeeRecorder.Unsupported.selector);
         vm.prank(INTENT_MANAGER);
         recorder.onPostCallForCrossChainIntent(ctx);
+        assertEq(recorder.intentTokenFee(INTENT_ID, TAKE_TOKEN), 0);
+        assertEq(recorder.tokenTotalFee(TAKE_TOKEN), 0);
     }
 
     function test_AccumulatesAcrossCalls() public {

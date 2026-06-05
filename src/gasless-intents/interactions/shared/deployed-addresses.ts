@@ -3,11 +3,11 @@ import type { Address } from "viem";
 const ZERO = "0x0000000000000000000000000000000000000000" as Address;
 
 export const INTERACTION_CONTRACT_ADDRESSES = {
-  LoggingInteractionHook: "0x20df8adc7b093594720334c69aa16a9d8d69580a" as Address,
-  FillCounter: "0x0f3fed84e654fb3b1e2ae3af80e2dc786c9b7277" as Address,
-  ProtocolFeeRecorder: "0xe04944aefa4d15aa0d322531b19cc8f06000c9c8" as Address,
-  RewardMinter: "0xf1360c7d00b6cffa862f6645dba05babc47a097b" as Address,
-  FillCapEnforcer: "0x3454ace276329902caeab59135439fb05cc644e5" as Address,
+  LoggingInteractionHook: "0x17c94c6daecd6f5c99fc0284f1159dc4eb76f3ed" as Address,
+  FillCounter: "0x31c646be72f5df8e1d2188e375b3cd4b6a5097ab" as Address,
+  ProtocolFeeRecorder: "0x06849f0fad887e73c57e44ede0821fbbc63ee1f9" as Address,
+  RewardMinter: "0xf359104c960ddecedd207b679450abdc9d7c6481" as Address,
+  FillCapEnforcer: "0xbc4a0ed3b62dd5d9512f954f43fcf5c23811b15e" as Address,
 } as const;
 
 export type InteractionContractName = keyof typeof INTERACTION_CONTRACT_ADDRESSES;

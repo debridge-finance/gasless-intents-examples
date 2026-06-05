@@ -54,13 +54,13 @@ https://gasless-docs.debridge.finance/overview/supported-chains
 | -------- | ------- |
 | `LoggingInteractionHook` | Indexed events at every callback; soft rate-limit via `referenceId > 0` on the payload. |
 | `FillCounter` | Per-intent / per-subject / per-token fill counters readable on-chain. |
-| `ProtocolFeeRecorder` | Same-chain-with-preswap fee derivation. Cross-chain variants intentionally revert with `Unsupported`. |
+| `ProtocolFeeRecorder` | Same-chain-with-preswap fee derivation. Cross-chain variants are accepted as no-op callbacks. |
 | `RewardMinter` | Accrues per-subject reward points on every callback; demo non-transferrable counter. |
 | `FillCapEnforcer` | Hard per-subject fill cap; pre-hook reverts `HardCapExceeded` past the cap. |
 
-`ProtocolFeeRecorder` is same-chain-with-preswap only. Do not attach it to
-cross-chain post-interactions unless the intended behavior is to revert the
-fill.
+`ProtocolFeeRecorder` records fees only for same-chain-with-preswap fills.
+Cross-chain post-interaction callbacks are no-ops because the callback data
+does not expose the same fee derivation inputs.
 
 ## Deploy
 
@@ -114,8 +114,8 @@ Verification uses Standard JSON Input mode against the Etherscan v2 API. Set
 
 | Contract | Chain | ChainId | Address | Verified |
 | -------- | ----- | ------- | ------- | -------- |
-| `LoggingInteractionHook` | Base mainnet | 8453 | [`0x20df8adc7b093594720334c69aa16a9d8d69580a`](https://basescan.org/address/0x20df8adc7b093594720334c69aa16a9d8d69580a#code) | yes |
-| `FillCounter` | Base mainnet | 8453 | [`0x0f3fed84e654fb3b1e2ae3af80e2dc786c9b7277`](https://basescan.org/address/0x0f3fed84e654fb3b1e2ae3af80e2dc786c9b7277#code) | yes |
-| `ProtocolFeeRecorder` | Base mainnet | 8453 | [`0xe04944aefa4d15aa0d322531b19cc8f06000c9c8`](https://basescan.org/address/0xe04944aefa4d15aa0d322531b19cc8f06000c9c8#code) | yes |
-| `RewardMinter` | Base mainnet | 8453 | [`0xf1360c7d00b6cffa862f6645dba05babc47a097b`](https://basescan.org/address/0xf1360c7d00b6cffa862f6645dba05babc47a097b#code) | yes |
-| `FillCapEnforcer` | Base mainnet | 8453 | [`0x3454ace276329902caeab59135439fb05cc644e5`](https://basescan.org/address/0x3454ace276329902caeab59135439fb05cc644e5#code) | yes |
+| `LoggingInteractionHook` | Base mainnet | 8453 | [`0x17c94c6daecd6f5c99fc0284f1159dc4eb76f3ed`](https://basescan.org/address/0x17c94c6daecd6f5c99fc0284f1159dc4eb76f3ed#code) | yes |
+| `FillCounter` | Base mainnet | 8453 | [`0x31c646be72f5df8e1d2188e375b3cd4b6a5097ab`](https://basescan.org/address/0x31c646be72f5df8e1d2188e375b3cd4b6a5097ab#code) | yes |
+| `ProtocolFeeRecorder` | Base mainnet | 8453 | [`0x06849f0fad887e73c57e44ede0821fbbc63ee1f9`](https://basescan.org/address/0x06849f0fad887e73c57e44ede0821fbbc63ee1f9#code) | yes |
+| `RewardMinter` | Base mainnet | 8453 | [`0xf359104c960ddecedd207b679450abdc9d7c6481`](https://basescan.org/address/0xf359104c960ddecedd207b679450abdc9d7c6481#code) | yes |
+| `FillCapEnforcer` | Base mainnet | 8453 | [`0xbc4a0ed3b62dd5d9512f954f43fcf5c23811b15e`](https://basescan.org/address/0xbc4a0ed3b62dd5d9512f954f43fcf5c23811b15e#code) | yes |
