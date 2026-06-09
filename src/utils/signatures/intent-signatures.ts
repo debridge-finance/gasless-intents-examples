@@ -37,6 +37,11 @@ export async function signAction(action: Action, walletClient: WalletClient | Ke
     case SignatureTypes.SignTransaction: {
       return solanaVersionedTransactionSign(action, walletClient as Keypair);
     }
+    case SignatureTypes.PreSignedMessage: {
+      throw new Error(
+        "PreSignedMessage is already signed by the API. Pass it through in the bundle and omit it from signedData.",
+      );
+    }
     case SignatureTypes.Transaction: {
       // Check if the transaction is EVM or Solana
       const tx = action.data as Tx;
@@ -90,7 +95,7 @@ export async function provideDeferredPlaceholderData(
   throw new Error(`provideDeferredPlaceholderData received unsupported action type: ${action.type}`);
 }
 
-async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<string> {
+export async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<string> {
   if (!walletClient.account) {
     throw new Error("Wallet client has no default account set");
   }
@@ -185,6 +190,7 @@ export async function getRequiredActionSignatures(
   requiredActions: Array<Action>,
   walletClient: WalletClient | Keypair,
   providedDataMap: ProvidedDataMap = {},
+  options: { skipBudgetApprovalTransactions?: boolean } = {},
 ): Promise<SignedDataItem[]> {
   const signatures: SignedDataItem[] = [];
 
@@ -196,6 +202,16 @@ export async function getRequiredActionSignatures(
   // Process each action in the intent
   for (const action of requiredActions) {
     try {
+      if (isPreSignedMessageAction(action)) {
+        // API-signed refill authorization is already part of the proposal payload.
+        continue;
+      }
+
+      if (options.skipBudgetApprovalTransactions && isBudgetTransactionAction(action)) {
+        // Refill flows submit first, then broadcast the approval after native gas arrives.
+        continue;
+      }
+
       // Hook-executed Transactions are run by the solver — the user wallet must not submit them.
       // Propose description for these is literally "Ready-to-execute transaction. No signature
       // or placeholder values required." (e.g. direct hook + eager placeholder.) Emit a no-op
@@ -231,6 +247,7 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
   getChainId: (item: T) => number | undefined,
   walletClientMap: WalletClientMap,
   providedDataMap: ProvidedDataMap = {},
+  options: { skipBudgetApprovalTransactions?: boolean } = {},
 ): Promise<SignedDataItem[]> {
   if (!items || !Array.isArray(items)) return [];
 
@@ -252,6 +269,7 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
       item.requiredActions,
       walletClientMap[chainId],
       providedDataMap,
+      options,
     );
     signatures.push(...sigs);
   }
@@ -265,31 +283,43 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
  * `providedDataMap` to supply hex values for deferred placeholders surfaced
  * via ProvidePlaceholders or Sign712MetaMaskWithPlaceholders actions.
  */
-export async function processIntentBundle(
+export async function processIntentBundleActions(
   bundle: BundleProposeResponse,
   walletClientMap: WalletClientMap,
   providedDataMap: ProvidedDataMap = {},
+  options: { skipBudgetApprovalTransactions?: boolean } = {},
 ): Promise<SignedDataItem[]> {
-  // tmp debugging, TODO: FIX
+  // Collect signatures for all bundle intents and hooks.
   const a = await collectSignaturesFromItems(
     bundle.intents,
     (i) => i.intent.intentChainId,
     walletClientMap,
     providedDataMap,
+    options,
   );
   const b = await collectSignaturesFromItems(
     bundle.preHooks,
     (h) => h.hook.chainId,
     walletClientMap,
     providedDataMap,
+    options,
   );
   const c = await collectSignaturesFromItems(
     bundle.postHooks,
     (h) => h.hook.chainId,
     walletClientMap,
     providedDataMap,
+    options,
   );
   return [...a, ...b, ...c];
+}
+
+export async function processIntentBundle(
+  bundle: BundleProposeResponse,
+  walletClientMap: WalletClientMap,
+  providedDataMap: ProvidedDataMap = {},
+): Promise<SignedDataItem[]> {
+  return processIntentBundleActions(bundle, walletClientMap, providedDataMap);
 }
 
 export function buildHookProvidedDataMap(
@@ -357,6 +387,14 @@ function isDeferredPlaceholderAction(type: SignatureTypes): boolean {
 
 function isSolverExecutedHookAction(action: Action): boolean {
   return action.type === SignatureTypes.Transaction && (action.actions?.includes(ActionType.Hook) ?? false);
+}
+
+function isPreSignedMessageAction(action: Action): boolean {
+  return action.type === SignatureTypes.PreSignedMessage || (action.actions?.includes(ActionType.SignRefill) ?? false);
+}
+
+function isBudgetTransactionAction(action: Action): boolean {
+  return action.type === SignatureTypes.Transaction && (action.actions?.includes(ActionType.Budget) ?? false);
 }
 
 function buildProvidedData(
