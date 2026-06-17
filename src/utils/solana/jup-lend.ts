@@ -1,7 +1,7 @@
 import {
   AccountLayout,
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
+  createAssociatedTokenAccountIdempotentInstruction,
   createTransferInstruction,
   getAccount,
   getAssociatedTokenAddressSync,
@@ -218,7 +218,7 @@ export async function buildJupLendUsdcDepositDlnHook(params: {
     tokenProgram: context.tokenProgram,
   });
 
-  const createRecipientFTokenAtaIx = createAssociatedTokenAccountInstruction(
+  const createRecipientFTokenAtaIx = createAssociatedTokenAccountIdempotentInstruction(
     externalCallAuthority,
     recipientFTokenAta,
     params.recipient,
@@ -257,7 +257,7 @@ export async function buildJupLendUsdcDepositDlnHook(params: {
   };
 
   const createTempAtaBytes = serializeSolanaExternalInstruction({
-    instruction: createAssociatedTokenAccountInstruction(
+    instruction: createAssociatedTokenAccountIdempotentInstruction(
       externalCallAuthority,
       tempFTokenAta,
       externalCallAuthority,
@@ -273,14 +273,14 @@ export async function buildJupLendUsdcDepositDlnHook(params: {
         index: CREATE_ATA_ACCOUNT_INDEX,
       },
     ],
-    isInMandatoryBlock: true,
+    isInMandatoryBlock: false,
   });
 
   const createRecipientAtaBytes = serializeSolanaExternalInstruction({
     instruction: createRecipientFTokenAtaIx,
     expense: recipientAtaRentExpense,
     reward: 0n,
-    isInMandatoryBlock: true,
+    isInMandatoryBlock: false,
   });
 
   const depositBytes = serializeSolanaExternalInstruction({
