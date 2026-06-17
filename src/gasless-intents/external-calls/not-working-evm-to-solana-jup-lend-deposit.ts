@@ -45,7 +45,7 @@ async function main() {
   });
 
   console.log("\n--- Solana External Call ---");
-  console.log("Approach: deposit to patched temp fToken wallet, then transfer fTokens to recipient");
+  console.log("Approach: deposit to substituted temp fToken ATA, then transfer fTokens to recipient");
   console.log("JUP LEND asset mint:", assetMint.toBase58());
   console.log("JUP LEND admin:", lendingAdmin.toBase58());
   console.log("JUP LEND market:", lending.toBase58());
@@ -57,7 +57,6 @@ async function main() {
   console.log("Liquidity program:", liquidityProgram.toBase58());
   console.log("Recipient fToken ATA:", recipientFTokenAta.toBase58());
   console.log("Recipient fToken ATA exists:", recipientFTokenAtaExists);
-  console.log("Patched temp fToken wallet:", `ATA(external-call authority, ${fTokenMint.toBase58()})`);
   console.log("Token program:", tokenProgram.toBase58());
   console.log("Serialized dlnHook bytes:", serializedHookBytes);
 

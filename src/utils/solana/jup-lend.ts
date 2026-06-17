@@ -1,12 +1,12 @@
 import {
   AccountLayout,
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountIdempotentInstruction,
+  createAssociatedTokenAccountInstruction,
   createTransferInstruction,
   getAccount,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
-import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
+import { Connection, PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 import BN from "bn.js";
 
 import { DlnHook, DlnHookType } from "@gasless-intents/types";
@@ -15,20 +15,14 @@ import {
   concatSolanaExternalInstructionsToHex,
   serializeSolanaExternalInstruction,
   SOLANA_EXTERNAL_CALL_PLACEHOLDERS,
-  type WalletSubstitution,
 } from "@utils/solana/external-call";
 
-const JUP_LEND_DEPOSIT_DISCRIMINATOR = Buffer.from([242, 35, 198, 137, 82, 225, 242, 182]);
 const JUP_LEND_REDEEM_DISCRIMINATOR = Buffer.from([184, 12, 86, 149, 70, 196, 97, 225]);
 export const JUP_LEND_DEPOSIT_AMOUNT_OFFSET = 8;
 export const JUP_LEND_DEPOSIT_DEPOSITOR_TOKEN_ACCOUNT_INDEX = 1;
 export const JUP_LEND_DEPOSIT_RECIPIENT_TOKEN_ACCOUNT_INDEX = 2;
 export const JUP_LEND_REDEEM_SHARES_OFFSET = 8;
 const CREATE_ATA_ACCOUNT_INDEX = 1;
-const CREATE_ATA_OWNER_INDEX = 2;
-const CREATE_ATA_MINT_INDEX = 3;
-const CREATE_ATA_TOKEN_PROGRAM_INDEX = 5;
-const CREATE_ATA_IDEMPOTENT_DATA = Buffer.from([1]);
 const SPL_TRANSFER_AMOUNT_OFFSET = 1;
 const SPL_TRANSFER_SOURCE_ACCOUNT_INDEX = 0;
 
@@ -36,10 +30,6 @@ type JupLendContextParams = {
   asset: PublicKey;
   signer: PublicKey;
   connection: Connection;
-};
-
-type JupLendDepositIxsParams = JupLendContextParams & {
-  amount: BN;
 };
 
 export type JupLendContext = {
@@ -65,7 +55,17 @@ export type JupLendContext = {
 
 type JupEarnModule = {
   getDepositContext(params: JupLendContextParams): Promise<JupLendContext>;
-  getDepositIxs(params: JupLendDepositIxsParams): Promise<{ ixs: TransactionInstruction[] }>;
+  getLendingProgram(params: { connection: Connection; signer: PublicKey }): JupLendingProgram;
+};
+
+type JupLendingProgram = {
+  methods: {
+    deposit(amount: BN): {
+      accounts(context: JupLendContext): {
+        instruction(): Promise<TransactionInstruction>;
+      };
+    };
+  };
 };
 
 export type JupLendDepositDlnHookResult = {
@@ -94,13 +94,6 @@ async function getJupDepositContext(params: JupLendContextParams): Promise<JupLe
   const { getDepositContext } = await nativeImport("@jup-ag/lend/earn");
 
   return getDepositContext(params);
-}
-
-async function getJupDepositIxs(params: JupLendDepositIxsParams): Promise<TransactionInstruction[]> {
-  // @jup-ag/lend is ESM-only; preserve native import when this repo emits CommonJS.
-  const { getDepositIxs } = await nativeImport("@jup-ag/lend/earn");
-
-  return (await getDepositIxs(params)).ixs;
 }
 
 export async function getJupLendUsdcContext(params: {
@@ -146,156 +139,20 @@ async function validateTokenAccount(params: {
   return true;
 }
 
-function findJupLendDepositIx(instructions: TransactionInstruction[]): TransactionInstruction {
-  const jupLendProgramId = new PublicKey(JUP_LEND.EarnProgram);
-  const depositInstructions = instructions.filter(
-    (instruction) =>
-      instruction.programId.equals(jupLendProgramId) &&
-      Buffer.from(instruction.data.subarray(0, JUP_LEND_DEPOSIT_DISCRIMINATOR.length)).equals(
-        JUP_LEND_DEPOSIT_DISCRIMINATOR,
-      ),
-  );
-
-  if (depositInstructions.length !== 1) {
-    throw new Error(`Expected exactly one JUP LEND deposit instruction, found ${depositInstructions.length}.`);
-  }
-
-  return depositInstructions[0];
-}
-
-function findSdkRecipientTokenAtaIx(
-  instructions: TransactionInstruction[],
-  context: JupLendContext,
-): TransactionInstruction | undefined {
-  const createAtaInstructions = instructions.filter(
-    (instruction) =>
-      instruction.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID) &&
-      instruction.keys[CREATE_ATA_ACCOUNT_INDEX]?.pubkey.equals(context.recipientTokenAccount) &&
-      instruction.keys[CREATE_ATA_MINT_INDEX]?.pubkey.equals(context.fTokenMint),
-  );
-
-  if (createAtaInstructions.length > 1) {
-    throw new Error(
-      `Expected at most one SDK create ATA instruction for ${context.recipientTokenAccount.toBase58()}, found ${createAtaInstructions.length}.`,
-    );
-  }
-
-  return createAtaInstructions[0];
-}
-
-function assertInstructionAccount(params: {
-  instruction: TransactionInstruction;
-  index: number;
-  expected: PublicKey;
-  label: string;
-}) {
-  const account = params.instruction.keys[params.index];
-
-  if (!account) {
-    throw new Error(
-      `Missing ${params.label} account at index ${params.index} on instruction ${params.instruction.programId.toBase58()}.`,
-    );
-  }
-
-  if (!account.pubkey.equals(params.expected)) {
-    throw new Error(
-      `Unexpected ${params.label} account at index ${params.index}: ${account.pubkey.toBase58()}, expected ${params.expected.toBase58()}.`,
-    );
-  }
-}
-
-function patchInstructionAccounts(
-  instruction: TransactionInstruction,
-  patches: Record<number, PublicKey>,
-): TransactionInstruction {
-  for (const index of Object.keys(patches).map(Number)) {
-    if (!instruction.keys[index]) {
-      throw new Error(`Cannot patch missing account index ${index} on instruction ${instruction.programId.toBase58()}.`);
-    }
-  }
-
-  return new TransactionInstruction({
-    programId: instruction.programId,
-    keys: instruction.keys.map((account, index) => ({
-      ...account,
-      pubkey: patches[index] ?? account.pubkey,
-    })),
-    data: Buffer.from(instruction.data),
-  });
-}
-
-function patchSdkCreateRecipientFTokenAtaIx(params: {
-  instruction: TransactionInstruction;
+async function buildJupLendDepositIxFromContext(params: {
+  connection: Connection;
   context: JupLendContext;
-  recipient: PublicKey;
-  recipientFTokenAta: PublicKey;
-}): TransactionInstruction {
-  assertInstructionAccount({
-    instruction: params.instruction,
-    index: CREATE_ATA_ACCOUNT_INDEX,
-    expected: params.context.recipientTokenAccount,
-    label: "SDK fToken ATA",
-  });
-  assertInstructionAccount({
-    instruction: params.instruction,
-    index: CREATE_ATA_OWNER_INDEX,
-    expected: params.context.signer,
-    label: "SDK fToken ATA owner",
-  });
-  assertInstructionAccount({
-    instruction: params.instruction,
-    index: CREATE_ATA_MINT_INDEX,
-    expected: params.context.fTokenMint,
-    label: "SDK fToken ATA mint",
-  });
-  assertInstructionAccount({
-    instruction: params.instruction,
-    index: CREATE_ATA_TOKEN_PROGRAM_INDEX,
-    expected: params.context.tokenProgram,
-    label: "SDK fToken ATA token program",
+  signer: PublicKey;
+  amount: BN;
+}): Promise<TransactionInstruction> {
+  // @jup-ag/lend is ESM-only; preserve native import when this repo emits CommonJS.
+  const { getLendingProgram } = await nativeImport("@jup-ag/lend/earn");
+  const program = getLendingProgram({
+    connection: params.connection,
+    signer: params.signer,
   });
 
-  const patchedIx = patchInstructionAccounts(params.instruction, {
-    [CREATE_ATA_ACCOUNT_INDEX]: params.recipientFTokenAta,
-    [CREATE_ATA_OWNER_INDEX]: params.recipient,
-  });
-
-  return new TransactionInstruction({
-    programId: patchedIx.programId,
-    keys: patchedIx.keys,
-    data: CREATE_ATA_IDEMPOTENT_DATA,
-  });
-}
-
-function patchSdkDepositIx(params: {
-  instruction: TransactionInstruction;
-  context: JupLendContext;
-  depositorTokenAccount: PublicKey;
-  recipientTokenAccount: PublicKey;
-}): TransactionInstruction {
-  assertInstructionAccount({
-    instruction: params.instruction,
-    index: 0,
-    expected: params.context.signer,
-    label: "SDK signer",
-  });
-  assertInstructionAccount({
-    instruction: params.instruction,
-    index: JUP_LEND_DEPOSIT_DEPOSITOR_TOKEN_ACCOUNT_INDEX,
-    expected: params.context.depositorTokenAccount,
-    label: "SDK depositor token account",
-  });
-  assertInstructionAccount({
-    instruction: params.instruction,
-    index: JUP_LEND_DEPOSIT_RECIPIENT_TOKEN_ACCOUNT_INDEX,
-    expected: params.context.recipientTokenAccount,
-    label: "SDK recipient token account",
-  });
-
-  return patchInstructionAccounts(params.instruction, {
-    [JUP_LEND_DEPOSIT_DEPOSITOR_TOKEN_ACCOUNT_INDEX]: params.depositorTokenAccount,
-    [JUP_LEND_DEPOSIT_RECIPIENT_TOKEN_ACCOUNT_INDEX]: params.recipientTokenAccount,
-  });
+  return program.methods.deposit(params.amount).accounts(params.context).instruction();
 }
 
 export function buildJupLendRedeemIx(params: {
@@ -344,11 +201,12 @@ export async function buildJupLendUsdcDepositDlnHook(params: {
     signer: externalCallAuthority,
     connection: params.connection,
   });
+  const tempFTokenAta = SystemProgram.programId;
 
   const recipientFTokenAta = getAssociatedTokenAddressSync(
     context.fTokenMint,
     params.recipient,
-    false,
+    true,
     context.tokenProgram,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
@@ -360,50 +218,31 @@ export async function buildJupLendUsdcDepositDlnHook(params: {
     tokenProgram: context.tokenProgram,
   });
 
-  const sdkDepositIxs = await getJupDepositIxs({
-    amount: new BN(0),
-    asset: new PublicKey(USDC.Solana),
-    signer: externalCallAuthority,
-    connection: params.connection,
-  });
-  const sdkCreateRecipientFTokenAtaIx = findSdkRecipientTokenAtaIx(sdkDepositIxs, context);
-  const createRecipientFTokenAtaIx = sdkCreateRecipientFTokenAtaIx
-    ? patchSdkCreateRecipientFTokenAtaIx({
-        instruction: sdkCreateRecipientFTokenAtaIx,
-        context,
-        recipient: params.recipient,
-        recipientFTokenAta,
-      })
-    : createAssociatedTokenAccountIdempotentInstruction(
-        externalCallAuthority,
-        recipientFTokenAta,
-        params.recipient,
-        context.fTokenMint,
-        context.tokenProgram,
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-      );
-
-  const createTempFTokenAtaIx = createAssociatedTokenAccountIdempotentInstruction(
+  const createRecipientFTokenAtaIx = createAssociatedTokenAccountInstruction(
     externalCallAuthority,
-    externalCallWallet,
-    externalCallAuthority,
+    recipientFTokenAta,
+    params.recipient,
     context.fTokenMint,
     context.tokenProgram,
     ASSOCIATED_TOKEN_PROGRAM_ID,
   );
 
-  const depositIx = patchSdkDepositIx({
-    instruction: findJupLendDepositIx(sdkDepositIxs),
+  context.signer = externalCallAuthority;
+  context.depositorTokenAccount = externalCallWallet;
+  context.recipientTokenAccount = tempFTokenAta;
+
+  const depositIx = await buildJupLendDepositIxFromContext({
+    connection: params.connection,
     context,
-    depositorTokenAccount: externalCallWallet,
-    recipientTokenAccount: externalCallWallet,
+    signer: externalCallAuthority,
+    amount: new BN(0),
   });
 
   const transferMintedFTokenToRecipientIx = createTransferInstruction(
-    externalCallWallet,
+    tempFTokenAta,
     recipientFTokenAta,
     externalCallAuthority,
-    0n,
+    1n,
     [],
     context.tokenProgram,
   );
@@ -412,26 +251,35 @@ export async function buildJupLendUsdcDepositDlnHook(params: {
     ? undefined
     : BigInt(await params.connection.getMinimumBalanceForRentExemption(AccountLayout.span));
   const tempFTokenAtaRentExpense = BigInt(await params.connection.getMinimumBalanceForRentExemption(AccountLayout.span));
-  const fTokenWalletSubstitution: WalletSubstitution = {
+  const fTokenWalletSubstitution = {
     token_mint: context.fTokenMint.toBase58(),
     index: 0,
   };
 
-  const createRecipientAtaBytes = serializeSolanaExternalInstruction({
-    instruction: createRecipientFTokenAtaIx,
-    expense: recipientAtaRentExpense,
-    isInMandatoryBlock: true,
-  });
-
   const createTempAtaBytes = serializeSolanaExternalInstruction({
-    instruction: createTempFTokenAtaIx,
+    instruction: createAssociatedTokenAccountInstruction(
+      externalCallAuthority,
+      tempFTokenAta,
+      externalCallAuthority,
+      context.fTokenMint,
+      context.tokenProgram,
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+    ),
+    expense: tempFTokenAtaRentExpense,
+    reward: 0n,
     walletSubstitutions: [
       {
         ...fTokenWalletSubstitution,
         index: CREATE_ATA_ACCOUNT_INDEX,
       },
     ],
-    expense: tempFTokenAtaRentExpense,
+    isInMandatoryBlock: true,
+  });
+
+  const createRecipientAtaBytes = serializeSolanaExternalInstruction({
+    instruction: createRecipientFTokenAtaIx,
+    expense: recipientAtaRentExpense,
+    reward: 0n,
     isInMandatoryBlock: true,
   });
 
@@ -456,6 +304,7 @@ export async function buildJupLendUsdcDepositDlnHook(params: {
 
   const transferMintedFTokenBytes = serializeSolanaExternalInstruction({
     instruction: transferMintedFTokenToRecipientIx,
+    reward: 0n,
     amountSubstitutions: [
       {
         is_big_endian: false,
@@ -471,8 +320,8 @@ export async function buildJupLendUsdcDepositDlnHook(params: {
   const hook: DlnHook = {
     type: DlnHookType.SolanaSerializedInstructions,
     data: concatSolanaExternalInstructionsToHex([
-      createRecipientAtaBytes,
       createTempAtaBytes,
+      createRecipientAtaBytes,
       depositBytes,
       transferMintedFTokenBytes,
     ]),
