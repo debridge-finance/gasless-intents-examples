@@ -21,8 +21,11 @@
     "typescript-eslint": "^8.56.1"
   },
   "dependencies": {
+    "@debridge-finance/debridge-external-call": "^1.0.7",
     "@debridge-finance/dln-client": "^17.6.2",
     "@debridge-finance/solana-utils": "^5.2.0",
+    "@kamino-finance/klend-sdk": "^8.0.2",
+    "@solana/spl-token": "^0.4.13",
     "@solana/web3.js": "^1.98.2",
     "bs58": "^6.0.0",
     "canvas": "^3.2.3",

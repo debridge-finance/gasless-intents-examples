@@ -58,6 +58,43 @@ export type Interaction = {
   hookPayload: string;
 }
 
+// `dlnHook` carries destination-chain external-call instructions attached to the
+// trade's DLN order. They execute during destination fulfillment, after the fill
+// routes funds to the external-call flow. Cross-chain trades only; the hook type must match the destination execution engine.
+export enum DlnHookType {
+  SolanaSerializedInstructions = "solana_serialized_instructions",
+  EvmTransactionCall = "evm_transaction_call",
+  EvmHookDataV1 = "evm_hook_data_v1",
+}
+
+// Converted by the API into a Universal Hook: atomic, success-required,
+// fallbackAddress = the trade's dstChainAuthorityAddress.
+export type EvmTransactionCallData = {
+  to: string;
+  calldata: string;
+  gas?: number; // set explicitly only for calls whose gas cannot be estimated at proposal time
+}
+
+// Mirrors the on-chain HookDataV1 struct one-to-one.
+export type EvmHookDataV1Data = {
+  fallbackAddress: string; // receives the order outcome if the call fails (optional-success) or is cancelled
+  target: string;          // contract implementing IExternalCallExecutor; 0x0 = Universal Hook
+  reward: string;          // uint160, cut from the order outcome to incentivize non-atomic execution
+  isNonAtomic: boolean;
+  isSuccessRequired: boolean;
+  targetPayload: string;
+}
+
+export type DlnHook =
+  // For Solana external calls, `data` is a 0x-prefixed plain hex string
+  // containing concatenated serialized external instructions. Max payload is
+  // 10 KiB (20,480 hex chars excluding `0x`). The trade recipient must be the
+  // Solana external-call executor program so the fill is routed into the
+  // external-call flow.
+  | { type: DlnHookType.SolanaSerializedInstructions; data: string }
+  | { type: DlnHookType.EvmTransactionCall; data: EvmTransactionCallData }
+  | { type: DlnHookType.EvmHookDataV1; data: EvmHookDataV1Data };
+
 export type Trade = {
   // Source chain params
   srcChainId: number;
@@ -85,9 +122,12 @@ export type Trade = {
   prependOperatingExpenses: boolean;
   ptp?: boolean;
 
+  // JSON-stringified DlnHook: an external call executed on the destination chain
+  // during the fill. Cross-chain trades only.
+  dlnHook?: string;
+
   // TODO: Define the fields
   allowedTaker?: null;
-  dlnHook?: null;
   metadata?: null;
 
   preInteractions?: Array<Interaction>;
@@ -312,6 +352,9 @@ export type Intent = {
   takeToken: TakeToken[];
   receiverDetails: Receiver[];
   dstAuthorityAddress: Receiver[];
+  // keccak256 of the trade's serialized external call; set when the trade carries
+  // dlnHook. Part of the signed constraints and of the deterministic DLN orderId.
+  externalCallHash?: string;
   preInteractions?: Array<Interaction>;
   postInteractions?: Array<Interaction>;
 }
