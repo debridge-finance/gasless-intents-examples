@@ -25,6 +25,43 @@ export function extractTransactionHexData(obj: any): string[] {
   return result;
 }
 
+// Sign (with `wallet` as the sole signer), SIMULATE, and only then send + confirm a Solana transaction
+// given as hex-encoded data (e.g. a tx returned by an API). Refreshes the blockhash before signing, and
+// ABORTS — never broadcasts — if simulation fails. Refuses multi-signer / co-signed txs, since refreshing
+// the blockhash invalidates any existing signatures.
+export async function simulateAndSendTx(
+  rpcUrl: string,
+  txData: string,
+  wallet: Keypair,
+): Promise<{ ok: true; signature: string } | { ok: false; reason: string }> {
+  const me = wallet.publicKey.toBase58();
+  const connection = new Connection(rpcUrl, { commitment: "confirmed" });
+  const tx = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(txData), "hex"));
+
+  const numRequiredSignatures = tx.message.header.numRequiredSignatures;
+  const feePayer = tx.message.staticAccountKeys[0]?.toBase58();
+  if (numRequiredSignatures !== 1 || feePayer !== me) {
+    return {
+      ok: false,
+      reason: `refusing to send: tx is not solely signed by us (requiredSignatures=${numRequiredSignatures}, feePayer=${feePayer}, wallet=${me})`,
+    };
+  }
+
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash({ commitment: "confirmed" });
+  tx.message.recentBlockhash = blockhash;
+  tx.signatures = tx.signatures.map(() => new Uint8Array(64)); // invalidated by the blockhash change
+  tx.sign([wallet]);
+
+  const sim = await connection.simulateTransaction(tx, { commitment: "confirmed" });
+  if (sim.value.err) {
+    return { ok: false, reason: `simulation failed: ${JSON.stringify(sim.value.err)}\n${(sim.value.logs ?? []).join("\n")}` };
+  }
+
+  const signature = await connection.sendRawTransaction(tx.serialize(), { skipPreflight: false });
+  await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
+  return { ok: true, signature };
+}
+
 export async function prepareSolanaTransaction(solRpcUrl: string, txData: string, solWallet: Keypair) {
   const connection = new Connection(solRpcUrl, { commitment: "confirmed" });
   const tx = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(txData), "hex"));

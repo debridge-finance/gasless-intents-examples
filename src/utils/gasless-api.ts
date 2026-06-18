@@ -59,6 +59,21 @@ export async function getBundleById(bundleId: string): Promise<Bundle> {
   return getUrl(`${BUNDLES_URL}/${bundleId}`) as Promise<Bundle>;
 }
 
+// Recursively collect every value stored under a key named orderId / orderIds — e.g. to resolve the
+// underlying DLN order id(s) from a fetched bundle. Same-chain trades have none, so this can return empty.
+export function collectOrderIds(node: unknown, found = new Set<string>()): Set<string> {
+  if (Array.isArray(node)) {
+    for (const item of node) collectOrderIds(item, found);
+  } else if (node && typeof node === "object") {
+    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+      if (k === "orderId" && typeof v === "string") found.add(v);
+      if (k === "orderIds" && Array.isArray(v)) v.forEach((x) => typeof x === "string" && found.add(x));
+      collectOrderIds(v, found);
+    }
+  }
+  return found;
+}
+
 export async function cancelBundles(
   cancelRequest: BundleCancelRequest,
   cancelAuthorityAccount: ReturnType<typeof privateKeyToAccount>,
