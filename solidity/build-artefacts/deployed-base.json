@@ -1,6 +1,6 @@
 {
   "chainId": 8453,
-  "lastUpdated": "2026-06-05T10:44:26.717Z",
+  "lastUpdated": "2026-07-17T08:02:03.479Z",
   "contracts": {
     "LoggingInteractionHook": {
       "address": "0x17c94c6daecd6f5c99fc0284f1159dc4eb76f3ed",
@@ -26,6 +26,11 @@
       "address": "0xbc4a0ed3b62dd5d9512f954f43fcf5c23811b15e",
       "deployTxHash": "0x1e37bdb7e6b4754b97a28d5086c2c53d2fbd09030a640f8965649180efabcd72",
       "blockNumber": 46933058
+    },
+    "IntentSubmitter": {
+      "address": "0xd90994b6e13095e20c64a35bd22f45c271b784dc",
+      "deployTxHash": "0x1b0efb7463f62b0547f906ba13a6924aa592b8f7cc3183d9b2d2672b1ec693ca",
+      "blockNumber": 48742989
     }
   }
 }
