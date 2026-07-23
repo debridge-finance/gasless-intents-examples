@@ -1,0 +1,25 @@
+{
+  "name": "@debridge/gasless-sdk",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "deposit": "tsx scripts/deposit.ts",
+    "withdraw": "tsx scripts/withdraw.ts"
+  },
+  "dependencies": {
+    "@solana/spl-token": "^0.4.15",
+    "@solana/web3.js": "^1.98.4",
+    "axios": "^1.13.2",
+    "bignumber.js": "^9.1.2",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.16.0",
+    "picocolors": "^1.1.1",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
