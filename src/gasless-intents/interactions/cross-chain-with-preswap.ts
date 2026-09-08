@@ -6,12 +6,13 @@
  */
 import { randomUUID } from "crypto";
 import { privateKeyToAccount } from "viem/accounts";
-import { createBundle, submitBundle } from "@utils/api";
+import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
 import { USDC } from "@utils/constants";
-import { getEnvConfig, toHexPrefixString } from "@utils/index";
+import { getEnvConfig } from "@utils/env";
+import { toHexPrefixString } from "@utils/string";
 import {
   Bundle,
   BundleProposeBody,
