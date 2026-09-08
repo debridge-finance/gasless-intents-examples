@@ -5,6 +5,9 @@ import {
   BundleCancelRequest,
   BundleCancelResponse,
   BundleProposeBody,
+  BundleQuoteBody,
+  BundleQuoteResponse,
+  ExplorerBundleDetail,
   GetBundlesFilterParams,
   PaginatedResponseMetadata,
   SubmitBundleResponse,
@@ -16,10 +19,27 @@ import { postUrl, getUrl } from "./http";
 
 const { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL } = ENDPOINTS;
 
-export async function createBundle(requestBody: BundleProposeBody): Promise<Bundle> {
+/** Propose a bundle; omit wallet addresses for a quote and re-propose after connection. */
+export function createBundle(requestBody: BundleProposeBody): Promise<Bundle>;
+export function createBundle(requestBody: BundleQuoteBody): Promise<BundleQuoteResponse>;
+export async function createBundle(requestBody: BundleProposeBody | BundleQuoteBody): Promise<Bundle | BundleQuoteResponse> {
   const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
 
-  return response as Bundle;
+  return response as Bundle | BundleQuoteResponse;
+}
+
+/**
+ * Ask deBridge to refresh and service-sign a hex-encoded Solana transaction.
+ * The input must retain the API's original signature. The wallet must sign the returned
+ * transaction again: changing a blockhash invalidates signatures over the old message.
+ * Docs: /api-reference/gasless-api/refresh-blockhash-and-resign-a-solana-transaction
+ */
+export async function refreshSolanaTransaction(transaction: string): Promise<string> {
+  const response = await postUrl(ENDPOINTS.BUNDLE_REFRESH_SOLANA_TX_URL, { transaction }) as { transaction?: unknown };
+  if (typeof response.transaction !== "string" || !/^0x(?:[0-9a-fA-F]{2})+$/.test(response.transaction)) {
+    throw new Error("refresh-solana-tx returned an invalid hex-encoded transaction");
+  }
+  return response.transaction;
 }
 
 /**
@@ -34,6 +54,9 @@ export async function createBundle(requestBody: BundleProposeBody): Promise<Bund
  * @returns A unique bundleId.
  */
 export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
+  if ("isQA" in requestBody) {
+    throw new Error("Use isQa (lowercase a) on submit. isQA is the backend's internal name and does not enable REST QA mode.");
+  }
   const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 
   return response as SubmitBundleResponse;
@@ -57,6 +80,15 @@ export async function getBundles(
 
 export async function getBundleById(bundleId: string): Promise<Bundle> {
   return getUrl(`${BUNDLES_URL}/${bundleId}`) as Promise<Bundle>;
+}
+
+/**
+ * Fetch full Explorer details, including the QA simulation result when available.
+ * Hidden bundles can be fetched by ID. showHiddenBundles=true is only needed
+ * when listing bundles with GET /v1/explorer/bundles.
+ */
+export async function getExplorerBundleById(bundleId: string): Promise<ExplorerBundleDetail> {
+  return getUrl(`${ENDPOINTS.EXPLORER_BUNDLES_URL}/${encodeURIComponent(bundleId)}`) as Promise<ExplorerBundleDetail>;
 }
 
 export async function cancelBundles(
