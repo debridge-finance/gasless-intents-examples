@@ -474,8 +474,8 @@ export type Bundle = {
   // Included when submitting via /submit endpoint
   enableAccountAbstraction?: boolean;
   isAtomic?: boolean;
-  // Submit-only REST field (case-sensitive): simulate with the solver and skip on-chain execution.
-  // The backend stores this as isQA; the HTTP request must use isQa.
+  // Set isQa on submission to simulate with the solver and skip on-chain execution.
+  // The field name is case-sensitive: use isQa with a lowercase a.
   isQa?: boolean;
 
   // Signatures

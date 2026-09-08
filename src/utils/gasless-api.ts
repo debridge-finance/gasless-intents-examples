@@ -55,7 +55,7 @@ export async function refreshSolanaTransaction(transaction: string): Promise<str
  */
 export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
   if ("isQA" in requestBody) {
-    throw new Error("Use isQa (lowercase a) on submit. isQA is the backend's internal name and does not enable REST QA mode.");
+    throw new Error("Use isQa (lowercase a) on submit to enable QA mode. The field name is case-sensitive.");
   }
   const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 

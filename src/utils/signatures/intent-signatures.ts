@@ -110,12 +110,11 @@ export async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<s
     to,
     value,
     data,
-  } as any); // Just to silence the errors - we're for sure not sending blobs in this transaction
+  } as any);
 
   return hash;
 }
 
-// Bug report - why does this even work on the backend? Managed to successfully submit a hex-prefixed base-58 encoded string. Stupid as it sounds.
 async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
   const connection = new Connection(SOLANA_RPC_URL, { commitment: "confirmed" });
 
