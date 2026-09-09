@@ -8,3 +8,7 @@ data/
 
 output/
 findings/
+
+solidity/out/
+solidity/cache/
+solidity/prompts/

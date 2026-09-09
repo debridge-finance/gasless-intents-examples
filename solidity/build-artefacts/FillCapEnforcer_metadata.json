@@ -1,0 +1,584 @@
+{
+  "compiler": {
+    "version": "0.8.24+commit.e11b9ed9"
+  },
+  "language": "Solidity",
+  "output": {
+    "abi": [
+      {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "cap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "attempted",
+            "type": "uint256"
+          }
+        ],
+        "type": "error",
+        "name": "HardCapExceeded"
+      },
+      {
+        "inputs": [],
+        "type": "error",
+        "name": "NotOwner"
+      },
+      {
+        "inputs": [],
+        "type": "error",
+        "name": "OnlyIntentManager"
+      },
+      {
+        "inputs": [],
+        "type": "error",
+        "name": "ZeroAddress"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address",
+            "indexed": true
+          },
+          {
+            "internalType": "uint256",
+            "name": "cap",
+            "type": "uint256",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "CapUpdated",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address",
+            "indexed": true
+          },
+          {
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address",
+            "indexed": true
+          }
+        ],
+        "type": "event",
+        "name": "OwnershipTransferred",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "PostObserved",
+        "anonymous": false
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32",
+            "indexed": true
+          },
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address",
+            "indexed": true
+          },
+          {
+            "internalType": "uint256",
+            "name": "fillNumber",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "uint256",
+            "name": "cap",
+            "type": "uint256",
+            "indexed": false
+          },
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address",
+            "indexed": false
+          }
+        ],
+        "type": "event",
+        "name": "PreCallAccepted",
+        "anonymous": false
+      },
+      {
+        "inputs": [],
+        "stateMutability": "view",
+        "type": "function",
+        "name": "INTENT_MANAGER",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ]
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function",
+        "name": "caps",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ]
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes",
+            "name": "hookPayload",
+            "type": "bytes"
+          }
+        ],
+        "stateMutability": "pure",
+        "type": "function",
+        "name": "decodePayload",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address"
+          }
+        ]
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function",
+        "name": "fills",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ]
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "struct IPostInteractionHook.CrossChainContext",
+            "name": "ctx",
+            "type": "tuple",
+            "components": [
+              {
+                "internalType": "bytes32",
+                "name": "intentId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "tradeId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "payload",
+                "type": "bytes"
+              },
+              {
+                "internalType": "address",
+                "name": "giveToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "giveAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bytes",
+                "name": "takeToken",
+                "type": "bytes"
+              },
+              {
+                "internalType": "uint256",
+                "name": "takeAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint32",
+                "name": "takeChainId",
+                "type": "uint32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "takeChainReceiver",
+                "type": "bytes"
+              }
+            ]
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "onPostCallForCrossChainIntent"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "struct IPostInteractionHook.CrossChainWithPreSwapContext",
+            "name": "ctx",
+            "type": "tuple",
+            "components": [
+              {
+                "internalType": "bytes32",
+                "name": "intentId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "tradeId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "payload",
+                "type": "bytes"
+              },
+              {
+                "internalType": "struct IPreSwapResult.PreSwapResult[]",
+                "name": "preSwapResults",
+                "type": "tuple[]",
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "inputToken",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "inputAmount",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "outputAmount",
+                    "type": "uint256"
+                  }
+                ]
+              },
+              {
+                "internalType": "address",
+                "name": "giveToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "giveAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bytes",
+                "name": "takeToken",
+                "type": "bytes"
+              },
+              {
+                "internalType": "uint256",
+                "name": "takeAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint32",
+                "name": "takeChainId",
+                "type": "uint32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "takeChainReceiver",
+                "type": "bytes"
+              }
+            ]
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "onPostCallForCrossChainIntentWithPreSwap"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "struct IPostInteractionHook.SameChainWithPreSwapChainContext",
+            "name": "ctx",
+            "type": "tuple",
+            "components": [
+              {
+                "internalType": "bytes32",
+                "name": "intentId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "tradeId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "payload",
+                "type": "bytes"
+              },
+              {
+                "internalType": "struct IPreSwapResult.PreSwapResult[]",
+                "name": "preSwapResults",
+                "type": "tuple[]",
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "inputToken",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "inputAmount",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "outputAmount",
+                    "type": "uint256"
+                  }
+                ]
+              },
+              {
+                "internalType": "address",
+                "name": "takeToken",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "takeAmountAfterFeeCharge",
+                "type": "uint256"
+              },
+              {
+                "internalType": "address",
+                "name": "receiver",
+                "type": "address"
+              }
+            ]
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "onPostCallForSameChainIntentWithPreSwap"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "intentId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tradeId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "hookPayload",
+            "type": "bytes"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "onPreCall"
+      },
+      {
+        "inputs": [],
+        "stateMutability": "view",
+        "type": "function",
+        "name": "owner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ]
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxFills",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "setCap"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address[]",
+            "name": "subjects",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxFills",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "setManyCaps"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "transferOwnership"
+      }
+    ],
+    "devdoc": {
+      "kind": "dev",
+      "methods": {},
+      "version": 1
+    },
+    "userdoc": {
+      "kind": "user",
+      "methods": {},
+      "version": 1
+    }
+  },
+  "settings": {
+    "remappings": [
+      "forge-std/=lib/forge-std/src/"
+    ],
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "metadata": {
+      "bytecodeHash": "ipfs"
+    },
+    "compilationTarget": {
+      "contracts/interactions/FillCapEnforcer.sol": "FillCapEnforcer"
+    },
+    "evmVersion": "cancun",
+    "libraries": {}
+  },
+  "sources": {
+    "contracts/interactions/FillCapEnforcer.sol": {
+      "keccak256": "0x95758f7b6caf910d0264ed2c4dc8d6c52a9c4a1df92ef19e7640c8d272b5e376",
+      "urls": [
+        "bzz-raw://3535a1bd88c408e1de9a9b69cf54734e91eb178758a364bccc6307aa601ef392",
+        "dweb:/ipfs/Qmad2KkUyRgMgGqjNj1XyhCPcdvV4ZPcii9sp45ziopVJA"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/IntentManagerCallable.sol": {
+      "keccak256": "0x8720cf7df95a530070355264bf10a3830a3ef1cfb4700256828745c4eec902d5",
+      "urls": [
+        "bzz-raw://4a324b13c1db987b23d3233f904738009c14b519a5d64f9a127b837652ca663c",
+        "dweb:/ipfs/QmUpWfQqLZWt8ADBcNitAy2Q4YzP1pKstF1gqojShsqe1E"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/interfaces/IPostInteractionHook.sol": {
+      "keccak256": "0x14e903a0c1603c6e4c25587307673693d8265514b7d0be81f88dc1d6d585e104",
+      "urls": [
+        "bzz-raw://f25c55fda8a003171e7f68a09450881ee5e13ac9f4d03216627855858548263f",
+        "dweb:/ipfs/QmV2yHCsMfkf2TJuZNB69otYDHq2b3wTQvvipWmtDekK6Y"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/interfaces/IPreInteractionHook.sol": {
+      "keccak256": "0x282bcf4ee350ba5b031cd0d43c035972976a4eda972d4a962c4e897b15b7541c",
+      "urls": [
+        "bzz-raw://ab8827f4016ddb4506497bd2c4bb0edd8026eeff26e57f903ccfec73ddfaa8cf",
+        "dweb:/ipfs/QmZHX3GUu2cDDCNNzLSE9gKG8vMEAtRPaiDV5PzwrA4Ee5"
+      ],
+      "license": "MIT"
+    },
+    "contracts/interactions/interfaces/IPreSwapResult.sol": {
+      "keccak256": "0xe7e64a641b1334c5ec95e1dd98bd2398da85a437e4ad52784e7384da73008060",
+      "urls": [
+        "bzz-raw://39e4655e814f772ecb09912384c60c2b4e6a2e1a526029bf9cc7fe695165ba97",
+        "dweb:/ipfs/QmZT35YNPf449R1t79mi9CFgrK1MTwJwVUfR5JJh9TgCDY"
+      ],
+      "license": "MIT"
+    }
+  },
+  "version": 1
+}

@@ -1,0 +1,31 @@
+{
+  "chainId": 8453,
+  "lastUpdated": "2026-06-05T10:44:26.717Z",
+  "contracts": {
+    "LoggingInteractionHook": {
+      "address": "0x17c94c6daecd6f5c99fc0284f1159dc4eb76f3ed",
+      "deployTxHash": "0x39fdbfd1789fb0bb0806d436a59f6723d64ece38b28ba5e9a1abff18c4051879",
+      "blockNumber": 46933044
+    },
+    "FillCounter": {
+      "address": "0x31c646be72f5df8e1d2188e375b3cd4b6a5097ab",
+      "deployTxHash": "0x3731c1dff2a97ec30baee04745755ebd43fe89488ac82547267ccc072a90c631",
+      "blockNumber": 46933048
+    },
+    "ProtocolFeeRecorder": {
+      "address": "0x06849f0fad887e73c57e44ede0821fbbc63ee1f9",
+      "deployTxHash": "0xb3a75197fdbc4f8c124b4afa9348868a00f8457a7303646b7db1cb18a1f54052",
+      "blockNumber": 46933460
+    },
+    "RewardMinter": {
+      "address": "0xf359104c960ddecedd207b679450abdc9d7c6481",
+      "deployTxHash": "0x87efa5aae38774e383c2b84802ec9f23794228759ea1266a4efdf1ca8c88a2e9",
+      "blockNumber": 46933055
+    },
+    "FillCapEnforcer": {
+      "address": "0xbc4a0ed3b62dd5d9512f954f43fcf5c23811b15e",
+      "deployTxHash": "0x1e37bdb7e6b4754b97a28d5086c2c53d2fbd09030a640f8965649180efabcd72",
+      "blockNumber": 46933058
+    }
+  }
+}

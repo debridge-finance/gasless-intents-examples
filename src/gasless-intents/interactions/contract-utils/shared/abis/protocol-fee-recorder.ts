@@ -347,10 +347,5 @@ export const PROTOCOL_FEE_RECORDER_ABI = [
       }
     ],
     "anonymous": false
-  },
-  {
-    "type": "error",
-    "name": "Unsupported",
-    "inputs": []
   }
 ] as const;
