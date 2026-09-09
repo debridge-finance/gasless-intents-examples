@@ -7,7 +7,6 @@ import {
   BundleProposeBody,
   BundleQuoteBody,
   BundleQuoteResponse,
-  ExplorerBundleDetail,
   GetBundlesFilterParams,
   PaginatedResponseMetadata,
   SubmitBundleResponse,
@@ -54,9 +53,6 @@ export async function refreshSolanaTransaction(transaction: string): Promise<str
  * @returns A unique bundleId.
  */
 export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
-  if ("isQA" in requestBody) {
-    throw new Error("Use isQa (lowercase a) on submit to enable QA mode. The field name is case-sensitive.");
-  }
   const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 
   return response as SubmitBundleResponse;
@@ -80,15 +76,6 @@ export async function getBundles(
 
 export async function getBundleById(bundleId: string): Promise<Bundle> {
   return getUrl(`${BUNDLES_URL}/${bundleId}`) as Promise<Bundle>;
-}
-
-/**
- * Fetch full Explorer details, including the QA simulation result when available.
- * Hidden bundles can be fetched by ID. showHiddenBundles=true is only needed
- * when listing bundles with GET /v1/explorer/bundles.
- */
-export async function getExplorerBundleById(bundleId: string): Promise<ExplorerBundleDetail> {
-  return getUrl(`${ENDPOINTS.EXPLORER_BUNDLES_URL}/${encodeURIComponent(bundleId)}`) as Promise<ExplorerBundleDetail>;
 }
 
 export async function cancelBundles(

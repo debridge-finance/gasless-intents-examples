@@ -13,7 +13,6 @@ export const ENDPOINTS = {
   BUNDLE_SUBMIT_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}/submit`,
   BUNDLE_REFRESH_SOLANA_TX_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}/refresh-solana-tx`,
   BUNDLE_CANCEL_URL: `${BASE_URL}${V1_BASE}${BUNDLES}/cancel`,
-  EXPLORER_BUNDLES_URL: `${BASE_URL}/v1/explorer${BUNDLES}`,
 };
 
 // Price API (no /gasless prefix)

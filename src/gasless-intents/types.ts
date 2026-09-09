@@ -474,9 +474,6 @@ export type Bundle = {
   // Included when submitting via /submit endpoint
   enableAccountAbstraction?: boolean;
   isAtomic?: boolean;
-  // Set isQa on submission to simulate with the solver and skip on-chain execution.
-  // The field name is case-sensitive: use isQa with a lowercase a.
-  isQa?: boolean;
 
   // Signatures
   signedData?: Array<{ actionId: string; signedData: string; providedData?: Record<string, string> }>;
@@ -486,18 +483,6 @@ export type Bundle = {
 }
 
 export type BundleProposeResponse = Bundle;
-
-// Explorer details have a different shape from the proposal/submission Bundle.
-// Type the fields used by the QA examples and preserve the rest of the response.
-export type ExplorerBundleDetail = {
-  id: string;
-  status: string;
-  // May be absent before a QA attempt reports its result, or for non-QA bundles.
-  allSimulationsPassed?: boolean;
-  // Present when all current batch attempts have passed; ISO 8601 timestamp.
-  allSimulationsPassedAt?: string;
-  [field: string]: unknown;
-};
 
 export type CancelBundleData = {
   preImage: string;
