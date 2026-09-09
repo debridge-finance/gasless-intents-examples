@@ -5,6 +5,8 @@ import {
   BundleCancelRequest,
   BundleCancelResponse,
   BundleProposeBody,
+  BundleQuoteBody,
+  BundleQuoteResponse,
   GetBundlesFilterParams,
   PaginatedResponseMetadata,
   SubmitBundleResponse,
@@ -16,10 +18,27 @@ import { postUrl, getUrl } from "./http";
 
 const { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL } = ENDPOINTS;
 
-export async function createBundle(requestBody: BundleProposeBody): Promise<Bundle> {
+/** Propose a bundle; omit wallet addresses for a quote and re-propose after connection. */
+export function createBundle(requestBody: BundleProposeBody): Promise<Bundle>;
+export function createBundle(requestBody: BundleQuoteBody): Promise<BundleQuoteResponse>;
+export async function createBundle(requestBody: BundleProposeBody | BundleQuoteBody): Promise<Bundle | BundleQuoteResponse> {
   const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
 
-  return response as Bundle;
+  return response as Bundle | BundleQuoteResponse;
+}
+
+/**
+ * Ask deBridge to refresh and service-sign a hex-encoded Solana transaction.
+ * The input must retain the API's original signature. The wallet must sign the returned
+ * transaction again: changing a blockhash invalidates signatures over the old message.
+ * Docs: /api-reference/gasless-api/refresh-blockhash-and-resign-a-solana-transaction
+ */
+export async function refreshSolanaTransaction(transaction: string): Promise<string> {
+  const response = await postUrl(ENDPOINTS.BUNDLE_REFRESH_SOLANA_TX_URL, { transaction }) as { transaction?: unknown };
+  if (typeof response.transaction !== "string" || !/^0x(?:[0-9a-fA-F]{2})+$/.test(response.transaction)) {
+    throw new Error("refresh-solana-tx returned an invalid hex-encoded transaction");
+  }
+  return response.transaction;
 }
 
 /**

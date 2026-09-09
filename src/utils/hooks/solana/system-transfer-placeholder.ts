@@ -7,11 +7,6 @@ const PLACEHOLDER_BLOCKHASH = "11111111111111111111111111111111";
 /**
  * Builds an unsigned Solana VersionedTransaction containing a SystemProgram.transfer
  * instruction, with the lamports amount replaced by a placeholder string.
- *
- * The placeholder encoding (`{name.N}` where N = byte length) spec is not yet
- * fully verified. This builder uses the hardcoded sentinel approach from
- * taf-backend-ts rather than generalized placeholder utilities.
- * A generalized byte-length placeholder system can be built once the spec is confirmed.
  */
 export function buildSolanaSystemTransferTxHexWithAmountPlaceholder(params: {
   payer: string | PublicKey;

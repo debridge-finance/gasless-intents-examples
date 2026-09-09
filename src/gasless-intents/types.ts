@@ -132,6 +132,27 @@ export type BundleProposeBody = BundleBase & {
   tradingAlgorithm: TradingAlgorithm;
 }
 
+// Before wallet connection, omit all authority/recipient fields rather than inventing addresses.
+// Keep Trade strict for executable proposals: re-propose with real addresses before signing.
+export type QuoteTrade = Omit<Trade,
+  "srcChainAuthorityAddress" | "dstChainAuthorityAddress" | "dstChainTokenOutRecipient"
+>;
+
+export type BundleQuoteBody = Omit<BundleProposeBody, "trades"> & { trades: QuoteTrade[] };
+
+// The raw propose response retains intents with intentId "0x" and preliminary requiredActions.
+export type BundleQuoteResponse = Omit<Bundle,
+  "trades" | "accumulativeTokenInput" | "accumulativeTokenOutput" | "preHooks" | "postHooks"
+> & {
+  trades: Array<Omit<TradeResult,
+    "srcChainAuthorityAddress" | "dstChainAuthorityAddress" | "dstChainTokenOutRecipient" | "relatedIntentId"
+  >>;
+  preHooks: Array<Omit<HookPayload, "requiredActions">>;
+  postHooks: Array<Omit<HookPayload, "requiredActions">>;
+  accumulativeTokenInput: Array<Omit<TokenInput, "spenderAddress">>;
+  accumulativeTokenOutput: Array<Omit<TokenResult, "recipientAddress">>;
+};
+
 export type SubmitBundleResponse = {
   bundleId: string; 
   message?: string; // Optional message field for additional info (e.g. if a duplicate bundle is detected based on requestId)

@@ -3,6 +3,7 @@ import "dotenv/config";
 export function getEnvConfig(): {
   privateKey: string;
   solPrivateKey: string;
+  referralCode: number;
 } {
   // --- Environment Variable Loading and Validation ---
   console.log("Loading environment variables...");
@@ -25,7 +26,16 @@ export function getEnvConfig(): {
   return {
     privateKey,
     solPrivateKey,
+    referralCode: getReferralCode(),
   };
+}
+
+export function getReferralCode(): number {
+  const referralCode = Number(process.env.REFERRAL_CODE ?? "110000002"); // Use your own referral code.
+  if (!Number.isSafeInteger(referralCode) || referralCode < 0 || process.env.REFERRAL_CODE === "") {
+    throw new Error("REFERRAL_CODE must be a non-negative safe integer");
+  }
+  return referralCode;
 }
 
 export function getHeaders(): Headers {
