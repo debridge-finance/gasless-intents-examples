@@ -7,6 +7,7 @@ import {
   BundleProposeBody,
   BundleQuoteBody,
   BundleQuoteResponse,
+  ExplorerBundleDetail,
   GetBundlesFilterParams,
   PaginatedResponseMetadata,
   SubmitBundleResponse,
@@ -76,6 +77,11 @@ export async function getBundles(
 
 export async function getBundleById(bundleId: string): Promise<Bundle> {
   return getUrl(`${BUNDLES_URL}/${bundleId}`) as Promise<Bundle>;
+}
+
+/** Fetch bundle details from the Explorer API. */
+export async function getExplorerBundleById(bundleId: string): Promise<ExplorerBundleDetail> {
+  return getUrl(`${ENDPOINTS.EXPLORER_BUNDLES_URL}/${encodeURIComponent(bundleId)}`) as Promise<ExplorerBundleDetail>;
 }
 
 export async function cancelBundles(
