@@ -20,7 +20,11 @@ import { prepareSolanaTransaction, signHexMessageBySolanaKey } from "../solana";
 import { clipHexPrefix, toHexPrefixString } from "@utils/string";
 import { substitutePlaceholdersInMessage } from "./placeholder-substitution";
 
-export async function signAction(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
+export async function signAction(
+  action: Action,
+  walletClient: WalletClient | Keypair,
+  options: ActionProcessingOptions = {},
+): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
 
   switch (action.type) {
@@ -28,14 +32,23 @@ export async function signAction(action: Action, walletClient: WalletClient | Ke
     case SignatureTypes.Sign712:
     case SignatureTypes.Sign712MetaMask:
     case SignatureTypes.Permit:
+    case SignatureTypes.Permit2612:
     case SignatureTypes.Permit2: {
       return evmActionSign(action, walletClient as WalletClient);
     }
     case SignatureTypes.Sign: {
-      return solanaAuthorizationSign(action, walletClient as Keypair);
+      return solanaAuthorizationSign(
+        action,
+        walletClient as Keypair,
+        options.solanaSignMessageEncoding ?? "hex",
+      );
     }
     case SignatureTypes.SignTransaction: {
-      return solanaVersionedTransactionSign(action, walletClient as Keypair);
+      return solanaVersionedTransactionSign(
+        action,
+        walletClient as Keypair,
+        options.refreshSolanaTransaction,
+      );
     }
     case SignatureTypes.PreSignedMessage: {
       throw new Error(
@@ -56,6 +69,12 @@ export async function signAction(action: Action, walletClient: WalletClient | Ke
     }
   }
 }
+
+export type ActionProcessingOptions = {
+  skipBudgetApprovalTransactions?: boolean;
+  refreshSolanaTransaction?: (serializedTransaction: string) => Promise<string>;
+  solanaSignMessageEncoding?: "hex" | "utf8";
+};
 
 /**
  * Handles the two solver-hook action types: ProvidePlaceholders and
@@ -125,14 +144,25 @@ async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
   return sig;
 }
 
-async function solanaAuthorizationSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
+async function solanaAuthorizationSign(
+  action: Action,
+  keypair: Keypair,
+  encoding: "hex" | "utf8",
+): Promise<SignTypedDataReturnType> {
   const signingData = (action.data as SolanaSign).data;
-  const signatures = signHexMessageBySolanaKey(signingData, keypair);
+  const messageHex =
+    encoding === "utf8" ? Buffer.from(signingData, "utf8").toString("hex") : signingData;
+  const signatures = signHexMessageBySolanaKey(messageHex, keypair);
   return toHexPrefixString(signatures.hex);
 }
 
-function solanaVersionedTransactionSign(action: Action, keypair: Keypair): string {
-  const signingData = (action.data as SolanaSign).data;
+async function solanaVersionedTransactionSign(
+  action: Action,
+  keypair: Keypair,
+  refresh?: (serializedTransaction: string) => Promise<string>,
+): Promise<string> {
+  const original = (action.data as SolanaSign).data;
+  const signingData = refresh ? await refresh(original) : original;
   const versionedTransaction = VersionedTransaction.deserialize(Buffer.from(clipHexPrefix(signingData), "hex"));
   versionedTransaction.sign([keypair]);
 
@@ -140,12 +170,11 @@ function solanaVersionedTransactionSign(action: Action, keypair: Keypair): strin
 }
 
 async function evmActionSign(action: Action, walletClient: WalletClient): Promise<string> {
-  if (!walletClient.chain) {
-    throw new Error("Wallet client has no chain information");
-  }
-
   // EIP-7702 Authorization
   if (action.type === SignatureTypes.Sign7702Authorization) {
+    if (!walletClient.chain) {
+      throw new Error("Wallet client has no chain information for EIP-7702 authorization");
+    }
     // Cast to Sign7702AuthorizationData to access specific properties
     const data = action.data as Sign7702AuthorizationData;
     const { contractAddress, nonce } = data;
@@ -166,9 +195,10 @@ async function evmActionSign(action: Action, walletClient: WalletClient): Promis
   // EIP-712 Typed Data - Sign712
   else if (
     action.type === SignatureTypes.Sign712 ||
-    action.type === SignatureTypes.Sign712MetaMask ||
-    action.type === SignatureTypes.Permit ||
-    action.type === SignatureTypes.Permit2
+      action.type === SignatureTypes.Sign712MetaMask ||
+      action.type === SignatureTypes.Permit ||
+      action.type === SignatureTypes.Permit2612 ||
+      action.type === SignatureTypes.Permit2
   ) {
     const data = action.data as EIP712Data;
     const { domain, types, message, primaryType } = data;
@@ -190,7 +220,7 @@ export async function getRequiredActionSignatures(
   requiredActions: Array<Action>,
   walletClient: WalletClient | Keypair,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   const signatures: SignedDataItem[] = [];
 
@@ -204,6 +234,11 @@ export async function getRequiredActionSignatures(
     try {
       if (isPreSignedMessageAction(action)) {
         // API-signed refill authorization is already part of the proposal payload.
+        continue;
+      }
+
+      if (action.type === SignatureTypes.EnsureErc20Allowance) {
+        console.log(`Skipping allowance check action ${action.actionId}; no signature is required`);
         continue;
       }
 
@@ -229,7 +264,7 @@ export async function getRequiredActionSignatures(
         signatures.push(result);
         console.log(`Handled deferred placeholder action ${action.actionId} of type ${action.type}`);
       } else {
-        const signedData = await signAction(action, walletClient);
+        const signedData = await signAction(action, walletClient, options);
         signatures.push({ actionId: action.actionId, signedData });
         console.log(`Successfully signed action ${action.actionId}`);
       }
@@ -247,7 +282,7 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
   getChainId: (item: T) => number | undefined,
   walletClientMap: WalletClientMap,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   if (!items || !Array.isArray(items)) return [];
 
@@ -287,7 +322,7 @@ export async function processIntentBundleActions(
   bundle: BundleProposeResponse,
   walletClientMap: WalletClientMap,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   // Collect signatures for all bundle intents and hooks.
   const a = await collectSignaturesFromItems(

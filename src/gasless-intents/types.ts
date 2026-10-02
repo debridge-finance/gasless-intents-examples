@@ -27,7 +27,7 @@ export enum CancelBundleReasonCodes {
 }
 
 /**
- * `creationTimestamp` and `expirationTimestamp` parameters are used for idempotency purposes - not as time-window filters. 
+ * `creationTimestamp` and `expirationTimestamp` parameters are used for idempotency purposes - not as time-window filters.
  */
 export type BundleCancelRequest = {
   bundleId?: string,
@@ -121,8 +121,12 @@ export type BundleBase = {
   enableAccountAbstraction: boolean;
   isAtomic: boolean;
   useRefill?: boolean;
+  costToken?: {
+    chainId: number;
+    tokenAddress: string;
+  };
 
-  // Permit flags 
+  // Permit flags
   approvalMode?: ApprovalMode; // Defaults to "approve" if not provided
   approveAmountFlag?: ApproveAmount; // Defaults to "none" if not provided
 }
@@ -133,7 +137,7 @@ export type BundleProposeBody = BundleBase & {
 }
 
 export type SubmitBundleResponse = {
-  bundleId: string; 
+  bundleId: string;
   message?: string; // Optional message field for additional info (e.g. if a duplicate bundle is detected based on requestId)
 }
 
@@ -148,7 +152,9 @@ export enum SignatureTypes {
   SignTransaction = "SignTransaction", // Solana Versioned Transaction signing
   Transaction = "Transaction", // Could be EVM or Solana - Solana doesn't have `value` and `to` fields.
   Permit = "Permit",
-  Permit2 = "Permit2"
+  Permit2612 = "Permit2612",
+  Permit2 = "Permit2",
+  EnsureErc20Allowance = "EnsureErc20Allowance",
 }
 
 // Type for EIP-712 data
@@ -177,6 +183,13 @@ export type Sign7702AuthorizationData = {
 export type PreSignedMessageData = {
   message: string;
   signature: string;
+}
+
+export type EnsureErc20AllowanceData = {
+  chainId: number;
+  token: string;
+  minAmount: string;
+  allowanceHolder: string;
 }
 
 // Placeholder entry returned in solver-hook actions (ProvidePlaceholders, Sign712MetaMaskWithPlaceholders).
@@ -208,7 +221,8 @@ export type ActionData =
   | (Tx & { domain?: never; contractAddress?: never; transaction?: never; placeholders?: never })
   | (SolanaSign & { domain?: never; contractAddress?: never; to?: never; value?: never; transaction?: never; placeholders?: never })
   | (ProvidePlaceholdersData & { domain?: never; types?: never; message?: never; contractAddress?: never; to?: never; value?: never })
-  | (Sign712MetaMaskWithPlaceholdersData & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never; transaction?: never });
+  | (Sign712MetaMaskWithPlaceholdersData & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never; transaction?: never })
+  | (EnsureErc20AllowanceData & { domain?: never; types?: never; message?: never; toSign?: never; calls?: never; contractAddress?: never; nonce?: never; transaction?: never; placeholders?: never });
 
 export type Action = {
   type: SignatureTypes;

@@ -1,12 +1,16 @@
+import { defineChain } from "viem";
+
+import { HYPEREVM } from "./constants";
+
 /**
  * Chain IDs for supported blockchains.
- * 
- * deBridge uses internal chain IDs which may differ from standard ones for some chains. 
- * 
+ *
+ * deBridge uses internal chain IDs which may differ from standard ones for some chains.
+ *
  * ChainIDs can be fetched by calling deBridge API: https://dln.debridge.finance/v1.0/supported-chains-info
- * 
+ *
  * Supported Chains docs: https://docs.debridge.com/dln-details/overview/fees-supported-chains
- * 
+ *
  * Endpoint docs: https://docs.debridge.com/api-reference/utils/get-v10supported-chains-info
  */
 export const CHAIN_IDS = {
@@ -32,6 +36,7 @@ export const CHAIN_IDS = {
   Berachain: 100000020,
   Story: 100000013,
   HyperEVM: 100000022,
+  HyperCore: 200000001,
   Zircuit: 100000015,
   Flow: 100000009,
   Zilliqa: 100000008,
@@ -43,3 +48,10 @@ export const CHAIN_IDS = {
   Sei: 100000027,
   Plasma: 100000028,
 }
+
+export const hyperEvm = defineChain({
+  id: HYPEREVM.chainId,
+  name: "HyperEVM",
+  nativeCurrency: { name: "HYPE", symbol: "HYPE", decimals: 18 },
+  rpcUrls: { default: { http: [HYPEREVM.rpcUrl] } },
+});

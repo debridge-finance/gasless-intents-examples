@@ -9,15 +9,32 @@ import {
   PaginatedResponseMetadata,
   SubmitBundleResponse,
 } from "@gasless-intents/types";
-import { ENDPOINTS } from "./constants";
+import { ENDPOINTS, SOLANA_TRANSACTION_REFRESH_URL } from "./constants";
 import { privateKeyToAccount } from "viem/accounts";
 import { getWalletClients } from "./wallet";
-import { postUrl, getUrl } from "./http";
+import { postUrl, getUrl, getPublicJsonHeaders } from "./http";
+import { getHeaders } from "./env";
 
 const { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL } = ENDPOINTS;
 
-export async function createBundle(requestBody: BundleProposeBody): Promise<Bundle> {
-  const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
+export type BundleApiEndpoints = {
+  BUNDLE_PROPOSE_URL: string;
+  BUNDLE_SUBMIT_URL: string;
+  requiresPartnerApiKey?: boolean;
+};
+
+const DEFAULT_BUNDLE_ENDPOINTS: BundleApiEndpoints = {
+  BUNDLE_PROPOSE_URL,
+  BUNDLE_SUBMIT_URL,
+  requiresPartnerApiKey: false,
+};
+
+export async function createBundle(
+  requestBody: BundleProposeBody,
+  endpoints: BundleApiEndpoints = DEFAULT_BUNDLE_ENDPOINTS,
+): Promise<Bundle> {
+  const headers = endpoints.requiresPartnerApiKey === false ? getPublicJsonHeaders() : getHeaders();
+  const response = await postUrl(endpoints.BUNDLE_PROPOSE_URL, requestBody, headers);
 
   return response as Bundle;
 }
@@ -33,10 +50,30 @@ export async function createBundle(requestBody: BundleProposeBody): Promise<Bund
  * @param requestBody
  * @returns A unique bundleId.
  */
-export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
-  const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
+export async function submitBundle(
+  requestBody: Bundle,
+  endpoints: BundleApiEndpoints = DEFAULT_BUNDLE_ENDPOINTS,
+): Promise<SubmitBundleResponse> {
+  const headers = endpoints.requiresPartnerApiKey === false ? getPublicJsonHeaders() : getHeaders();
+  const suffix = endpoints.requiresPartnerApiKey === false ? "" : "?format=json";
+  const response = await postUrl(`${endpoints.BUNDLE_SUBMIT_URL}${suffix}`, requestBody, headers);
 
   return response as SubmitBundleResponse;
+}
+
+export async function refreshSolanaTransaction(serializedTransaction: string): Promise<string> {
+  const response = await postUrl(
+    SOLANA_TRANSACTION_REFRESH_URL,
+    { transaction: serializedTransaction },
+    getPublicJsonHeaders(),
+  ) as { transaction?: string; errorMessage?: string };
+
+  if (!response.transaction) {
+    throw new Error(
+      `Solana transaction refresh returned no transaction: ${response.errorMessage ?? "unknown error"}`,
+    );
+  }
+  return response.transaction;
 }
 
 export async function getBundles(
@@ -85,4 +122,30 @@ export async function cancelBundles(
   };
 
   return postUrl(BUNDLE_CANCEL_URL, requestBody) as Promise<BundleCancelResponse>;
+}
+
+export type BundleCancelApiEndpoints = {
+  BUNDLE_CANCEL_URL: string;
+  requiresPartnerApiKey?: boolean;
+};
+
+export async function cancelBundleById(
+  cancelRequest: BundleCancelRequest & {
+    bundleId: string;
+    creationTimestamp: string;
+    expirationTimestamp: string;
+  },
+  cancelAuthorityAccount: ReturnType<typeof privateKeyToAccount>,
+  endpoints: BundleCancelApiEndpoints,
+): Promise<BundleCancelResponse> {
+  const authority = getAddress(cancelAuthorityAccount.address);
+  const preImage = generateCancelPreimage(cancelRequest, authority);
+  const signature = await cancelAuthorityAccount.signMessage({ message: preImage });
+  const headers = endpoints.requiresPartnerApiKey === false ? getPublicJsonHeaders() : getHeaders();
+
+  return postUrl(
+    endpoints.BUNDLE_CANCEL_URL,
+    { ...cancelRequest, signature },
+    headers,
+  ) as Promise<BundleCancelResponse>;
 }

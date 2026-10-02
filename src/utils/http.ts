@@ -1,5 +1,11 @@
 import { getHeaders } from "./env";
 
+export function getPublicJsonHeaders(): Headers {
+  const headers = new Headers();
+  headers.set("accept", "application/json");
+  headers.set("content-type", "application/json");
+  return headers;
+}
 
 export async function getUrl(url: string) {
   const response = await fetch(url, {
@@ -14,10 +20,10 @@ export async function getUrl(url: string) {
   return response.json();
 }
 
-export async function postUrl(url: string, body: any) {
+export async function postUrl(url: string, body: any, headers: Headers = getHeaders()) {
   const response = await fetch(url, {
     method: "POST",
-    headers: getHeaders(),
+    headers,
     body: JSON.stringify(body),
   });
   if (!response.ok) {

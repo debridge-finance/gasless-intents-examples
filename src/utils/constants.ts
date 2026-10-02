@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
 
 export const V1_BASE = "/v1/gasless";
@@ -12,6 +14,25 @@ export const ENDPOINTS = {
   BUNDLE_PROPOSE_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}`,
   BUNDLE_SUBMIT_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}/submit`,
   BUNDLE_CANCEL_URL: `${BASE_URL}${V1_BASE}${BUNDLES}/cancel`,
+};
+
+export function getHyperliquidApiBaseUrl(): string {
+  const value = process.env.HYPERLIQUID_API_BASE_URL?.trim().replace(/\/+$/, "");
+  if (!value) throw new Error("HYPERLIQUID_API_BASE_URL not found in .env file.");
+  return value;
+}
+
+export const HYPERLIQUID_ENDPOINTS = {
+  get BUNDLE_PROPOSE_URL() {
+    return `${getHyperliquidApiBaseUrl()}/api/bundles`;
+  },
+  get BUNDLE_SUBMIT_URL() {
+    return `${getHyperliquidApiBaseUrl()}/api/bundles/submit`;
+  },
+  get BUNDLE_CANCEL_URL() {
+    return `${getHyperliquidApiBaseUrl()}/api/bundles/cancel`;
+  },
+  requiresPartnerApiKey: true,
 };
 
 // Price API (no /gasless prefix)
@@ -35,6 +56,69 @@ export const USDC = {
   Optimism: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
   Solana: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
 };
+
+export const HYPERCORE = {
+  USDC: {
+    symbol: "USDC",
+    address: "0xb88339CB7199b77E23DB6E890353E22632Ba630f",
+    tokenId: "0x6d1e7cde53ba9467b783cb7c530ce054",
+    index: 0,
+    coreDecimals: 8,
+    evmDecimals: 6,
+    systemAddress: "0x2000000000000000000000000000000000000000",
+    withdrawFeePolicy: "self-paid" as string | null,
+  },
+  HYPE: {
+    symbol: "HYPE",
+    address: "0x5555555555555555555555555555555555555555",
+    tokenId: "0x0d01dc56dcaaca66ad901c959b4011ec",
+    index: 150,
+    coreDecimals: 8,
+    evmDecimals: 18,
+    systemAddress: "0x2222222222222222222222222222222222222222",
+    withdrawFeePolicy: "none" as string | null,
+  },
+  PURR: {
+    symbol: "PURR",
+    address: "0x9b498c3c8a0b8cd8ba1d9851d40d186f1872b44e",
+    tokenId: "0xc1fb593aeffbeb02f85e0308e9956a90",
+    index: 1,
+    coreDecimals: 5,
+    evmDecimals: 18,
+    systemAddress: "0x2000000000000000000000000000000000000001",
+    withdrawFeePolicy: null as string | null,
+  },
+  USDT0: {
+    symbol: "USDT0",
+    address: "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb",
+    tokenId: "0x25faedc3f054130dbb4e4203aca63567",
+    index: 268,
+    coreDecimals: 8,
+    evmDecimals: 6,
+    systemAddress: "0x200000000000000000000000000000000000010c",
+    withdrawFeePolicy: "self-paid" as string | null,
+  },
+};
+
+export type HyperCoreToken = (typeof HYPERCORE)[keyof typeof HYPERCORE];
+
+export const HYPERCORE_PERPS_USDC_ADDRESS = "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC";
+
+export const HYPEREVM = {
+  chainId: 999,
+  dlnChainId: 100000022,
+  rpcUrl: "https://rpc.hyperliquid.xyz/evm",
+  spotSendExecutor: "0xb7Be1af750755Dab829E1E94122d8ABB27fc52f5",
+  usdcDepositWallet: "0x6B9E773128f453f5c2C60935Ee2DE2CBc5390A24",
+  whype: "0x5555555555555555555555555555555555555555",
+};
+
+export const HYPERCORE_CHAIN_ID = 200000001;
+
+export const HYPERLIQUID_ESCROW_FACTORY = "0xAd635f04134562D58B30C93676FBBdF37f5c6dAB";
+
+export const SOLANA_TRANSACTION_REFRESH_URL =
+  "https://deswap.debridge.finance/v1.0/bundle/refresh-solana-tx";
 
 export const USDT = {
   Ethereum: "0xdAC17F958D2ee523a2206206994597C13D831ec7",

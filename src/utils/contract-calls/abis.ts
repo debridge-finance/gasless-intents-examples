@@ -3,6 +3,7 @@ import { parseAbi } from "viem";
 /** ERC-20 */
 export const Erc20Abi = {
   Balance: parseAbi(["function balanceOf(address account) view returns (uint256)"]),
+  Allowance: parseAbi(["function allowance(address owner, address spender) view returns (uint256)"]),
   Approve: parseAbi(["function approve(address spender, uint256 amount)"]),
   Transfer: parseAbi(["function transfer(address to, uint256 amount)"]),
 } as const;

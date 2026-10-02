@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/gasless-intents/types.ts",
+    "src/gasless-intents/hyperliquid/basic-flow/**/*.ts",
+    "src/gasless-intents/hyperliquid/cancellation/**/*.ts",
+    "src/gasless-intents/hyperliquid/direct-transfers/**/*.ts",
+    "src/gasless-intents/hyperliquid/exploration/**/*.ts",
+    "src/utils/**/*.ts"
+  ],
+  "exclude": [
+    "src/gasless-intents/hyperliquid/gasless-sdk/**"
+  ]
+}
