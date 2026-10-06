@@ -97,3 +97,28 @@ export const CASH = {
 // Pools
 
 export const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
+
+export function getHyperliquidApiBaseUrl(): string {
+  const value = process.env.HYPERLIQUID_API_BASE_URL?.trim().replace(/\/+$/, "");
+  if (!value) throw new Error("HYPERLIQUID_API_BASE_URL not found in .env file.");
+  return value;
+}
+
+export const HYPERLIQUID_ENDPOINTS = {
+  get BUNDLE_PROPOSE_URL() {
+    return `${getHyperliquidApiBaseUrl()}/api/bundles`;
+  },
+  get BUNDLE_SUBMIT_URL() {
+    return `${getHyperliquidApiBaseUrl()}/api/bundles/submit`;
+  },
+};
+
+export const HYPERCORE = {
+  USDC: { address: "0xb88339CB7199b77E23DB6E890353E22632Ba630f", evmDecimals: 6 },
+  HYPE: { address: "0x5555555555555555555555555555555555555555", evmDecimals: 18 },
+};
+
+export const HYPEREVM = {
+  chainId: 999,
+  rpcUrl: "https://rpc.hyperliquid.xyz/evm",
+};

@@ -16,8 +16,18 @@ import { postUrl, getUrl } from "./http";
 
 const { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL } = ENDPOINTS;
 
-export async function createBundle(requestBody: BundleProposeBody): Promise<Bundle> {
-  const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
+export type BundleApiEndpoints = {
+  BUNDLE_PROPOSE_URL: string;
+  BUNDLE_SUBMIT_URL: string;
+};
+
+const DEFAULT_BUNDLE_ENDPOINTS: BundleApiEndpoints = { BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL };
+
+export async function createBundle(
+  requestBody: BundleProposeBody,
+  endpoints: BundleApiEndpoints = DEFAULT_BUNDLE_ENDPOINTS,
+): Promise<Bundle> {
+  const response = await postUrl(endpoints.BUNDLE_PROPOSE_URL, requestBody);
 
   return response as Bundle;
 }
@@ -33,8 +43,11 @@ export async function createBundle(requestBody: BundleProposeBody): Promise<Bund
  * @param requestBody
  * @returns A unique bundleId.
  */
-export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
-  const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
+export async function submitBundle(
+  requestBody: Bundle,
+  endpoints: BundleApiEndpoints = DEFAULT_BUNDLE_ENDPOINTS,
+): Promise<SubmitBundleResponse> {
+  const response = await postUrl(`${endpoints.BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 
   return response as SubmitBundleResponse;
 }
