@@ -20,7 +20,16 @@ import { prepareSolanaTransaction, signHexMessageBySolanaKey } from "../solana";
 import { clipHexPrefix, toHexPrefixString } from "@utils/string";
 import { substitutePlaceholdersInMessage } from "./placeholder-substitution";
 
-export async function signAction(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
+export type ActionProcessingOptions = {
+  skipBudgetApprovalTransactions?: boolean;
+  solanaSignMessageEncoding?: "hex" | "utf8";
+};
+
+export async function signAction(
+  action: Action,
+  walletClient: WalletClient | Keypair,
+  options: ActionProcessingOptions = {},
+): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
 
   switch (action.type) {
@@ -32,7 +41,11 @@ export async function signAction(action: Action, walletClient: WalletClient | Ke
       return evmActionSign(action, walletClient as WalletClient);
     }
     case SignatureTypes.Sign: {
-      return solanaAuthorizationSign(action, walletClient as Keypair);
+      return solanaAuthorizationSign(
+        action,
+        walletClient as Keypair,
+        options.solanaSignMessageEncoding ?? "hex",
+      );
     }
     case SignatureTypes.SignTransaction: {
       return solanaVersionedTransactionSign(action, walletClient as Keypair);
@@ -124,9 +137,15 @@ async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
   return sig;
 }
 
-async function solanaAuthorizationSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
+async function solanaAuthorizationSign(
+  action: Action,
+  keypair: Keypair,
+  encoding: "hex" | "utf8",
+): Promise<SignTypedDataReturnType> {
   const signingData = (action.data as SolanaSign).data;
-  const signatures = signHexMessageBySolanaKey(signingData, keypair);
+  const messageHex =
+    encoding === "utf8" ? Buffer.from(signingData, "utf8").toString("hex") : signingData;
+  const signatures = signHexMessageBySolanaKey(messageHex, keypair);
   return toHexPrefixString(signatures.hex);
 }
 
@@ -189,7 +208,7 @@ export async function getRequiredActionSignatures(
   requiredActions: Array<Action>,
   walletClient: WalletClient | Keypair,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   const signatures: SignedDataItem[] = [];
 
@@ -228,7 +247,7 @@ export async function getRequiredActionSignatures(
         signatures.push(result);
         console.log(`Handled deferred placeholder action ${action.actionId} of type ${action.type}`);
       } else {
-        const signedData = await signAction(action, walletClient);
+        const signedData = await signAction(action, walletClient, options);
         signatures.push({ actionId: action.actionId, signedData });
         console.log(`Successfully signed action ${action.actionId}`);
       }
@@ -246,7 +265,7 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
   getChainId: (item: T) => number | undefined,
   walletClientMap: WalletClientMap,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   if (!items || !Array.isArray(items)) return [];
 
@@ -286,7 +305,7 @@ export async function processIntentBundleActions(
   bundle: BundleProposeResponse,
   walletClientMap: WalletClientMap,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   // Collect signatures for all bundle intents and hooks.
   const a = await collectSignaturesFromItems(

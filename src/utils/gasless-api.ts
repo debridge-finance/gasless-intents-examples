@@ -18,11 +18,21 @@ import { postUrl, getUrl } from "./http";
 
 const { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL } = ENDPOINTS;
 
+export type BundleApiEndpoints = {
+  BUNDLE_PROPOSE_URL: string;
+  BUNDLE_SUBMIT_URL: string;
+};
+
+const DEFAULT_BUNDLE_ENDPOINTS: BundleApiEndpoints = { BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL };
+
 /** Propose a bundle; omit wallet addresses for a quote and re-propose after connection. */
-export function createBundle(requestBody: BundleProposeBody): Promise<Bundle>;
-export function createBundle(requestBody: BundleQuoteBody): Promise<BundleQuoteResponse>;
-export async function createBundle(requestBody: BundleProposeBody | BundleQuoteBody): Promise<Bundle | BundleQuoteResponse> {
-  const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
+export function createBundle(requestBody: BundleProposeBody, endpoints?: BundleApiEndpoints): Promise<Bundle>;
+export function createBundle(requestBody: BundleQuoteBody, endpoints?: BundleApiEndpoints): Promise<BundleQuoteResponse>;
+export async function createBundle(
+  requestBody: BundleProposeBody | BundleQuoteBody,
+  endpoints: BundleApiEndpoints = DEFAULT_BUNDLE_ENDPOINTS,
+): Promise<Bundle | BundleQuoteResponse> {
+  const response = await postUrl(endpoints.BUNDLE_PROPOSE_URL, requestBody);
 
   return response as Bundle | BundleQuoteResponse;
 }
@@ -52,8 +62,11 @@ export async function refreshSolanaTransaction(transaction: string): Promise<str
  * @param requestBody
  * @returns A unique bundleId.
  */
-export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
-  const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
+export async function submitBundle(
+  requestBody: Bundle,
+  endpoints: BundleApiEndpoints = DEFAULT_BUNDLE_ENDPOINTS,
+): Promise<SubmitBundleResponse> {
+  const response = await postUrl(`${endpoints.BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 
   return response as SubmitBundleResponse;
 }
