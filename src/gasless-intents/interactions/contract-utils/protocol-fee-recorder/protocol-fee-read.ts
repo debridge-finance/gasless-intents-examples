@@ -13,7 +13,7 @@ import { getBaseClients, readView } from "../shared/base-clients";
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   let intentId: Hex | null = null;
-  let token: Address | null = null;
+  let token: Address;
   if (args[0] === "--token") {
     if (!args[1] || !isAddress(args[1])) throw new Error("Invalid token address");
     token = args[1] as Address;
@@ -32,7 +32,7 @@ async function main(): Promise<void> {
     address,
     abi,
     functionName: "tokenTotalFee",
-    args: [token!],
+    args: [token],
   });
 
   console.log(`ProtocolFeeRecorder: ${address}`);
@@ -42,7 +42,7 @@ async function main(): Promise<void> {
       address,
       abi,
       functionName: "intentTokenFee",
-      args: [intentId, token!],
+      args: [intentId, token],
     });
     console.log(`  intentTokenFee[${intentId}][${token}]: ${perIntent}`);
   }
