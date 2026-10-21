@@ -22,14 +22,9 @@ import { substitutePlaceholdersInMessage } from "./placeholder-substitution";
 
 export type ActionProcessingOptions = {
   skipBudgetApprovalTransactions?: boolean;
-  solanaSignMessageEncoding?: "hex" | "utf8";
 };
 
-export async function signAction(
-  action: Action,
-  walletClient: WalletClient | Keypair,
-  options: ActionProcessingOptions = {},
-): Promise<string> {
+export async function signAction(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
 
   switch (action.type) {
@@ -41,11 +36,7 @@ export async function signAction(
       return evmActionSign(action, walletClient as WalletClient);
     }
     case SignatureTypes.Sign: {
-      return solanaAuthorizationSign(
-        action,
-        walletClient as Keypair,
-        options.solanaSignMessageEncoding ?? "hex",
-      );
+      return solanaAuthorizationSign(action, walletClient as Keypair);
     }
     case SignatureTypes.SignTransaction: {
       return solanaVersionedTransactionSign(action, walletClient as Keypair);
@@ -137,15 +128,9 @@ async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
   return sig;
 }
 
-async function solanaAuthorizationSign(
-  action: Action,
-  keypair: Keypair,
-  encoding: "hex" | "utf8",
-): Promise<SignTypedDataReturnType> {
+async function solanaAuthorizationSign(action: Action, keypair: Keypair): Promise<SignTypedDataReturnType> {
   const signingData = (action.data as SolanaSign).data;
-  const messageHex =
-    encoding === "utf8" ? Buffer.from(signingData, "utf8").toString("hex") : signingData;
-  const signatures = signHexMessageBySolanaKey(messageHex, keypair);
+  const signatures = signHexMessageBySolanaKey(signingData, keypair);
   return toHexPrefixString(signatures.hex);
 }
 
@@ -247,7 +232,7 @@ export async function getRequiredActionSignatures(
         signatures.push(result);
         console.log(`Handled deferred placeholder action ${action.actionId} of type ${action.type}`);
       } else {
-        const signedData = await signAction(action, walletClient, options);
+        const signedData = await signAction(action, walletClient);
         signatures.push({ actionId: action.actionId, signedData });
         console.log(`Successfully signed action ${action.actionId}`);
       }

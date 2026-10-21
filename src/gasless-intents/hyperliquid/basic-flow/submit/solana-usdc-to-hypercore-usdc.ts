@@ -53,9 +53,7 @@ async function main() {
   const bundle = await createBundle(request, HYPERLIQUID_ENDPOINTS);
   console.log(JSON.stringify(bundle, null, 2));
 
-  const signedData = await processIntentBundleActions(bundle, walletClients, {}, {
-    solanaSignMessageEncoding: "utf8",
-  });
+  const signedData = await processIntentBundleActions(bundle, walletClients);
 
   const submitPayload: Bundle = {
     ...bundle,
