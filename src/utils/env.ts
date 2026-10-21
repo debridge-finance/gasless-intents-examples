@@ -1,5 +1,21 @@
 import "dotenv/config";
 
+function requireEnv(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} not found in .env file.`);
+  }
+  return value;
+}
+
+export function getEvmPrivateKey(): string {
+  return requireEnv("SIGNER_PK");
+}
+
+export function getSolanaPrivateKey(): string {
+  return requireEnv("SOL_PK");
+}
+
 export function getEnvConfig(): {
   privateKey: string;
   solPrivateKey: string;
