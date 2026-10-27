@@ -128,6 +128,10 @@ export type BundleBase = {
 }
 
 export type BundleProposeBody = BundleBase & {
+  costToken?: {
+    chainId: number;
+    tokenAddress: string;
+  };
   expirationTimestamp: number; // Unix timestamp in seconds
   tradingAlgorithm: TradingAlgorithm;
 }
