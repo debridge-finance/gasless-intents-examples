@@ -7,7 +7,7 @@
  */
 import { isAddress, type Address } from "viem";
 import { loadAbi } from "../shared/abis";
-import { requireDeployedAddress } from "../shared/deployed-addresses";
+import { requireDeployedAddress } from "../../shared/deployed-addresses";
 import { getBaseClients, readView, writeTx } from "../shared/base-clients";
 
 async function main(): Promise<void> {

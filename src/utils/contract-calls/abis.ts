@@ -1,4 +1,5 @@
-import { parseAbi } from "viem";
+import { parseAbi, type Abi } from "viem";
+import { INTENT_TUPLE } from "@utils/intent-struct";
 
 /** ERC-20 */
 export const Erc20Abi = {
@@ -33,3 +34,47 @@ export const EchoWithSigAbi = {
     "event MessageEchoed(address indexed user, bytes32 indexed nonce, string message, bytes signature)",
   ]),
 } as const;
+
+/** deBridge IntentManager — the direct on-chain submission surface (verbose
+ *  submitIntent + the authorization-flag read). Built as an object rather than
+ *  via parseAbi because submitIntent takes the full IIntent.Intent tuple,
+ *  reused from @utils/intent-struct. */
+export const IntentManagerAbi = [
+  {
+    type: "function",
+    name: "submitIntent",
+    stateMutability: "nonpayable",
+    inputs: [{ ...(INTENT_TUPLE[0] as object), name: "intent" }],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "isIntentSubmitted",
+    stateMutability: "view",
+    inputs: [
+      { type: "address", name: "intentOwner" },
+      { type: "bytes32", name: "intentId" },
+    ],
+    outputs: [{ type: "bool", name: "" }],
+  },
+] as unknown as Abi;
+
+// IntentSubmitter (solidity/contracts/submitter/IntentSubmitter.sol).
+export const IntentSubmitterAbi = [
+  {
+    type: "function",
+    name: "submitIntent",
+    stateMutability: "nonpayable",
+    inputs: [{ ...(INTENT_TUPLE[0] as object), name: "intent" }],
+    outputs: [{ type: "bytes32", name: "intentId" }],
+  },
+  {
+    type: "function",
+    name: "isIntentSubmitted",
+    stateMutability: "view",
+    inputs: [{ type: "bytes32", name: "intentId" }],
+    outputs: [{ type: "bool", name: "" }],
+  },
+  { type: "function", name: "owner", stateMutability: "view", inputs: [], outputs: [{ type: "address", name: "" }] },
+  { type: "function", name: "RECIPIENT", stateMutability: "view", inputs: [], outputs: [{ type: "address", name: "" }] },
+] as unknown as Abi;

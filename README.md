@@ -5,58 +5,60 @@ cross-chain and same-chain execution.
 
 ## Overview
 
-Gasless intents let you bundle multiple trades across chains into a single atomic operation. The deBridge protocol signs and pays
-gas on your behalf — you never need native tokens to cover transaction fees. This repository provides ready-to-run scripts
+Gasless intents let you bundle multiple trades across chains into a single atomic operation. Your wallet signs the required
+actions; gasless flows handle transaction gas on your behalf, while examples that broadcast wallet transactions require native
+tokens for gas. This repository provides ready-to-run scripts
 covering the full lifecycle: creating bundles, signing intents, submitting trades, querying status, cancelling bundles, attaching
-pre/post-hooks, and working with both EVM and Solana chains.
+pre/post-hooks, and working with EVM, Solana, and HyperCore.
 
 ## Examples
 
 | Category                     | Description                                                                  | Chains       | Path                                                                                                        |
 | ---------------------------- | ---------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------- |
-| **Bundle Creation**          | Create and inspect bundles without submitting                                | EVM          | [`prepare-bundle/`](src/gasless-intents/prepare-bundle/)                                                    |
-| **Bundle Submission**        | End-to-end create → sign → submit workflows                                  | EVM          | [`submit-bundle*.ts`](src/gasless-intents/), [`aa-disabled-evm.ts`](src/gasless-intents/aa-disabled-evm.ts) |
+| **Bundle Creation**          | Create and inspect bundles without submitting                                | EVM          | [`trades/basic-flow/propose-only/`](src/gasless-intents/trades/basic-flow/propose-only/)                    |
+| **Bundle Submission**        | End-to-end create → sign → submit workflows                                  | EVM          | [`trades/basic-flow/submit/`](src/gasless-intents/trades/basic-flow/submit/)                                |
 | **Querying Bundles**         | Fetch bundles by ID, owner, order ID, date range                             | EVM          | [`queries/`](src/gasless-intents/queries/)                                                                  |
 | **Cancellation**             | Cancel by bundle ID, by intent owner, by partner authority, stuck bundles    | EVM          | [`cancellation/`](src/gasless-intents/cancellation/)                                                        |
-| **Pre-hooks**                | Arbitrary on-chain actions executed before settlement                        | EVM          | [`prehooks/`](src/gasless-intents/prehooks/)                                                                |
-| **Post-hooks**               | On-chain actions after settlement (Morpho deposit, ERC-20 send, native send) | EVM          | [`posthooks/`](src/gasless-intents/posthooks/)                                                              |
+| **Pre-hooks**                | Arbitrary on-chain actions executed before settlement                        | EVM          | [`hooks/prehooks/`](src/gasless-intents/hooks/prehooks/)                                                    |
+| **Post-hooks**               | On-chain actions after settlement (Morpho deposit, ERC-20 send, native send) | EVM          | [`hooks/posthooks/`](src/gasless-intents/hooks/posthooks/)                                                  |
 | **Pre/Post-Interactions**    | Intent-level on-chain hooks (observability, metrics, gating). Base only      | EVM (Base)   | [`interactions/`](src/gasless-intents/interactions/)                                                        |
-| **Solana Source Chain**      | Bundles originating from Solana (AA enabled/disabled, pre-swap, same-chain)  | Solana → EVM | [`solana/src-cases/`](src/gasless-intents/solana/src-cases/)                                                |
-| **Solana Destination Chain** | Atomic fulfillment with Solana as destination                                | EVM → Solana | [`solana/dst-cases/`](src/gasless-intents/solana/dst-cases/)                                                |
-| **Solana Prepare Steps**     | SPL token approval and SOL wrapping before bundle submission                 | Solana       | [`solana/prepare-steps/`](src/gasless-intents/solana/prepare-steps/)                                        |
-| **Solana Trade Scenarios**   | Mixed cross-chain and same-chain Solana bundles                              | EVM + Solana | [`solana-trade-scenarios/`](src/gasless-intents/solana-trade-scenarios/)                                    |
+| **Solana Source Chain**      | Bundles originating from Solana (AA enabled/disabled, pre-swap, same-chain)  | Solana → EVM | [`trades/solana/basic-flow/src-cases/`](src/gasless-intents/trades/solana/basic-flow/src-cases/)            |
+| **Solana Destination Chain** | Atomic fulfillment with Solana as destination                                | EVM → Solana | [`trades/solana/basic-flow/dst-cases/`](src/gasless-intents/trades/solana/basic-flow/dst-cases/)            |
+| **Solana Prepare Steps**     | SPL token approval and SOL wrapping before bundle submission                 | Solana       | [`trades/solana/basic-flow/prepare-steps/`](src/gasless-intents/trades/solana/basic-flow/prepare-steps/)    |
+| **Solana Trade Scenarios**   | Mixed cross-chain and same-chain Solana bundles                              | EVM + Solana | [`trades/solana/trade-scenarios/`](src/gasless-intents/trades/solana/trade-scenarios/)                      |
 | **Hyperliquid**              | Propose and submit deposits/withdrawals through HyperCore                    | EVM + Solana + HyperCore | [`hyperliquid/`](src/gasless-intents/hyperliquid/)                                            |
 | **WebSockets**               | Real-time bundle status tracking via WebSocket client + HTML tracker         | EVM          | [`web-sockets/`](src/gasless-intents/web-sockets/)                                                          |
-| **EIP-7702 Authorization**   | Manual account abstraction authorization on Base                             | EVM (Base)   | [`manual-authorization-base.ts`](src/gasless-intents/manual-authorization-base.ts)                          |
-| **Price API**                | Token rates table and price chart with SVG output                            | Any chain    | [`price/examples/`](src/price/examples/)                                                                    |
+| **EIP-7702 Authorization**   | Manual account abstraction authorization on Base                             | EVM (Base)   | [`utility-scripts/authorization-7702/`](src/gasless-intents/utility-scripts/authorization-7702/)            |
+| **Price API**                | Token rates table and price chart with SVG output                            | Any chain    | [`price/scripts/`](src/price/scripts/)                                                                      |
 
 ## Quick Start
 
 ```bash
-nvm use                    # Node v20.18.0
+nvm use                    # Node v24.16.0 (see .nvmrc)
 npm install
 cp .env.example .env       # fill in keys (see below)
 ```
 
-Run your first queries:
+Run these commands from the repository root. Set the owner filters or bundle ID in the query scripts before running them:
 
 ```bash
 npx tsx src/gasless-intents/queries/get-bundles.ts
 npx tsx src/gasless-intents/queries/get-bundle-by-id.ts
 ```
 
-Submit a bundle end-to-end:
+Submit a bundle end-to-end. This example calls `getEnvConfig()`, which currently requires both `SIGNER_PK` and `SOL_PK`
+to be set:
 
 ```bash
-npx tsx src/gasless-intents/submit-bundle.ts
+npx tsx src/gasless-intents/trades/basic-flow/submit/submit-bundle.ts
 ```
 
 ### Prerequisites
 
-- **Node.js v20.18.0** — `.nvmrc` provided, run `nvm use`
-- **RPC URLs** — Alchemy (or equivalent) endpoints for Polygon, BNB Chain, Arbitrum, Base, and Solana
+- **Node.js v24.16.0** — `.nvmrc` provided, run `nvm use`
+- **RPC URLs** — configure the endpoints used by your chosen example; shared EVM wallet clients use chain defaults
 - **EVM private key** (`SIGNER_PK`) — wallet that will sign EIP-712 intents
-- **Solana private key** (`SOL_PK`) — base58-encoded keypair (only needed for Solana examples)
+- **Solana private key** (`SOL_PK`) — base58-encoded keypair for Solana examples; also required by scripts using `getEnvConfig()`
 - **deBridge partner API key** (`DE_BRIDGE_PARTNER_API_KEY`) — obtain from deBridge
 
 ### Environment Variables
@@ -72,21 +74,25 @@ Copy `.env.example` to `.env` and fill in the values:
 | `ARB_RPC_URL`               | Arbitrum RPC endpoint                              |
 | `BASE_RPC_URL`              | Base RPC endpoint                                  |
 | `SOL_RPC_URL`               | Solana RPC endpoint                                |
+| `MAINNET_RPC_URL`           | Ethereum RPC endpoint                              |
+| `OPTIMISM_RPC_URL`          | Optimism RPC endpoint                              |
 | `DE_BRIDGE_PARTNER_API_KEY` | deBridge partner API key                           |
+| `REFERRAL_CODE`             | Your referral code for examples that read it from the environment; some scripts hardcode it |
+| `HYPERLIQUID_API_BASE_URL`   | Partner-issued API host required by the Hyperliquid examples |
 
 ## Category Details
 
 ### Bundle Creation
 
 Create bundles via the Borderless API without submitting them on-chain. Useful for inspecting the response payload, understanding
-intent structure, and validating trade parameters. `create-bundle.ts` shows a minimal single-trade example; `multi-poly-to-bsc.ts`
-demonstrates multi-trade bundles.
+intent structure, and validating trade parameters. `trades/basic-flow/propose-only/create-bundle.ts` shows a minimal single-trade
+example; `multi-poly-to-bsc.ts` demonstrates multi-trade bundles.
 
 ### Bundle Submission
 
 End-to-end workflow: create a bundle of trades, collect EIP-712 signatures for each intent via `processIntentBundle()`, and
-submit. `submit-bundle.ts` shows a 3-trade Polygon/BSC bundle with account abstraction enabled. `aa-disabled-evm.ts` shows the
-same flow with `enableAccountAbstraction: false`, requiring the signer to pay gas directly.
+submit. `trades/basic-flow/submit/submit-bundle.ts` shows a 3-trade Polygon/BSC bundle with account abstraction enabled.
+`aa-disabled-evm.ts` shows the same flow with `enableAccountAbstraction: false`, requiring the signer to pay gas directly.
 
 ### Querying Bundles
 
@@ -109,11 +115,13 @@ sending ERC-20 tokens to another address, and forwarding native assets to a bene
 ### Pre/Post-Interactions
 
 `preInteractions` / `postInteractions` are **per-intent** on-chain hook calls executed on the source chain around the maker's
-fill. The example scripts in [`src/gasless-intents/interactions/`](src/gasless-intents/interactions/) cover observability, on-chain metrics,
-protocol-fee derivation, compliance gating, and soft/hard rate limiting use cases.
+fill. The example scripts in [`src/gasless-intents/interactions/`](src/gasless-intents/interactions/) cover observability,
+on-chain metrics, protocol-fee derivation, rewards, and soft/hard rate limiting use cases.
 
-Note: the Solidity receiver contracts / deployment artefacts referenced by these examples are not vendored in this repository.
-The submit pipeline is not yet end-to-end for this feature — the example scripts focus on propose-side payload correctness.
+The Solidity receiver contracts and generated artefacts live under [`solidity/`](solidity/). Contract utility scripts use the
+hardcoded Base mainnet addresses in
+[`deployed-addresses.ts`](src/gasless-intents/interactions/shared/deployed-addresses.ts), so they do not depend on
+local deployment ledger files being present.
 
 ### Solana Examples
 
@@ -123,6 +131,11 @@ AA-disabled flows, plus a pre-swap variant. **Destination chain** shows atomic f
 required before submitting Solana-origin bundles. **Trade scenarios** demonstrate mixed bundles combining cross-chain and
 same-chain Solana trades (e.g., 2 cross-chain + 2 same-chain, or 3 same-chain SOL swaps).
 
+### Hyperliquid
+
+Deposit from EVM or Solana into HyperCore, withdraw from HyperCore, or transfer USDC directly between HyperEVM and HyperCore.
+See the [Hyperliquid examples README](src/gasless-intents/hyperliquid/README.md) for configuration and commands.
+
 ### WebSockets
 
 Real-time bundle tracking over WebSockets. `example.ts` connects to the deBridge WebSocket API and subscribes to bundle updates
@@ -131,8 +144,8 @@ filtered by referral code, intent owner, or bundle ID. `DebridgeWsClient.ts` is 
 
 ### EIP-7702 Authorization
 
-`manual-authorization-base.ts` demonstrates signing and submitting an EIP-7702 authorization transaction on Base. This delegates
-your EOA to a
+`utility-scripts/authorization-7702/manual-authorization-base.ts` demonstrates signing and submitting an EIP-7702 authorization
+transaction on Base. This delegates your EOA to a
 [EIP7702StatelessDeleGator](https://github.com/MetaMask/delegation-framework/blob/main/documents/EIP7702DeleGator.md) contract,
 introduced with MetaMask delegation framework, enabling account abstraction without deploying a separate smart account.
 
@@ -144,10 +157,10 @@ Additional chart scripts demonstrate longer time ranges (`THREE_MONTHS`, `SIX_MO
 All scripts write SVG output to the `output/` directory.
 
 ```bash
-npx tsx src/price/examples/chart-three-months.ts   # → output/token-chart-line-THREE_MONTHS.svg
-npx tsx src/price/examples/chart-six-months.ts     # → output/token-chart-line-SIX_MONTHS.svg
-npx tsx src/price/examples/chart-five-years.ts     # → output/token-chart-line-FIVE_YEARS.svg
-npx tsx src/price/examples/chart-all.ts            # → output/token-chart-line-ALL.svg
+npx tsx src/price/scripts/chart-three-months.ts   # → output/token-chart-line-THREE_MONTHS.svg
+npx tsx src/price/scripts/chart-six-months.ts     # → output/token-chart-line-SIX_MONTHS.svg
+npx tsx src/price/scripts/chart-five-years.ts     # → output/token-chart-ohlc-FIVE_YEARS.svg
+npx tsx src/price/scripts/chart-all.ts            # → output/token-chart-line-ALL.svg
 ```
 
 > **Note:** The `canvas` npm package (used by Vega for server-side SVG rendering) has native bindings. On Ubuntu/WSL, install system libraries first:
@@ -159,7 +172,7 @@ npx tsx src/price/examples/chart-all.ts            # → output/token-chart-line
 - **Wallet setup**: viem `WalletClient` instances for EVM chains, Solana `Keypair` for Solana, mapped by chain ID via
   `getChainIdToWalletClientMap()`
 - **Signing**: EIP-712 typed data for EVM intents, NaCl (`tweetnacl`) for Solana, EIP-7702 for account abstraction authorization
-- **Trade definitions**: Factory functions in `trades.ts` (e.g., `getPolyUsdcToBscUsdcTrade()`) or inline `Trade` objects
+- **Trade definitions**: Factory functions in `trade-blueprints.ts` (e.g., `getPolyUsdcToBscUsdcTrade()`) or inline `Trade` objects
 - **Hooks**: Pre/post-hooks attached to the `BundleProposeBody` as arrays of calldata objects targeting specific chains and
   contracts
 - **Atomicity**: `isAtomic: true` ensures all-or-nothing settlement — either every intent in the bundle is fulfilled, or none are
@@ -169,34 +182,33 @@ npx tsx src/price/examples/chart-all.ts            # → output/token-chart-line
 ```
 src/
 ├── gasless-intents/            # All example scripts
-│   ├── prepare-bundle/         # Bundle creation (no submission)
 │   ├── queries/                # Read-only bundle queries
 │   ├── cancellation/           # Bundle cancellation flows
-│   ├── prehooks/               # Pre-hook examples
-│   ├── posthooks/              # Post-hook examples
+│   ├── hooks/                  # Pre-hook, post-hook, gas-limit, and delegated/direct hook examples
+│   ├── hyperliquid/            # HyperCore deposits, withdrawals, and HyperEVM transfers
 │   ├── interactions/           # Per-intent on-chain pre/postInteractions (Base)
-│   ├── solana/
-│   │   ├── src-cases/          # Solana as source chain
-│   │   ├── dst-cases/          # Solana as destination chain
-│   │   └── prepare-steps/      # SPL approve & SOL wrap
-│   ├── solana-trade-scenarios/ # Mixed Solana trade bundles
+│   ├── quote-only/             # Exact-input and exact-output EURC quotes
+│   ├── refill/                 # Gas refill flow
+│   ├── trades/
+│   │   ├── basic-flow/         # EVM propose-only and submit examples
+│   │   ├── eurc-base/          # Trades into EURC on Base
+│   │   ├── on-chain-submission/ # Direct and contract-based intent submission
+│   │   ├── permit/             # Permit examples
+│   │   └── solana/             # Solana source/destination/prepare/trade scenarios
+│   ├── utility-scripts/        # Balances, permits, EIP-7702, lending helpers, wallet migration
 │   ├── web-sockets/            # WebSocket client & HTML tracker
-│   ├── submit-bundle.ts        # Main EVM submission example (AA enabled)
-│   ├── submit-bundle-example-2.ts
-│   ├── submit-bundle-poly-to-base.ts
-│   ├── aa-disabled-evm.ts      # Submission without account abstraction
-│   ├── manual-authorization-base.ts  # EIP-7702 authorization
-│   ├── trades.ts               # Trade factory functions
+│   ├── trade-blueprints.ts     # Trade factory functions
 │   └── types.ts                # Shared TypeScript types
 ├── price/                      # Price API
-│   ├── examples/               # Runnable scripts (rates, charts by range)
-│   ├── renderers/              # Vega-Lite SVG renderers
+│   ├── scripts/                # Runnable scripts (rates, charts by range)
+│   ├── example-outputs/        # Sample generated SVG files
+│   └── renderers/              # Vega-Lite SVG renderers
 └── utils/                      # Shared utilities
-    ├── api.ts                  # createBundle, submitBundle, getBundles, cancelBundles
+    ├── gasless-api.ts          # createBundle, submitBundle, getBundles, cancelBundles
     ├── chains.ts               # Chain ID constants
     ├── constants.ts            # Token addresses, API URLs
     ├── wallet.ts               # Wallet client setup
-    ├── posthooks.ts            # Post-hook builders
+    ├── hooks/                  # Hook builders
     ├── signatures/
     │   └── intent-signatures.ts  # EIP-712 & NaCl signing
     ├── solana/                 # Solana-specific utilities
