@@ -73,6 +73,7 @@ Copy `.env.example` to `.env` and fill in the values:
 | `BASE_RPC_URL`              | Base RPC endpoint                                  |
 | `SOL_RPC_URL`               | Solana RPC endpoint                                |
 | `DE_BRIDGE_PARTNER_API_KEY` | deBridge partner API key                           |
+| `GASLESS_API_BASE_URL`     | Optional API host override; defaults to `https://api-gaslessb2b.debridge.finance` |
 
 ## Category Details
 

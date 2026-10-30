@@ -58,7 +58,10 @@ export async function simulateAndSendTx(
   }
 
   const signature = await connection.sendRawTransaction(tx.serialize(), { skipPreflight: false });
-  await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
+  const confirmation = await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
+  if (confirmation.value.err) {
+    return { ok: false, reason: `transaction ${signature} failed: ${JSON.stringify(confirmation.value.err)}` };
+  }
   return { ok: true, signature };
 }
 

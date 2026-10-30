@@ -1,6 +1,7 @@
-// export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+import "dotenv/config";
 
-export const BASE_URL = "https://api-dev.debridge.io"
+export const BASE_URL =
+  process.env.GASLESS_API_BASE_URL?.trim().replace(/\/+$/, "") || "https://api-gaslessb2b.debridge.finance";
 
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
@@ -102,11 +103,6 @@ export const DEBRIDGE_SOLANA_EXTERNAL_CALL = {
 export const KAMINO = {
   LendProgram: "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
   MainMarket: "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF",
-};
-
-// Mainnet program address: https://developers.jup.ag/docs/lend/program-addresses
-export const JUP_LEND = {
-  EarnProgram: "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
 };
 
 export const ECHO_BASE = "0xa77563ce5dfb7fe631d4b9fba8968efbb1f722c8";

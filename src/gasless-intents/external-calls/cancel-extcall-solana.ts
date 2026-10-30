@@ -71,6 +71,7 @@ async function main() {
   const result = await simulateAndSendTx(SOLANA_RPC_URL, cancelTx.data, wallet);
   if (result.ok === false) {
     console.log(`\nAborting: ${result.reason}`);
+    process.exitCode = 1;
     return;
   }
   console.log(`\n  Submitted: ${result.signature}`);
