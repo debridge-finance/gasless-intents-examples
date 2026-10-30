@@ -1,8 +1,25 @@
 import "dotenv/config";
 
+function requireEnv(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} not found in .env file.`);
+  }
+  return value;
+}
+
+export function getEvmPrivateKey(): string {
+  return requireEnv("SIGNER_PK");
+}
+
+export function getSolanaPrivateKey(): string {
+  return requireEnv("SOL_PK");
+}
+
 export function getEnvConfig(): {
   privateKey: string;
   solPrivateKey: string;
+  referralCode: number;
 } {
   // --- Environment Variable Loading and Validation ---
   console.log("Loading environment variables...");
@@ -25,7 +42,16 @@ export function getEnvConfig(): {
   return {
     privateKey,
     solPrivateKey,
+    referralCode: getReferralCode(),
   };
+}
+
+export function getReferralCode(): number {
+  const referralCode = Number(process.env.REFERRAL_CODE ?? "110000002"); // Use your own referral code.
+  if (!Number.isSafeInteger(referralCode) || referralCode < 0 || process.env.REFERRAL_CODE === "") {
+    throw new Error("REFERRAL_CODE must be a non-negative safe integer");
+  }
+  return referralCode;
 }
 
 export function getHeaders(): Headers {

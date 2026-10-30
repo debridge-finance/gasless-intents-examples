@@ -20,6 +20,10 @@ import { prepareSolanaTransaction, signHexMessageBySolanaKey } from "../solana";
 import { clipHexPrefix, toHexPrefixString } from "@utils/string";
 import { substitutePlaceholdersInMessage } from "./placeholder-substitution";
 
+export type ActionProcessingOptions = {
+  skipBudgetApprovalTransactions?: boolean;
+};
+
 export async function signAction(action: Action, walletClient: WalletClient | Keypair): Promise<string> {
   console.log(`Signing action: ${action.actionId} of type ${action.type}`);
 
@@ -110,12 +114,11 @@ export async function submitEvmTx(tx: Tx, walletClient: WalletClient): Promise<s
     to,
     value,
     data,
-  } as any); // Just to silence the errors - we're for sure not sending blobs in this transaction
+  } as any);
 
   return hash;
 }
 
-// Bug report - why does this even work on the backend? Managed to successfully submit a hex-prefixed base-58 encoded string. Stupid as it sounds.
 async function submitSolanaTx(data: string, keypair: Keypair): Promise<string> {
   const connection = new Connection(SOLANA_RPC_URL, { commitment: "confirmed" });
 
@@ -190,7 +193,7 @@ export async function getRequiredActionSignatures(
   requiredActions: Array<Action>,
   walletClient: WalletClient | Keypair,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   const signatures: SignedDataItem[] = [];
 
@@ -247,7 +250,7 @@ async function collectSignaturesFromItems<T extends { requiredActions?: Action[]
   getChainId: (item: T) => number | undefined,
   walletClientMap: WalletClientMap,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   if (!items || !Array.isArray(items)) return [];
 
@@ -287,7 +290,7 @@ export async function processIntentBundleActions(
   bundle: BundleProposeResponse,
   walletClientMap: WalletClientMap,
   providedDataMap: ProvidedDataMap = {},
-  options: { skipBudgetApprovalTransactions?: boolean } = {},
+  options: ActionProcessingOptions = {},
 ): Promise<SignedDataItem[]> {
   // Collect signatures for all bundle intents and hooks.
   const a = await collectSignaturesFromItems(
