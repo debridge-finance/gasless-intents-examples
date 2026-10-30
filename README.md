@@ -77,6 +77,7 @@ Copy `.env.example` to `.env` and fill in the values:
 | `MAINNET_RPC_URL`           | Ethereum RPC endpoint                              |
 | `OPTIMISM_RPC_URL`          | Optimism RPC endpoint                              |
 | `DE_BRIDGE_PARTNER_API_KEY` | deBridge partner API key                           |
+| `GASLESS_API_BASE_URL`     | Optional API host override; defaults to `https://api-gaslessb2b.debridge.finance` |
 | `REFERRAL_CODE`             | Your referral code for examples that read it from the environment; some scripts hardcode it |
 | `HYPERLIQUID_API_BASE_URL`   | Partner-issued API host required by the Hyperliquid examples |
 

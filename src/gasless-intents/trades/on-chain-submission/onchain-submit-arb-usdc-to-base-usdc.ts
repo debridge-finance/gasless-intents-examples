@@ -96,7 +96,7 @@ async function main() {
   //    AllowanceHolder; a Wrap tx would appear here for native input).
   //    The Sign712 is skipped — step ④ replaces it with the on-chain submit.
   console.log("③ Executing Transaction requiredAction(s)...");
-  
+
   const executed = await executeTransactionActions(requiredActions, walletClient, publicClient);
   for (const tx of executed) {
     console.log(`   ${tx.actions}: ${tx.hash} (${tx.status})`);

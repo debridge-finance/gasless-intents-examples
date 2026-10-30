@@ -1,4 +1,7 @@
-export const BASE_URL = "https://api-gaslessb2b.debridge.finance";
+import "dotenv/config";
+
+export const BASE_URL =
+  process.env.GASLESS_API_BASE_URL?.trim().replace(/\/+$/, "") || "https://api-gaslessb2b.debridge.finance";
 
 export const V1_BASE = "/v1/gasless";
 export const V1_1_BASE = "/v1.1/gasless";
@@ -89,6 +92,19 @@ export const DE_BRIDGE_CONTRACTS = {
   },
 };
 
+export const DEBRIDGE_SOLANA_EXTERNAL_CALL = {
+  Executor: "exe59FS5cojZkPJVDFDV8RnXCC7wd6yoBjsUtqH7Zai",
+  WalletPlaceholder: "J4vKrc4pCdtiHpxFDfBy4iyZ22Uf7fBjJyJ817k4673y",
+  AuthorityPlaceholder: "2iBUASRfDHgEkuZ91Lvos5NxwnmiryHrNbWBfEVqHRQZ",
+  SubmissionPlaceholder: "7cu34CRu47UZKLRHjt9kFPhuoYyHCzAafGiGWz83GNFs",
+  SerializedInstructionsHexLimit: 20_480,
+};
+
+export const KAMINO = {
+  LendProgram: "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD",
+  MainMarket: "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF",
+};
+
 export const ECHO_BASE = "0xa77563ce5dfb7fe631d4b9fba8968efbb1f722c8";
 export const ECHO_WITH_SIG_BASE = "0x30f1acea1948fa286f6ebd948d79fadeb2ae1ca9";
 
@@ -99,6 +115,7 @@ export const CASH = {
 // Pools
 
 export const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
+export const aavePoolPolygonAddress = "0x794a61358D6845594F94dc1DB02A252b5b4814aD"; // TODO: unconfirmed, keep
 
 export function getHyperliquidApiBaseUrl(): string {
   const value = process.env.HYPERLIQUID_API_BASE_URL?.trim().replace(/\/+$/, "");
