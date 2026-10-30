@@ -7,7 +7,7 @@
  */
 import { isAddress, isHex, type Address, type Hex } from "viem";
 import { loadAbi } from "../shared/abis";
-import { requireDeployedAddress } from "../shared/deployed-addresses";
+import { requireDeployedAddress } from "../../shared/deployed-addresses";
 import { getBaseClients, readView } from "../shared/base-clients";
 
 async function main(): Promise<void> {

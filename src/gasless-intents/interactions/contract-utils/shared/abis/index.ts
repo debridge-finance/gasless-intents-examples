@@ -4,7 +4,6 @@ import { ECHO_WITH_SIG_ABI } from "./echo-with-sig";
 import { LOGGING_INTERACTION_HOOK_ABI } from "./logging-interaction-hook";
 import { FILL_COUNTER_ABI } from "./fill-counter";
 import { PROTOCOL_FEE_RECORDER_ABI } from "./protocol-fee-recorder";
-import { ALLOWLIST_GUARD_ABI } from "./allowlist-guard";
 import { REWARD_MINTER_ABI } from "./reward-minter";
 import { FILL_CAP_ENFORCER_ABI } from "./fill-cap-enforcer";
 
@@ -14,7 +13,6 @@ const ABIS: Record<string, Abi> = {
   LoggingInteractionHook: LOGGING_INTERACTION_HOOK_ABI as unknown as Abi,
   FillCounter: FILL_COUNTER_ABI as unknown as Abi,
   ProtocolFeeRecorder: PROTOCOL_FEE_RECORDER_ABI as unknown as Abi,
-  AllowlistGuard: ALLOWLIST_GUARD_ABI as unknown as Abi,
   RewardMinter: REWARD_MINTER_ABI as unknown as Abi,
   FillCapEnforcer: FILL_CAP_ENFORCER_ABI as unknown as Abi,
 };
@@ -36,7 +34,6 @@ export {
   LOGGING_INTERACTION_HOOK_ABI,
   FILL_COUNTER_ABI,
   PROTOCOL_FEE_RECORDER_ABI,
-  ALLOWLIST_GUARD_ABI,
   REWARD_MINTER_ABI,
   FILL_CAP_ENFORCER_ABI,
 };

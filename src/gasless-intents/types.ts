@@ -106,6 +106,7 @@ export enum ApprovalMode {
 
 export enum ApproveAmount {
   Unlimited = "unlimited",
+  ExactApproveAmount = "exactApproveAmount",
 }
 
 export type BundleBase = {
@@ -126,15 +127,41 @@ export type BundleBase = {
   isAtomic: boolean;
   tradingAlgorithm: TradingAlgorithm;
   totalDstAmount?: string;
+  useRefill?: boolean;
 
   approvalMode?: ApprovalMode; // Defaults to "approve" if not provided
   approveAmountFlag?: ApproveAmount; // Defaults to "none" if not provided
 }
 
 export type BundleProposeBody = BundleBase & {
+  costToken?: {
+    chainId: number;
+    tokenAddress: string;
+  };
   expirationTimestamp: number; // Unix timestamp in seconds
   tradingAlgorithm: TradingAlgorithm;
 }
+
+// Before wallet connection, omit all authority/recipient fields rather than inventing addresses.
+// Keep Trade strict for executable proposals: re-propose with real addresses before signing.
+export type QuoteTrade = Omit<Trade,
+  "srcChainAuthorityAddress" | "dstChainAuthorityAddress" | "dstChainTokenOutRecipient"
+>;
+
+export type BundleQuoteBody = Omit<BundleProposeBody, "trades"> & { trades: QuoteTrade[] };
+
+// The raw propose response retains intents with intentId "0x" and preliminary requiredActions.
+export type BundleQuoteResponse = Omit<Bundle,
+  "trades" | "accumulativeTokenInput" | "accumulativeTokenOutput" | "preHooks" | "postHooks"
+> & {
+  trades: Array<Omit<TradeResult,
+    "srcChainAuthorityAddress" | "dstChainAuthorityAddress" | "dstChainTokenOutRecipient" | "relatedIntentId"
+  >>;
+  preHooks: Array<Omit<HookPayload, "requiredActions">>;
+  postHooks: Array<Omit<HookPayload, "requiredActions">>;
+  accumulativeTokenInput: Array<Omit<TokenInput, "spenderAddress">>;
+  accumulativeTokenOutput: Array<Omit<TokenResult, "recipientAddress">>;
+};
 
 export type SubmitBundleResponse = {
   bundleId: string; 
@@ -147,6 +174,7 @@ export enum SignatureTypes {
   Sign712MetaMaskWithPlaceholders = "Sign712MetaMaskWithPlaceholders", // Delegated hook with deferred placeholders
   ProvidePlaceholders = "ProvidePlaceholders",                         // Direct hook with deferred placeholders
   Sign7702Authorization = "Sign7702Authorization",
+  PreSignedMessage = "PreSignedMessage",
   Sign = "Sign", // Solana Hex Sign - Authorization
   SignTransaction = "SignTransaction", // Solana Versioned Transaction signing
   Transaction = "Transaction", // Could be EVM or Solana - Solana doesn't have `value` and `to` fields.
@@ -177,6 +205,11 @@ export type Sign7702AuthorizationData = {
   chainId?: number;
 }
 
+export type PreSignedMessageData = {
+  message: string;
+  signature: string;
+}
+
 // Placeholder entry returned in solver-hook actions (ProvidePlaceholders, Sign712MetaMaskWithPlaceholders).
 export type PlaceholderItem = {
   nameVariable: string;
@@ -202,6 +235,7 @@ export type Sign712MetaMaskWithPlaceholdersData = EIP712Data & {
 export type ActionData =
   | (EIP712Data & { toSign?: never; calls?: never; contractAddress?: never; nonce?: never; transaction?: never; placeholders?: never })
   | (Sign7702AuthorizationData & { domain?: never; types?: never; message?: never; toSign?: never; transaction?: never; placeholders?: never })
+  | (PreSignedMessageData & { domain?: never; types?: never; toSign?: never; calls?: never; contractAddress?: never; nonce?: never; transaction?: never; placeholders?: never })
   | (Tx & { domain?: never; contractAddress?: never; transaction?: never; placeholders?: never })
   | (SolanaSign & { domain?: never; contractAddress?: never; to?: never; value?: never; transaction?: never; placeholders?: never })
   | (ProvidePlaceholdersData & { domain?: never; types?: never; message?: never; contractAddress?: never; to?: never; value?: never })
@@ -226,6 +260,7 @@ export enum ActionType {
   // EVM only
   Delegate = "Delegate",
   Hook = "Hook",
+  SignRefill = "SignRefill",
 
   // Solana Only
   Compensation = "Compensation",
@@ -444,6 +479,7 @@ export type Bundle = {
   accumulativeTokenInput: Array<TokenInput>;
   status?: BundleStatus;
   partnerCancelAuthority?: Array<string>;
+  useRefill?: boolean;
 
   // Included when submitting via /submit endpoint
   enableAccountAbstraction?: boolean;

@@ -11,6 +11,7 @@ export const ENDPOINTS = {
   BUNDLES_URL: `${BASE_URL}${V1_BASE}${BUNDLES}`,
   BUNDLE_PROPOSE_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}`,
   BUNDLE_SUBMIT_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}/submit`,
+  BUNDLE_REFRESH_SOLANA_TX_URL: `${BASE_URL}${V1_1_BASE}${BUNDLES}/refresh-solana-tx`,
   BUNDLE_CANCEL_URL: `${BASE_URL}${V1_BASE}${BUNDLES}/cancel`,
 };
 
@@ -23,6 +24,7 @@ export const PRICE_CHART_URL = `${BASE_URL}/v1/token/chart`;
 export const SOL_NATIVE = "11111111111111111111111111111111";
 export const WSOL = "So11111111111111111111111111111111111111112";
 export const EVM_NATIVE_TOKEN = "0x0000000000000000000000000000000000000000";
+export const EURC_BASE = "0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42";
 export const SOL_JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"; // 6 decimals https://solscan.io/token/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN
 export const DBR_SOL = "DBRiDgJAMsM95moTzJs7M9LnkGErpbv9v6CUR1DXnUu5";
 
@@ -97,3 +99,28 @@ export const CASH = {
 // Pools
 
 export const AAVE_V3_POOL_ARBITRUM = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
+
+export function getHyperliquidApiBaseUrl(): string {
+  const value = process.env.HYPERLIQUID_API_BASE_URL?.trim().replace(/\/+$/, "");
+  if (!value) throw new Error("HYPERLIQUID_API_BASE_URL not found in .env file.");
+  return value;
+}
+
+export const HYPERLIQUID_ENDPOINTS = {
+  get BUNDLE_PROPOSE_URL() {
+    return `${getHyperliquidApiBaseUrl()}/api/bundles`;
+  },
+  get BUNDLE_SUBMIT_URL() {
+    return `${getHyperliquidApiBaseUrl()}/api/bundles/submit`;
+  },
+};
+
+export const HYPERCORE = {
+  USDC: { address: "0xb88339CB7199b77E23DB6E890353E22632Ba630f", evmDecimals: 6 },
+  HYPE: { address: "0x5555555555555555555555555555555555555555", evmDecimals: 18 },
+};
+
+export const HYPEREVM = {
+  chainId: 999,
+  rpcUrl: "https://rpc.hyperliquid.xyz/evm",
+};
