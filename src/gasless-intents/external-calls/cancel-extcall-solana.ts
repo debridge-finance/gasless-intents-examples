@@ -69,7 +69,7 @@ async function main() {
 
   // 4. sign + simulate + send (shared helper: single-signer gate, blockhash refresh, simulate-abort)
   const result = await simulateAndSendTx(SOLANA_RPC_URL, cancelTx.data, wallet);
-  if (!result.ok) {
+  if (result.ok === false) {
     console.log(`\nAborting: ${result.reason}`);
     return;
   }

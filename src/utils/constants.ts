@@ -104,6 +104,11 @@ export const KAMINO = {
   MainMarket: "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF",
 };
 
+// Mainnet program address: https://developers.jup.ag/docs/lend/program-addresses
+export const JUP_LEND = {
+  EarnProgram: "jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9",
+};
+
 export const ECHO_BASE = "0xa77563ce5dfb7fe631d4b9fba8968efbb1f722c8";
 export const ECHO_WITH_SIG_BASE = "0x30f1acea1948fa286f6ebd948d79fadeb2ae1ca9";
 
