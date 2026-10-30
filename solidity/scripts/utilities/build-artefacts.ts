@@ -11,6 +11,7 @@ const CONTRACTS = [
   "ProtocolFeeRecorder",
   "RewardMinter",
   "FillCapEnforcer",
+  "IntentSubmitter",
 ];
 
 const ARTEFACTS_DIR = path.join(SOLIDITY_DIR, "build-artefacts");

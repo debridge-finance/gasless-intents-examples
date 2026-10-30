@@ -13,6 +13,9 @@ solidity/scripts/
   interactions/
     deploy/      IPre/PostInteractionHook deploy scripts
     verify/      IPre/PostInteractionHook verify scripts
+  submitter/
+    deploy/      IntentSubmitter deploy script
+    verify/      IntentSubmitter verify script
 ```
 
 The deployed-address ledger lives at
@@ -96,6 +99,21 @@ Required env vars:
 | `SIGNER_PK` | Deployer private key (with or without `0x` prefix). Needs ETH on Base. |
 | `BASE_RPC_URL` | Base mainnet RPC endpoint. Optional; falls back to `https://mainnet.base.org`. |
 
+## IntentSubmitter
+
+Example contract for direct on-chain intent submission
+(`contracts/submitter/IntentSubmitter.sol`): forwards a full `IIntent.Intent`
+to the IntentManager, pinning the receiver to a hardcoded `RECIPIENT`,
+rejecting Solana/TRON chain ids and expirations outside (now, now + 30 days].
+Owner can revoke individual intents or bulk-revoke by timestamp
+(`revokeIntentsUpTo`). No constructor args; `owner` = deployer.
+
+```bash
+npx tsx solidity/scripts/utilities/build-artefacts.ts
+npx tsx solidity/scripts/submitter/deploy/deploy-intent-submitter.ts
+npx tsx solidity/scripts/submitter/verify/verify-intent-submitter.ts <0xAddress>
+```
+
 ## Verify
 
 ```bash
@@ -119,3 +137,4 @@ Verification uses Standard JSON Input mode against the Etherscan v2 API. Set
 | `ProtocolFeeRecorder` | Base mainnet | 8453 | [`0x06849f0fad887e73c57e44ede0821fbbc63ee1f9`](https://basescan.org/address/0x06849f0fad887e73c57e44ede0821fbbc63ee1f9#code) | yes |
 | `RewardMinter` | Base mainnet | 8453 | [`0xf359104c960ddecedd207b679450abdc9d7c6481`](https://basescan.org/address/0xf359104c960ddecedd207b679450abdc9d7c6481#code) | yes |
 | `FillCapEnforcer` | Base mainnet | 8453 | [`0xbc4a0ed3b62dd5d9512f954f43fcf5c23811b15e`](https://basescan.org/address/0xbc4a0ed3b62dd5d9512f954f43fcf5c23811b15e#code) | yes |
+| `IntentSubmitter` | Base mainnet | 8453 | [`0xd90994b6e13095e20c64a35bd22f45c271b784dc`](https://basescan.org/address/0xd90994b6e13095e20c64a35bd22f45c271b784dc#code) | yes |
