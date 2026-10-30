@@ -5,6 +5,8 @@ import {
   BundleCancelRequest,
   BundleCancelResponse,
   BundleProposeBody,
+  BundleQuoteBody,
+  BundleQuoteResponse,
   GetBundlesFilterParams,
   PaginatedResponseMetadata,
   SubmitBundleResponse,
@@ -16,10 +18,37 @@ import { postUrl, getUrl } from "./http";
 
 const { BUNDLE_CANCEL_URL, BUNDLES_URL, BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL } = ENDPOINTS;
 
-export async function createBundle(requestBody: BundleProposeBody): Promise<Bundle> {
-  const response = await postUrl(BUNDLE_PROPOSE_URL, requestBody);
+export type BundleApiEndpoints = {
+  BUNDLE_PROPOSE_URL: string;
+  BUNDLE_SUBMIT_URL: string;
+};
 
-  return response as Bundle;
+const DEFAULT_BUNDLE_ENDPOINTS: BundleApiEndpoints = { BUNDLE_PROPOSE_URL, BUNDLE_SUBMIT_URL };
+
+/** Propose a bundle; omit wallet addresses for a quote and re-propose after connection. */
+export function createBundle(requestBody: BundleProposeBody, endpoints?: BundleApiEndpoints): Promise<Bundle>;
+export function createBundle(requestBody: BundleQuoteBody, endpoints?: BundleApiEndpoints): Promise<BundleQuoteResponse>;
+export async function createBundle(
+  requestBody: BundleProposeBody | BundleQuoteBody,
+  endpoints: BundleApiEndpoints = DEFAULT_BUNDLE_ENDPOINTS,
+): Promise<Bundle | BundleQuoteResponse> {
+  const response = await postUrl(endpoints.BUNDLE_PROPOSE_URL, requestBody);
+
+  return response as Bundle | BundleQuoteResponse;
+}
+
+/**
+ * Ask deBridge to refresh and service-sign a hex-encoded Solana transaction.
+ * The input must retain the API's original signature. The wallet must sign the returned
+ * transaction again: changing a blockhash invalidates signatures over the old message.
+ * Docs: /api-reference/gasless-api/refresh-blockhash-and-resign-a-solana-transaction
+ */
+export async function refreshSolanaTransaction(transaction: string): Promise<string> {
+  const response = await postUrl(ENDPOINTS.BUNDLE_REFRESH_SOLANA_TX_URL, { transaction }) as { transaction?: unknown };
+  if (typeof response.transaction !== "string" || !/^0x(?:[0-9a-fA-F]{2})+$/.test(response.transaction)) {
+    throw new Error("refresh-solana-tx returned an invalid hex-encoded transaction");
+  }
+  return response.transaction;
 }
 
 /**
@@ -33,8 +62,11 @@ export async function createBundle(requestBody: BundleProposeBody): Promise<Bund
  * @param requestBody
  * @returns A unique bundleId.
  */
-export async function submitBundle(requestBody: Bundle): Promise<SubmitBundleResponse> {
-  const response = await postUrl(`${BUNDLE_SUBMIT_URL}?format=json`, requestBody);
+export async function submitBundle(
+  requestBody: Bundle,
+  endpoints: BundleApiEndpoints = DEFAULT_BUNDLE_ENDPOINTS,
+): Promise<SubmitBundleResponse> {
+  const response = await postUrl(`${endpoints.BUNDLE_SUBMIT_URL}?format=json`, requestBody);
 
   return response as SubmitBundleResponse;
 }
