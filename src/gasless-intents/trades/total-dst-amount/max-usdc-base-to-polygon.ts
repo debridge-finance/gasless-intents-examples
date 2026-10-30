@@ -1,3 +1,13 @@
+/**
+ * Max input: USDC on Base → exactly 1 USDC on Polygon.
+ *
+ * totalDstAmount is the net destination amount after operating expenses.
+ * The single trade supplies the amount needed to reach that target.
+ * Fund the source wallet with enough to cover the target and operating expenses.
+ *
+ * Usage: npx tsx ./src/gasless-intents/trades/total-dst-amount/max-usdc-base-to-polygon.ts
+ */
+
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
@@ -15,34 +25,17 @@ async function main() {
   const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  // 6 USDC on BNB (18 decimals)
-  const totalDstAmount = (6n * 10n ** 18n).toString();
+  // 1 USDC on Polygon (6 decimals).
+  const totalDstAmount = (1n * 10n ** 6n).toString();
 
-  // ── Trades ─────────────────────────────────────────────────────────
-
-  const arbUsdc1ToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Arbitrum,
-    srcChainTokenIn: USDC.Arbitrum,
-    srcChainTokenInAmount: "2000000",
-
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
-    dstChainTokenOutAmount: TokenAmount.AUTO,
-    dstChainTokenOutRecipient: account.address,
-
-    srcChainAuthorityAddress: account.address,
-    dstChainAuthorityAddress: account.address,
-
-    prependOperatingExpenses: false,
-  };
-
-  const baseUsdcToBnbUsdc: Trade = {
+  // The input amount is an upper bound; the system takes only what is needed.
+  const trade: Trade = {
     srcChainId: CHAIN_IDS.Base,
     srcChainTokenIn: USDC.Base,
     srcChainTokenInAmount: TokenAmount.MAX,
 
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
+    dstChainId: CHAIN_IDS.Polygon,
+    dstChainTokenOut: USDC.Polygon,
     dstChainTokenOutAmount: TokenAmount.AUTO,
     dstChainTokenOutRecipient: account.address,
 
@@ -51,24 +44,6 @@ async function main() {
 
     prependOperatingExpenses: false,
   };
-
-  const polyUsdcToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Polygon,
-    srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: TokenAmount.MAX,
-
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
-    dstChainTokenOutAmount: TokenAmount.AUTO,
-    dstChainTokenOutRecipient: account.address,
-
-    srcChainAuthorityAddress: account.address,
-    dstChainAuthorityAddress: account.address,
-
-    prependOperatingExpenses: false,
-  };
-
-  // ── Bundle ─────────────────────────────────────────────────────────
 
   const requestBody: BundleProposeBody = {
     requestId: randomUUID(),
@@ -76,24 +51,21 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [
-      arbUsdc1ToBnbUsdc,
-      baseUsdcToBnbUsdc,
-      polyUsdcToBnbUsdc,
-    ],
+    trades: [trade],
     totalDstAmount,
   };
+
+  console.log("Creating bundle (USDC on Base → 1 USDC on Polygon)...");
+  console.log(`  totalDstAmount: ${totalDstAmount}`);
 
   const bundle = await createBundle(requestBody);
   console.log("\nBundle created!");
   console.log(JSON.stringify(bundle, null, 2));
 
-  // ── Sign ───────────────────────────────────────────────────────────
   console.log("\nCollecting signatures...");
   const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
   console.log(`Generated ${signedDataArray.length} signatures`);
 
-  // ── Submit ─────────────────────────────────────────────────────────
   const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,

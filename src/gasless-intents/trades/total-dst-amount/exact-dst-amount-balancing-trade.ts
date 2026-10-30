@@ -1,3 +1,14 @@
+/**
+ * Aave withdrawal: USDC on Arbitrum → exactly 1 USDC on Base.
+ *
+ * totalDstAmount is the net destination amount after operating expenses.
+ * The single trade supplies the amount needed to reach that target.
+ * Requires a sufficient USDC deposit in Aave V3 on Arbitrum; the pre-hook
+ * withdraws the calculated input amount before the trade executes.
+ *
+ * Usage: npx tsx ./src/gasless-intents/trades/total-dst-amount/exact-dst-amount-balancing-trade.ts
+ */
+
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
@@ -16,74 +27,34 @@ async function main() {
   const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  // 8 USDC on BNB (18 decimals)
-  const totalDstAmount = (8n * 10n ** 18n).toString();
+  // 1 USDC on Base (6 decimals).
+  const totalDstAmount = (1n * 10n ** 6n).toString();
 
-  // ── Trades ─────────────────────────────────────────────────────────
-
-  // Trade 1: USDC on Base → USDC on BNB (max / auto)
-  const baseUsdcToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Base,
-    srcChainTokenIn: USDC.Base,
-    srcChainTokenInAmount: TokenAmount.MAX,
-
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
-    dstChainTokenOutAmount: TokenAmount.AUTO,
-    dstChainTokenOutRecipient: account.address,
-
-    srcChainAuthorityAddress: account.address,
-    dstChainAuthorityAddress: account.address,
-
-    prependOperatingExpenses: true,
-  };
-
-  // Trade 2: USDC on Polygon → USDC on BNB (max / auto)
-  const polyUsdcToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Polygon,
-    srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: TokenAmount.MAX,
-
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
-    dstChainTokenOutAmount: TokenAmount.AUTO,
-    dstChainTokenOutRecipient: account.address,
-
-    srcChainAuthorityAddress: account.address,
-    dstChainAuthorityAddress: account.address,
-
-    prependOperatingExpenses: true,
-  };
-
-  // Trade 3: USDC on Arbitrum → USDC on BNB (auto / auto — balancing trade)
-  // The wallet is empty on Arbitrum. Funds arrive via the AAVE withdraw pre-hook.
-  // The system calculates both srcAmount and dstAmount for this trade.
-  const arbAaveUsdcToBnbUsdc: Trade = {
+  // The pre-hook supplies the input calculated for this auto/auto trade.
+  const trade: Trade = {
     srcChainId: CHAIN_IDS.Arbitrum,
     srcChainTokenIn: USDC.Arbitrum,
-    srcChainTokenInAmount: TokenAmount.AUTO,    // balancing trade — system calculates src
+    srcChainTokenInAmount: TokenAmount.AUTO,
 
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
-    dstChainTokenOutAmount: TokenAmount.AUTO,   // balancing trade — system calculates dst
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: USDC.Base,
+    dstChainTokenOutAmount: TokenAmount.AUTO,
     dstChainTokenOutRecipient: account.address,
 
     srcChainAuthorityAddress: account.address,
     dstChainAuthorityAddress: account.address,
 
-    prependOperatingExpenses: true,
+    prependOperatingExpenses: false,
   };
 
   const aaveWithdrawHook = await getAaveWithdrawHook(
-    toHexPrefixString(AAVE_V3_POOL_ARBITRUM),  // AAVE V3 Pool on Arbitrum
-    toHexPrefixString(USDC.Arbitrum),            // asset to withdraw
-    CHAIN_IDS.Arbitrum,                          // chain where AAVE lives
-    account.address,                             // beneficiary (receives withdrawn USDC)
+    toHexPrefixString(AAVE_V3_POOL_ARBITRUM),
+    toHexPrefixString(USDC.Arbitrum),
+    CHAIN_IDS.Arbitrum,
+    account.address,
   );
 
   console.log("AAVE withdraw pre-hook:", JSON.stringify(aaveWithdrawHook, null, 2));
-
-  // ── Bundle ─────────────────────────────────────────────────────────
 
   const requestBody: BundleProposeBody = {
     requestId: randomUUID(),
@@ -91,30 +62,22 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [
-      baseUsdcToBnbUsdc,       // processed first
-      polyUsdcToBnbUsdc,       // processed second
-      arbAaveUsdcToBnbUsdc     // processed third (balancing trade)
-    ],
+    trades: [trade],
     preHooks: [aaveWithdrawHook],
     totalDstAmount,
   };
 
-  // ── Propose ────────────────────────────────────────────────────────
-  console.log("\nCreating bundle (AAVE withdraw balancing → 8 USDC on BNB)...");
+  console.log("Creating bundle (Aave USDC on Arbitrum → 1 USDC on Base)...");
   console.log(`  totalDstAmount: ${totalDstAmount}`);
-  console.log(`  Trades: 2 × max/auto`);
 
   const bundle = await createBundle(requestBody);
   console.log("\nBundle created!");
   console.log(JSON.stringify(bundle, null, 2));
 
-  // ── Sign ───────────────────────────────────────────────────────────
   console.log("\nCollecting signatures...");
   const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
   console.log(`Generated ${signedDataArray.length} signatures`);
 
-  // ── Submit ─────────────────────────────────────────────────────────
   const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,

@@ -1,3 +1,13 @@
+/**
+ * Max input: native ETH on Arbitrum → exactly 1 USDC on Base.
+ *
+ * totalDstAmount is the net destination amount after operating expenses.
+ * The single trade supplies the amount needed to reach that target.
+ * Fund the source wallet with enough to cover the target and operating expenses.
+ *
+ * Usage: npx tsx ./src/gasless-intents/trades/total-dst-amount/eth-arbitrum-to-base-usdc.ts
+ */
+
 import { privateKeyToAccount } from "viem/accounts";
 import { randomUUID } from "crypto";
 
@@ -7,7 +17,7 @@ import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
-import { USDC } from "@utils/constants";
+import { USDC, EVM_NATIVE_TOKEN } from "@utils/constants";
 import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "@gasless-intents/types";
 
 async function main() {
@@ -15,19 +25,17 @@ async function main() {
   const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  // 8 USDC on BNB (18 decimals)
-  const totalDstAmount = (8n * 10n ** 18n).toString();
+  // 1 USDC on Base (6 decimals).
+  const totalDstAmount = (1n * 10n ** 6n).toString();
 
-  // ── Trades ─────────────────────────────────────────────────────────
-
-  // Trade 1: USDC on Base → USDC on BNB (max / auto)
-  const baseUsdcToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Base,
-    srcChainTokenIn: USDC.Base,
+  // The input amount is an upper bound; the system takes only what is needed.
+  const trade: Trade = {
+    srcChainId: CHAIN_IDS.Arbitrum,
+    srcChainTokenIn: EVM_NATIVE_TOKEN,
     srcChainTokenInAmount: TokenAmount.MAX,
 
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
+    dstChainId: CHAIN_IDS.Base,
+    dstChainTokenOut: USDC.Base,
     dstChainTokenOutAmount: TokenAmount.AUTO,
     dstChainTokenOutRecipient: account.address,
 
@@ -36,25 +44,6 @@ async function main() {
 
     prependOperatingExpenses: false,
   };
-
-  // Trade 2: USDC on Polygon → USDC on BNB (max / auto)
-  const polyUsdcToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Polygon,
-    srcChainTokenIn: USDC.Polygon,
-    srcChainTokenInAmount: TokenAmount.MAX,
-
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
-    dstChainTokenOutAmount: TokenAmount.AUTO,
-    dstChainTokenOutRecipient: account.address,
-
-    srcChainAuthorityAddress: account.address,
-    dstChainAuthorityAddress: account.address,
-
-    prependOperatingExpenses: false,
-  };
-
-  // ── Bundle ─────────────────────────────────────────────────────────
 
   const requestBody: BundleProposeBody = {
     requestId: randomUUID(),
@@ -62,23 +51,21 @@ async function main() {
     enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [
-      baseUsdcToBnbUsdc,
-      polyUsdcToBnbUsdc,
-    ],
+    trades: [trade],
     totalDstAmount,
   };
+
+  console.log("Creating bundle (ETH on Arbitrum → 1 USDC on Base)...");
+  console.log(`  totalDstAmount: ${totalDstAmount}`);
 
   const bundle = await createBundle(requestBody);
   console.log("\nBundle created!");
   console.log(JSON.stringify(bundle, null, 2));
 
-  // ── Sign ───────────────────────────────────────────────────────────
   console.log("\nCollecting signatures...");
   const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
   console.log(`Generated ${signedDataArray.length} signatures`);
 
-  // ── Submit ─────────────────────────────────────────────────────────
   const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,

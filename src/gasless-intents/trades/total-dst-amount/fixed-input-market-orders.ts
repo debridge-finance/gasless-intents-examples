@@ -1,24 +1,11 @@
 /**
- * Cross-Token Consolidation with totalDstAmount
+ * Fixed input cap: up to 2.5 USDC on Base → exactly 1 USDC on Arbitrum.
  *
- * Scenario: 2.5 USDC on Base + 0.003 ETH on Arbitrum → 5 USDC on BNB Chain.
+ * totalDstAmount is the net destination amount after operating expenses.
+ * The single trade supplies the amount needed to reach that target.
+ * Fund the source wallet with enough to cover the target and operating expenses.
  *
- * The bundle uses `totalDstAmount` to request exactly 5 USDC (in 18-decimal
- * BNB USDC) as the consolidated destination amount. The system iterates the
- * trades in array order, converting each source token to the destination USDC,
- * and trims whichever trade pushes the cumulative total past the target (the
- * "balancing trade").
- *
- * What to verify:
- *   - Final amount received on BNB ≈ 5 USDC, not the raw sum of both trades.
- *   - One of the two trades is trimmed (the balancing trade).
- *
- * Prerequisites:
- *   - Fund wallet with ≥ 2.5 USDC on Base
- *   - Fund wallet with ≥ 0.003 ETH on Arbitrum
- *   - Set SIGNER_PK and DE_BRIDGE_PARTNER_API_KEY in .env
- *
- * Usage: npx tsx src/gasless-intents/total-dst-amount/smoke-test-a-cross-token.ts
+ * Usage: npx tsx ./src/gasless-intents/trades/total-dst-amount/fixed-input-market-orders.ts
  */
 
 import { privateKeyToAccount } from "viem/accounts";
@@ -30,46 +17,26 @@ import { createBundle, submitBundle } from "@utils/gasless-api";
 import { processIntentBundle } from "@utils/signatures/intent-signatures";
 import { getChainIdToWalletClientMap } from "@utils/wallet";
 import { CHAIN_IDS } from "@utils/chains";
-import { USDC, EVM_NATIVE_TOKEN } from "@utils/constants";
-import { Bundle, BundleProposeBody, Trade, TradingAlgorithm } from "@gasless-intents/types";
+import { USDC } from "@utils/constants";
+import { Bundle, BundleProposeBody, Trade, TradingAlgorithm, TokenAmount } from "@gasless-intents/types";
 
 async function main() {
   const { privateKey } = getEnvConfig();
   const account = privateKeyToAccount(`0x${clipHexPrefix(privateKey)}`);
   const chainIdToWalletClientMap = getChainIdToWalletClientMap(account);
 
-  // USDC on BNB Chain has 18 decimals (not 6 like on most other chains).
-  // 5 USDC on BNB = 5 * 10^18 = "5000000000000000000".
-  const totalDstAmount = (5n * 10n ** 18n).toString();
+  // 1 USDC on Arbitrum (6 decimals).
+  const totalDstAmount = (1n * 10n ** 6n).toString();
 
-  // Trade 1: 2.5 USDC on Base → USDC on BNB
-  // srcChainTokenInAmount is an upper bound — the system may take less.
-  const baseUsdcToBnbUsdc: Trade = {
+  // The input amount is an upper bound; the system takes only what is needed.
+  const trade: Trade = {
     srcChainId: CHAIN_IDS.Base,
-    srcChainTokenIn: USDC.Base,               // USDC on Base, 6 decimals
-    srcChainTokenInAmount: "2500000",          // 2.5 USDC (6 decimals)
+    srcChainTokenIn: USDC.Base,
+    srcChainTokenInAmount: "2500000",
 
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,               // USDC on BNB, 18 decimals
-    dstChainTokenOutAmount: "auto",            // system calculates dst amount
-    dstChainTokenOutRecipient: account.address,
-
-    srcChainAuthorityAddress: account.address,
-    dstChainAuthorityAddress: account.address,
-
-    prependOperatingExpenses: false,           // required for totalDstAmount
-  };
-
-  // Trade 2: 0.003 ETH on Arbitrum → USDC on BNB
-  // ETH uses the native token address (zero address).
-  const arbEthToBnbUsdc: Trade = {
-    srcChainId: CHAIN_IDS.Arbitrum,
-    srcChainTokenIn: EVM_NATIVE_TOKEN,         // Native ETH, 18 decimals
-    srcChainTokenInAmount: "3000000000000000",  // 0.003 ETH (18 decimals)
-
-    dstChainId: CHAIN_IDS.BNB,
-    dstChainTokenOut: USDC.BNB,
-    dstChainTokenOutAmount: "auto",
+    dstChainId: CHAIN_IDS.Arbitrum,
+    dstChainTokenOut: USDC.Arbitrum,
+    dstChainTokenOutAmount: TokenAmount.AUTO,
     dstChainTokenOutRecipient: account.address,
 
     srcChainAuthorityAddress: account.address,
@@ -78,39 +45,27 @@ async function main() {
     prependOperatingExpenses: false,
   };
 
-  // All trades must share the same dst token (USDC) and dst chain (BNB).
-  // totalDstAmount tells the system: "I want exactly 5 USDC on BNB."
-  // The system iterates trades in order, taking from each source until the
-  // cumulative dst amount minus operational expenses equals totalDstAmount.
   const requestBody: BundleProposeBody = {
     requestId: randomUUID(),
     expirationTimestamp: Math.floor((new Date().getTime() * 2) / 1000),
-    enableAccountAbstraction: true,  // required for totalDstAmount
+    enableAccountAbstraction: true,
     isAtomic: true,
     tradingAlgorithm: TradingAlgorithm.MARKET,
-    trades: [
-      baseUsdcToBnbUsdc,   // Trade 1: ~2.5 USDC from Base
-      arbEthToBnbUsdc,     // Trade 2: ~0.003 ETH from Arb
-    ],
-    totalDstAmount,         // 5 USDC on BNB (18 decimals)
+    trades: [trade],
+    totalDstAmount,
   };
 
-  // ── Propose ────────────────────────────────────────────────────────
-  console.log("Creating bundle with totalDstAmount...");
-  console.log(`  totalDstAmount: ${totalDstAmount} (5 USDC, 18 decimals on BNB)`);
-  console.log(`  Trades: ${requestBody.trades.length}`);
+  console.log("Creating bundle (USDC on Base → 1 USDC on Arbitrum)...");
+  console.log(`  totalDstAmount: ${totalDstAmount}`);
 
   const bundle = await createBundle(requestBody);
-
-  console.log("\nBundle created successfully!");
+  console.log("\nBundle created!");
   console.log(JSON.stringify(bundle, null, 2));
 
-  // ── Sign ───────────────────────────────────────────────────────────
-  console.log("\nCollecting signatures for all intents...");
+  console.log("\nCollecting signatures...");
   const signedDataArray = await processIntentBundle(bundle, chainIdToWalletClientMap);
-  console.log(`Generated ${signedDataArray.length} signatures for ${bundle.intents?.length ?? 0} intents`);
+  console.log(`Generated ${signedDataArray.length} signatures`);
 
-  // ── Submit ─────────────────────────────────────────────────────────
   const submitPayload: Bundle = {
     ...bundle,
     requestId: requestBody.requestId,
@@ -119,7 +74,7 @@ async function main() {
     signedData: signedDataArray,
   };
 
-  console.log("\nSubmitting bundle...");
+  console.log("\nSubmitting...");
   const submitResponse = await submitBundle(submitPayload);
   console.log("Submit response:", submitResponse);
 }
