@@ -174,6 +174,7 @@ export type BundleBase = {
 }
 
 export type BundleProposeBody = BundleBase & {
+  forceEip7702Authorization?: boolean; // Request EVM authorization even when delegation already exists.
   costToken?: {
     chainId: number;
     tokenAddress: string;
