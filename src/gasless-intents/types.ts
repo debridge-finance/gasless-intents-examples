@@ -142,6 +142,7 @@ export type Trade = {
 export enum ApprovalMode {
   Approve = "approve",
   Permit = "permit",
+  StrictPermit2 = "strictPermit2",
 }
 
 export enum ApproveAmount {
