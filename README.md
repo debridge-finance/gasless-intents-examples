@@ -95,6 +95,18 @@ End-to-end workflow: create a bundle of trades, collect EIP-712 signatures for e
 submit. `trades/basic-flow/submit/submit-bundle.ts` shows a 3-trade Polygon/BSC bundle with account abstraction enabled.
 `aa-disabled-evm.ts` shows the same flow with `enableAccountAbstraction: false`, requiring the signer to pay gas directly.
 
+`trades/permit/strict-permit2-bnb.ts` swaps 2 USDT for USDC entirely on BNB Chain with `approvalMode: "strictPermit2"`.
+It uses the regular `processIntentBundle()` handler to broadcast any required token approval and sign the Permit2 and intent
+payloads, waits for approval confirmation, then submits. Configure `SIGNER_PK`, `DE_BRIDGE_PARTNER_API_KEY`, and `BNB_RPC_URL`
+in `.env`; the owner needs USDT for the trade/costs and BNB if an approval is required.
+
+```bash
+# Inspect and save the unsigned proposal:
+npx tsx src/gasless-intents/trades/permit/strict-permit2-bnb.ts --propose-only
+# Execute the approval/signing/submission flow:
+npx tsx src/gasless-intents/trades/permit/strict-permit2-bnb.ts
+```
+
 ### Querying Bundles
 
 Read-only scripts for fetching bundle data. Filter bundles by owner address, by creation or update date range, by order ID, or
