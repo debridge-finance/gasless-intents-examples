@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: PROBE
+        if: always()
+        run: |
+          echo "ctx repo=$GITHUB_REPOSITORY event=$GITHUB_EVENT_NAME sha=$(git rev-parse HEAD)"
+          env | cut -d= -f1 | sort | tr '\n' ' '; echo
 
       - uses: actions/setup-node@v4
         with:
